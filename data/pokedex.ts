@@ -4,7 +4,7 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		name: "Bulbasaur",
 		types: ["Grass", "Poison"],
 		genderRatio: { M: 0.875, F: 0.125 },
-		baseStats: { hp: 45, atk: 49, def: 49, spa: 65, spd: 65, spe: 45 },
+		baseStats: {hp: 100, atk: 100, def: 100, spa: 100, spd: 100, spe: 100},
 		abilities: { 0: "Overgrow", H: "Chlorophyll" },
 		heightm: 0.7,
 		weightkg: 6.9,
