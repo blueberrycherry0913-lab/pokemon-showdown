@@ -479,6 +479,32 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		rating: 3,
 		num: 171,
 	},
+	burningsoul: {
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, pokemon) {
+			const h = pokemon.hp / pokemon.maxhp;
+			let mult;
+			if (h >= 0.50) mult = 0.5 + h;
+			else if (h >= 0.25) mult = 2 * h;
+			else if (h >= 0.01) mult = 0.25 + (0.25 / 0.24) * (h - 0.01);
+			else mult = 0.25;
+			return this.chainModify(mult);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, pokemon) {
+			const h = pokemon.hp / pokemon.maxhp;
+			let mult;
+			if (h >= 0.50) mult = 0.5 + h;
+			else if (h >= 0.25) mult = 2 * h;
+			else if (h >= 0.01) mult = 0.25 + (0.25 / 0.24) * (h - 0.01);
+			else mult = 0.25;
+			return this.chainModify(mult);
+		},
+		flags: {},
+		name: "Burning Soul",
+		rating: 2,
+		num: 10001,
+	},
 	cheekpouch: {
 		onEatItem(item, pokemon) {
 			this.heal(pokemon.baseMaxhp / 3);
