@@ -3129,7 +3129,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			if (pokemon.activeTurns) {
 				const boosted = this.boost({ spa: 1 });
 				if (boosted) {
-					this.damage(pokemon.baseMaxhp / 16, pokemon, pokemon);
+					this.damage(pokemon.baseMaxhp / 8, pokemon, pokemon);
 				}
 			}
 		},
