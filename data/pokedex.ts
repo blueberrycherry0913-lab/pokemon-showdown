@@ -1017,7 +1017,7 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 	clefable: {
 		num: 36,
 		name: "Clefable",
-		types: ["Fairy"],
+		types: ["Fairy", "Cosmic"],
 		genderRatio: { M: 0.25, F: 0.75 },
 		baseStats: { hp: 95, atk: 70, def: 73, spa: 95, spd: 90, spe: 60 },
 		abilities: { 0: "Cute Charm", 1: "Magic Guard", H: "Unaware" },
