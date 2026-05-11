@@ -3122,6 +3122,22 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		rating: 2,
 		num: 65,
 	},
+	overthinker: {
+		onResidualOrder: 28,
+		onResidualSubOrder: 2,
+		onResidual(pokemon) {
+			if (pokemon.activeTurns) {
+				const boosted = this.boost({ spa: 1 });
+				if (boosted) {
+					this.damage(pokemon.baseMaxhp / 16, pokemon, pokemon);
+				}
+			}
+		},
+		flags: {},
+		name: "Overthinker",
+		rating: 3,
+		num: 10002,
+	},
 	owntempo: {
 		onUpdate(pokemon) {
 			if (pokemon.volatiles['confusion']) {

@@ -1419,7 +1419,7 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		name: "Golduck",
 		types: ["Water"],
 		baseStats: { hp: 80, atk: 82, def: 78, spa: 95, spd: 80, spe: 85 },
-		abilities: { 0: "Damp", 1: "Cloud Nine", H: "Swift Swim" },
+		abilities: { 0: "Overthinker", 1: "Cloud Nine", H: "Swift Swim" },
 		heightm: 1.7,
 		weightkg: 76.6,
 		color: "Blue",
