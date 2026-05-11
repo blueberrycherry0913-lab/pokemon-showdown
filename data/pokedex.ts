@@ -1407,7 +1407,7 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		name: "Psyduck",
 		types: ["Water"],
 		baseStats: { hp: 50, atk: 52, def: 48, spa: 65, spd: 50, spe: 55 },
-		abilities: { 0: "Damp", 1: "Cloud Nine", H: "Swift Swim" },
+		abilities: { 0: "Overthinker", 1: "Cloud Nine", H: "Swift Swim" },
 		heightm: 0.8,
 		weightkg: 19.6,
 		color: "Yellow",
