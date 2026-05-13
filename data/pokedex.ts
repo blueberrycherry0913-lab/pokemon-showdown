@@ -33,7 +33,7 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		types: ["Grass", "Poison"],
 		genderRatio: { M: 0.875, F: 0.125 },
 		baseStats: { hp: 105, atk: 80, def: 80, spa: 110, spd: 100, spe: 75 },
-		abilities: { 0: "Overgrow", H: "Chlorophyll" },
+		abilities: { 0: "Chlorophyll", 1: "Thick Fat", H: "Wild Vines" },
 		heightm: 2,
 		weightkg: 100,
 		color: "Green",
