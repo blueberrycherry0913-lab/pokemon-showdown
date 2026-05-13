@@ -10,10 +10,13 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 		doublesTier: "(DUU)",
 		natDexTier: "RU",
 	},
-	venusaurmega: {
-		isNonstandard: "Past",
-		tier: "Illegal",
-		natDexTier: "UU",
+	venusaurmegax: {
+    		tier: "Past",
+    		isNonstandard: "Past",
+	},
+	venusaurmegay: {
+    		tier: "Past",
+    		isNonstandard: "Past",
 	},
 	venusaurgmax: {
 		isNonstandard: "Past",
