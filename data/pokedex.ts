@@ -67,7 +67,7 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
     		forme: "Mega-Y",
     		types: ["Grass", "Poison"],
     		genderRatio: { M: 0.875, F: 0.125 },
-    		baseStats: { hp: 80, atk: 100, def: 123, spa: 122, spd: 120, spe: 80 },
+    		baseStats: { hp: 105, atk: 145, def: 100, spa: 80, spd: 100, spe: 95 },
     		abilities: { 0: "Chlorophyll" },
     		heightm: 2.4,
     		weightkg: 155.5,
