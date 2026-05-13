@@ -7461,17 +7461,29 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
 		num: 1123,
 		gen: 8,
 	},
-	venusaurite: {
-		name: "Venusaurite",
-		spritenum: 608,
-		megaStone: { "Venusaur": "Venusaur-Mega" },
-		itemUser: ["Venusaur"],
-		onTakeItem(item, source) {
-			return !item.megaStone?.[source.baseSpecies.baseSpecies];
-		},
-		num: 659,
-		gen: 6,
-		isNonstandard: "Past",
+	venusauritex: {
+    		name: "Venusaurite X",
+    		spritenum: 608,
+    		megaStone: { "Venusaur": "Venusaur-Mega-X" },
+    		itemUser: ["Venusaur"],
+    		onTakeItem(item, source) {
+        		return !item.megaStone?.[source.baseSpecies.baseSpecies];
+    		},
+    		num: -1,
+    		gen: 6,
+    		isNonstandard: "Past",
+	},
+	venusauritey: {
+    		name: "Venusaurite Y",
+    		spritenum: 608,
+    		megaStone: { "Venusaur": "Venusaur-Mega-Y" },
+    		itemUser: ["Venusaur"],
+    		onTakeItem(item, source) {
+        		return !item.megaStone?.[source.baseSpecies.baseSpecies];
+    		},
+    		num: 659,
+    		gen: 6,
+    		isNonstandard: "Past",
 	},
 	victreebelite: {
 		name: "Victreebelite",
