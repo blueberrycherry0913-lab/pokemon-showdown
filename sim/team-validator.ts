@@ -1132,14 +1132,15 @@ export class TeamValidator {
 		const canBottleCap = dex.gen >= 7 && (set.level >= (dex.gen < 9 ? 100 : 50) || !ruleTable.has('obtainablemisc'));
 
 		if (!set.evs) set.evs = TeamValidator.fillStats(null, evLimit === null ? 252 : 0);
-		if (!set.ivs) set.ivs = TeamValidator.fillStats(null, 31);
+		if (!set.ivs) set.ivs = TeamValidator.fillStats(null, ruleTable.has('forceiv0') ? 0 : 31);
 
 		const problems = [];
 		const name = set.name || set.species;
 
 		const maxedIVs = Object.values(set.ivs).every(stat => stat === 31);
-		if (useStatPoints && !maxedIVs) {
-			problems.push(`${name}'s IVs are not maxed out, but this format requires all IVs to be 31.`);
+		const zeroedIVs = Object.values(set.ivs).every(stat => stat === 0);
+		if (useStatPoints && !maxedIVs && !zeroedIVs) {
+			problems.push(`${name}'s IVs must be either all 31 or all 0 in this format.`);
 		}
 		for (const moveName of set.moves) {
 			const move = dex.moves.get(moveName);

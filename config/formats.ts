@@ -28,7 +28,7 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 	},
 	{
 		name: "[Gen 9] Testing Standard",
-		desc: `Custom fan-game rework playtesting format. Inherits Nat Dex AG roster and clauses; Pok&eacute;mon Champions SP system + Level 50 lock applied via mod=champions.`,
+		desc: `Custom fan-game rework playtesting format. Inherits Nat Dex AG roster and clauses; Pok&eacute;mon Champions SP system + Level 50 lock + 0-IV baseline applied via mod=champions.`,
 		mod: 'champions',
 		ruleset: [
 			'Standard NatDex',
@@ -39,9 +39,16 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			'!Obtainable Moves',
 			'!Obtainable Abilities',
 			'!Obtainable Formes',
-			// IV removal added in Step 4
+			// All IVs forced to 0 silently; champions/scripts.ts:statModify switches to
+			// 0-IV baseline constants when this clause is in the rule table.
+			'Force IV 0',
 		],
-		banlist: [],
+		banlist: [
+			// With all IVs at 0, Hidden Power is always Fighting-type at low BP — uglier
+			// than just disabling it. Can revisit if a custom Hidden Power replacement
+			// gets added to the rework.
+			'Hidden Power',
+		],
 		restricted: [],
 	},
 ];

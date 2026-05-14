@@ -5,17 +5,22 @@ export const Scripts: ModdedBattleScriptsData = {
 	// sim/team-validator.ts via `useStatPoints = dex.currentMod === 'champions'`
 	// and sim/dex-formats.ts via evLimit = 66).
 	//
-	// The +75 / +20 constants bake in the canonical "31 IV, Level 50" baseline
-	// stat. Step 4 will override IVs to 0; that needs handling here too at that
-	// time (subtract 15 from non-HP, 30 from HP if maxedIVs is false).
+	// Constants bake in the canonical "Level 50" baseline. If the format's
+	// rule table includes 'Force IV 0' (Testing Standard's IV-removal clause),
+	// we use 0-IV constants (+5 / +60). Otherwise the canonical Champions
+	// behavior of treating stats as 31-IV-equivalent (+20 / +75) is preserved
+	// for any future champions-mod format that wants it.
 	statModify(baseStats, set, statName) {
 		const tr = this.trunc;
 		let stat = baseStats[statName];
 		const evs = set.evs[statName];
+		const force0IVs = this.ruleTable.has('forceiv0');
+		const hpBaseline = force0IVs ? 60 : 75;
+		const baseline = force0IVs ? 5 : 20;
 		if (statName === 'hp') {
-			return stat + evs + 75;
+			return stat + evs + hpBaseline;
 		}
-		stat = stat + evs + 20;
+		stat = stat + evs + baseline;
 		const nature = this.dex.natures.get(set.nature);
 		// Natures are calculated with 16-bit truncation.
 		if (nature.plus === statName) {
