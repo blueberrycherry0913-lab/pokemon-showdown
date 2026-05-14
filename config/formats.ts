@@ -19,15 +19,23 @@ The column value will be ignored for repeat sections.
 
 export const Formats: import('../sim/dex-formats').FormatList = [
 
-	// National Dex
+	// Custom
 	///////////////////////////////////////////////////////////////////
 
 	{
-		section: "National Dex",
+		section: "Custom",
+		column: 1,
 	},
 	{
-		name: "[Gen 9] National Dex AG",
+		name: "[Gen 9] Testing Standard",
+		desc: `Custom fan-game rework playtesting format. Inherits Nat Dex AG roster and clauses; Pok&eacute;mon Champions stat system applied separately (see Steps 3-4).`,
 		mod: 'gen9',
-		ruleset: ['Standard AG', 'NatDex Mod'],
+		ruleset: [
+			'Standard NatDex',
+			'!Obtainable',
+			// SP system, Level 50, IV removal added in Steps 3-4
+		],
+		banlist: [],
+		restricted: [],
 	},
 ];
