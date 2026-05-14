@@ -28,12 +28,18 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 	},
 	{
 		name: "[Gen 9] Testing Standard",
-		desc: `Custom fan-game rework playtesting format. Inherits Nat Dex AG roster and clauses; Pok&eacute;mon Champions stat system applied separately (see Steps 3-4).`,
-		mod: 'gen9',
+		desc: `Custom fan-game rework playtesting format. Inherits Nat Dex AG roster and clauses; Pok&eacute;mon Champions SP system + Level 50 lock applied via mod=champions.`,
+		mod: 'champions',
 		ruleset: [
 			'Standard NatDex',
-			'!Obtainable',
-			// SP system, Level 50, IV removal added in Steps 3-4
+			// Lift the legality checks that would reject custom moves / abilities / formes,
+			// but keep 'Nonexistent' banned and 'EV Limit = Auto' active (both inherited from
+			// the unmodified parts of Obtainable). 'Nonexistent' is what gates validateStats —
+			// without it the 32 SP per-stat cap, 66 total cap, and Level 50 lock never fire.
+			'!Obtainable Moves',
+			'!Obtainable Abilities',
+			'!Obtainable Formes',
+			// IV removal added in Step 4
 		],
 		banlist: [],
 		restricted: [],
