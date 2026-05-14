@@ -49,7 +49,7 @@ export const Rulesets: import('../../../sim/dex-formats').ModdedFormatDataTable 
 		onValidateSet(set) {
 			const species = this.dex.species.get(set.species);
 			if (!isGen1Lineage(this.dex, species)) {
-				return [`${set.name || set.species} is not part of a Gen 1 evolution family and is currently restricted.`];
+				return [`${set.name || set.species} is not part of a Generation 1 evolution family and is currently restricted.`];
 			}
 		},
 	},
