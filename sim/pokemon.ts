@@ -2063,6 +2063,15 @@ export class Pokemon {
 		let shared;
 		if (this.battle.reportExactHP) {
 			shared = secret;
+		} else if (this.battle.dex.currentMod === 'champions') {
+			// Pokemon Champions mechanics
+			const percentage = Math.floor(100 * this.hp / this.maxhp) || 1;
+			shared = `${percentage}/100`;
+			if (percentage === 20) {
+				shared += this.hp * 5 > this.maxhp ? 'y' : 'r';
+			} else if (percentage === 50) {
+				shared += this.hp * 2 > this.maxhp ? 'g' : 'y';
+			}
 		} else if (this.battle.reportPercentages || this.battle.gen >= 7) {
 			// HP Percentage Mod mechanics
 			let percentage = Math.ceil(100 * this.hp / this.maxhp);
@@ -2178,19 +2187,21 @@ export class Pokemon {
 	 * Like Field.effectiveWeather(), but ignores sun and rain if
 	 * the Utility Umbrella is active for the Pokemon.
 	 */
-	effectiveWeather(message?: string | boolean) {
+	effectiveWeather(sourceEffect?: Effect, message?: string | boolean) {
+		if (!sourceEffect && this.battle.effect) sourceEffect = this.battle.effect;
 		const weather = this.battle.field.effectiveWeather();
+		if (this.battle.activePokemon?.hasAbility('megasol') && sourceEffect &&
+			(sourceEffect.id === 'megasol' || sourceEffect.effectType === 'Move' || sourceEffect.effectType === 'Weather') &&
+			sourceEffect.id !== 'electroshot') {
+			if (weather !== 'sunnyday' && message) this.battle.add('-activate', this, 'ability: Mega Sol');
+			return 'sunnyday' as ID;
+		}
 		switch (weather) {
 		case 'sunnyday':
 		case 'raindance':
 		case 'desolateland':
 		case 'primordialsea':
 			if (this.hasItem('utilityumbrella')) return '';
-		}
-		// TODO: check interactions of Mega Sol with Utility Umbrella and Desolate Land
-		if (this.hasAbility('megasol') && this.battle.activePokemon === this && weather !== 'sunnyday') {
-			if (message) this.battle.add('-activate', this, 'ability: Mega Sol');
-			return 'sunnyday' as ID;
 		}
 		return weather;
 	}
