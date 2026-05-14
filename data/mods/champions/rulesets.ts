@@ -1,4 +1,58 @@
+// True if `species` is part of a Gen 1 evolution family (Bulbasaur-Mew, num 1-151):
+//   - The species itself is Gen 1 (gen === 1 or num 1-151)
+//   - Or any species in its forward/backward evolution chain is Gen 1
+//     (so Pichu / Munchlax / Magnezone / Rhyperior all qualify)
+//   - Or it's a Mega / Primal / Ultra-Burst / G-Max forme of a Gen 1-lineage species
+//     (Mega Venusaur X, Primal Groudon doesn't qualify since Groudon isn't Gen 1, etc.)
+// Used by the Gen 1 Only validator clause below and mirrored in the client's
+// build-indexes so the teambuilder UI shows the same set as legal.
+function isGen1Lineage(dex: any, species: any): boolean {
+	if (!species || !species.exists) return false;
+	// Non-base formes inherit eligibility from their base species
+	if (species.baseSpecies && species.baseSpecies !== species.name) {
+		const base = dex.species.get(species.baseSpecies);
+		if (base.exists && base.id !== species.id && isGen1Lineage(dex, base)) return true;
+	}
+	// Walk prevo chain back to the root of the family
+	let root = species;
+	let safety = 20;
+	while (root.prevo && safety-- > 0) {
+		const prev = dex.species.get(root.prevo);
+		if (!prev.exists) break;
+		root = prev;
+	}
+	return familyHasGen1Member(dex, root, new Set<string>());
+}
+function familyHasGen1Member(dex: any, species: any, seen: Set<string>): boolean {
+	if (seen.has(species.id)) return false;
+	seen.add(species.id);
+	if (species.num >= 1 && species.num <= 151) return true;
+	if (species.gen === 1) return true;
+	if (species.evos) {
+		for (const evoName of species.evos) {
+			const evo = dex.species.get(evoName);
+			if (evo.exists && familyHasGen1Member(dex, evo, seen)) return true;
+		}
+	}
+	return false;
+}
+
 export const Rulesets: import('../../../sim/dex-formats').ModdedFormatDataTable = {
+	// Restrict Testing Standard to Gen 1 lineage Pokémon (Bulbasaur-Mew family,
+	// their forward/backward evolutions, and their Mega/Primal/Ultra-Burst/G-Max
+	// formes). Temporary — easy to remove by dropping 'Gen 1 Only' from the
+	// format's ruleset.
+	gen1only: {
+		effectType: 'ValidatorRule',
+		name: 'Gen 1 Only',
+		desc: "Only Pokémon descended from a Gen 1 species (Bulbasaur-Mew, num 1-151) and their Mega/Primal/Ultra/G-Max formes are legal.",
+		onValidateSet(set) {
+			const species = this.dex.species.get(set.species);
+			if (!isGen1Lineage(this.dex, species)) {
+				return [`${set.name || set.species} is not part of a Gen 1 evolution family and is currently restricted.`];
+			}
+		},
+	},
 	// Forces every IV to 0 silently on validation. Used by Testing Standard.
 	// The stat-math constants in champions/scripts.ts:statModify switch from a
 	// 31-IV baseline to a 0-IV baseline when this rule is present. The

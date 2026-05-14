@@ -44,6 +44,10 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			// All IVs forced to 0 silently; champions/scripts.ts:statModify switches to
 			// 0-IV baseline constants when this clause is in the rule table.
 			'Force IV 0',
+			// TEMPORARY: only Gen 1 lineage Pokémon (Bulbasaur-Mew family + their
+			// forward/backward evolutions + Mega/Primal/Ultra/G-Max formes) are legal.
+			// Drop this line to restore the full roster.
+			'Gen 1 Only',
 		],
 		banlist: [
 			// With all IVs at 0, Hidden Power is always Fighting-type at low BP — uglier
