@@ -32,11 +32,13 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		mod: 'champions',
 		ruleset: [
 			'Standard NatDex',
-			// Lift the legality checks that would reject custom moves / abilities / formes,
-			// but keep 'Nonexistent' banned and 'EV Limit = Auto' active (both inherited from
-			// the unmodified parts of Obtainable). 'Nonexistent' is what gates validateStats —
-			// without it the 32 SP per-stat cap, 66 total cap, and Level 50 lock never fire.
-			'!Obtainable Moves',
+			// Keep 'Obtainable Moves' on (the default via Standard NatDex) so Pokemon
+			// can only use moves in their NatDex AG learnset. Custom moves the user
+			// adds via data/learnsets.ts will pass; canon moves not in a species's
+			// learnset (e.g. Venusaur with Light That Burns the Sky) will be rejected.
+			// We do still lift Abilities and Formes since the user has custom abilities
+			// (e.g. Burning Soul on Charizard) and custom formes that wouldn't pass the
+			// canon checks otherwise.
 			'!Obtainable Abilities',
 			'!Obtainable Formes',
 			// All IVs forced to 0 silently; champions/scripts.ts:statModify switches to
