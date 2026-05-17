@@ -58,7 +58,6 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
     		color: "Green",
     		eggGroups: ["Monster", "Grass"],
     		requiredItem: "Venusaurite X",
-		spriteid: "venusaur-gmax",
 	},
 	venusaurmegay: {
     		num: 3,
