@@ -56,5 +56,21 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			'Hidden Power',
 		],
 		restricted: [],
+		// Type Order STAB (§6 of master reference):
+		//   Pure type (single type): ×1.6
+		//   Primary type (types[0]):  ×1.5
+		//   Secondary type (types[1]): ×1.4
+		// Adaptability overrides this (its own onModifySTAB fires and returns 2;
+		// we skip to avoid clobbering it). forceSTAB and non-type-matched cases
+		// fall through unchanged.
+		onModifySTAB(stab, attacker, defender, move) {
+			if (stab <= 1) return stab; // move has no STAB
+			if (attacker.hasAbility('adaptability')) return stab; // preserve Adaptability
+			const types = attacker.types;
+			if (!types.includes(move.type)) return stab; // forceSTAB edge case
+			if (types.length === 1) return 1.6; // pure type
+			if (types[0] === move.type) return 1.5; // primary
+			return 1.4; // secondary
+		},
 	},
 ];
