@@ -119,6 +119,9 @@ export class Pokemon {
 	baseAbility: ID;
 	ability: ID;
 	abilityState: EffectState;
+	/** Awakened (hidden) ability — auto-assigned in champions mod; empty in other formats. */
+	ability2: ID;
+	abilityState2: EffectState;
 
 	item: ID;
 	itemState: EffectState;
@@ -421,6 +424,16 @@ export class Pokemon {
 		this.baseAbility = toID(set.ability);
 		this.ability = this.baseAbility;
 		this.abilityState = this.battle.initEffectState({ id: this.ability, target: this });
+
+		// Awakened ability: auto-assigned from H slot in champions mod; empty otherwise.
+		if (this.battle.dex.currentMod === 'champions') {
+			const speciesData = this.battle.dex.species.get(set.species);
+			const hiddenAbilityName = speciesData.abilities['H'];
+			this.ability2 = hiddenAbilityName ? toID(hiddenAbilityName) : '' as ID;
+		} else {
+			this.ability2 = '' as ID;
+		}
+		this.abilityState2 = this.battle.initEffectState({ id: this.ability2, target: this });
 
 		this.item = toID(set.item);
 		this.itemState = this.battle.initEffectState({ id: this.item, target: this });
@@ -1949,17 +1962,31 @@ export class Pokemon {
 		return this.battle.dex.abilities.getByID(this.ability);
 	}
 
+	getAbility2() {
+		return this.battle.dex.abilities.getByID(this.ability2);
+	}
+
 	hasAbility(ability: string | string[]) {
 		if (Array.isArray(ability)) {
-			if (!ability.map(toID).includes(this.ability)) return false;
+			const ids = ability.map(toID);
+			if (!ids.includes(this.ability) && !(this.ability2 && ids.includes(this.ability2))) return false;
 		} else {
-			if (toID(ability) !== this.ability) return false;
+			const id = toID(ability);
+			if (id !== this.ability && !(this.ability2 && id === this.ability2)) return false;
 		}
 		return !this.ignoringAbility();
 	}
 
 	clearAbility() {
 		return this.setAbility('');
+	}
+
+	clearAbility2() {
+		if (!this.ability2) return false;
+		this.battle.singleEvent('End', this.getAbility2(), this.abilityState2, this, null);
+		this.ability2 = '' as ID;
+		this.abilityState2 = this.battle.initEffectState({ id: '', target: this });
+		return true;
 	}
 
 	getNature() {

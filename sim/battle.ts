@@ -1121,6 +1121,15 @@ export class Battle {
 				effect: ability, callback, state: pokemon.abilityState, end: pokemon.clearAbility, effectHolder: pokemon,
 			}, callbackName));
 		}
+		if (pokemon.ability2) {
+			const ability2 = pokemon.getAbility2();
+			callback = this.getCallback(pokemon, ability2, callbackName);
+			if (callback !== undefined || (getKey && pokemon.abilityState2[getKey])) {
+				handlers.push(this.resolvePriority({
+					effect: ability2, callback, state: pokemon.abilityState2, end: pokemon.clearAbility2, effectHolder: pokemon,
+				}, callbackName));
+			}
+		}
 		const item = pokemon.getItem();
 		callback = this.getCallback(pokemon, item, callbackName);
 		if (callback !== undefined || (getKey && pokemon.itemState[getKey])) {

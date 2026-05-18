@@ -140,6 +140,7 @@ export class BattleActions {
 			moveSlot.used = false;
 		}
 		pokemon.abilityState = this.battle.initEffectState({ id: pokemon.ability, target: pokemon });
+		pokemon.abilityState2 = this.battle.initEffectState({ id: pokemon.ability2, target: pokemon });
 		pokemon.itemState = this.battle.initEffectState({ id: pokemon.item, target: pokemon });
 		this.battle.runEvent('BeforeSwitchIn', pokemon);
 		if (sourceEffect) {
