@@ -49,7 +49,7 @@ export const Rulesets: import('../../../sim/dex-formats').ModdedFormatDataTable 
 		onValidateSet(set) {
 			const species = this.dex.species.get(set.species);
 			if (!isGen1Lineage(this.dex, species)) {
-				return [`${set.name || set.species} is not part of a Generation 1 evolution family and is currently restricted.`];
+				return [`${set.name || set.species} is not available yet.`];
 			}
 		},
 	},
@@ -89,8 +89,11 @@ export const Rulesets: import('../../../sim/dex-formats').ModdedFormatDataTable 
 		onValidateSet(set) {
 			const species = this.dex.species.get(set.species);
 			if (species.natDexTier === 'Illegal') {
+				// Gen 1 lineage always passes — the Gen 1 Only clause is the species gate.
+				// natDexTier 'Illegal' is only enforced for non-Gen1 species.
+				if (isGen1Lineage(this.dex, species)) return;
 				if (this.ruleTable.has(`+pokemon:${species.id}`)) return;
-				return [`${set.name || set.species} does not exist in the National Dex.`];
+				return [`${set.name || set.species} is not available yet.`];
 			}
 			const requireObtainable = this.ruleTable.has('obtainable');
 			if (requireObtainable) {
@@ -99,7 +102,7 @@ export const Rulesets: import('../../../sim/dex-formats').ModdedFormatDataTable 
 					if (this.ruleTable.has(`+pokemon:${species.id}`) || this.ruleTable.has(`+basepokemon:${basePokemon}`)) {
 						return;
 					}
-					return [`${set.name || set.species} does not exist in the National Dex.`];
+					return [`${set.name || set.species} is not available yet.`];
 				}
 				for (const moveid of set.moves) {
 					const move = this.dex.moves.get(moveid);
