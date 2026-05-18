@@ -58,6 +58,14 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 		doublesTier: "(DUU)",
 		natDexTier: "RU",
 	},
+	blastoisemegax: {
+		tier: "Past",
+		isNonstandard: "Past",
+	},
+	blastoisemegay: {
+		tier: "Past",
+		isNonstandard: "Past",
+	},
 	blastoisemega: {
 		isNonstandard: "Past",
 		tier: "Illegal",

@@ -7485,6 +7485,30 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
     		gen: 6,
     		isNonstandard: "Past",
 	},
+	blastoiseitex: {
+		name: "Blastoiseite X",
+		spritenum: 583,
+		megaStone: { "Blastoise": "Blastoise-Mega-X" },
+		itemUser: ["Blastoise"],
+		onTakeItem(item, source) {
+			return !item.megaStone?.[source.baseSpecies.baseSpecies];
+		},
+		num: -2,
+		gen: 6,
+		isNonstandard: "Past",
+	},
+	blastoiseitey: {
+		name: "Blastoiseite Y",
+		spritenum: 583,
+		megaStone: { "Blastoise": "Blastoise-Mega-Y" },
+		itemUser: ["Blastoise"],
+		onTakeItem(item, source) {
+			return !item.megaStone?.[source.baseSpecies.baseSpecies];
+		},
+		num: -3,
+		gen: 6,
+		isNonstandard: "Past",
+	},
 	victreebelite: {
 		name: "Victreebelite",
 		spritenum: 545,
