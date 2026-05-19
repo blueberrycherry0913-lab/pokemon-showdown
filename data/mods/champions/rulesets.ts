@@ -53,6 +53,20 @@ export const Rulesets: import('../../../sim/dex-formats').ModdedFormatDataTable 
 			}
 		},
 	},
+	// Prevents a Pokémon from having the same ability in both the basic and
+	// awakened (hidden) slots. Duplicate abilities give no strategic choice.
+	nodupabilities: {
+		effectType: 'ValidatorRule',
+		name: 'No Dup Abilities',
+		desc: "A Pokémon may not have the same ability in both its basic and awakened slots.",
+		onValidateSet(set) {
+			const species = this.dex.species.get(set.species);
+			const awakened = species.abilities['H'];
+			if (awakened && this.toID(set.ability) === this.toID(awakened)) {
+				return [`${set.name || set.species} has duplicate abilities.`];
+			}
+		},
+	},
 	// Forces every IV to 0 silently on validation. Used by Testing Standard.
 	// The stat-math constants in champions/scripts.ts:statModify switch from a
 	// 31-IV baseline to a 0-IV baseline when this rule is present. The

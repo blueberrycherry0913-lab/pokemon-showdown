@@ -48,6 +48,9 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			// forward/backward evolutions + Mega/Primal/Ultra/G-Max formes) are legal.
 			// Drop this line to restore the full roster.
 			'Gen 1 Only',
+			// Reject sets where the chosen basic ability matches the awakened (hidden)
+			// ability — no strategic choice if both slots are the same.
+			'No Dup Abilities',
 		],
 		banlist: [
 			// With all IVs at 0, Hidden Power is always Fighting-type at low BP — uglier
