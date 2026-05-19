@@ -48,6 +48,10 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			// forward/backward evolutions + Mega/Primal/Ultra/G-Max formes) are legal.
 			// Drop this line to restore the full roster.
 			'Gen 1 Only',
+			// Enforce that set.ability must be one of the species's own ability slots.
+			// '!Obtainable Abilities' above lifts the core learnset-based check (needed
+			// for custom abilities/formes), so we gate species-level legality here.
+			'Species Abilities',
 			// Reject sets where the chosen basic ability matches the awakened (hidden)
 			// ability — no strategic choice if both slots are the same.
 			'No Dup Abilities',

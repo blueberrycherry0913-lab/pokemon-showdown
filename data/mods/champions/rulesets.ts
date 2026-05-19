@@ -53,6 +53,30 @@ export const Rulesets: import('../../../sim/dex-formats').ModdedFormatDataTable 
 			}
 		},
 	},
+	// Enforces that set.ability must be one of the ability slots listed in the
+	// species's pokedex entry. Replaces the '!Obtainable Abilities' lift — we
+	// still keep that flag so the core learnset-based ability validation doesn't
+	// fire (it's incompatible with custom data), but we enforce species-level
+	// ability legality here ourselves.
+	// For Mega formes the player picks a pre-mega ability, so we validate
+	// against the base species's ability slots instead.
+	speciesabilities: {
+		effectType: 'ValidatorRule',
+		name: 'Species Abilities',
+		desc: "A Pokémon may only use abilities listed in its Pokédex entry.",
+		onValidateSet(set) {
+			const species = this.dex.species.get(set.species);
+			const source = (species as any).isMega
+				? this.dex.species.get(species.baseSpecies)
+				: species;
+			const legal = new Set(
+				Object.values(source.abilities).map((a: any) => this.toID(a))
+			);
+			if (!legal.has(this.toID(set.ability))) {
+				return [`${set.name || set.species} can't have ${set.ability}.`];
+			}
+		},
+	},
 	// Prevents a Pokémon from having the same ability in both the basic and
 	// awakened (hidden) slots. Duplicate abilities give no strategic choice.
 	nodupabilities: {
