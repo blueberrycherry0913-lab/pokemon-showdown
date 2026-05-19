@@ -7509,6 +7509,18 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
 		gen: 6,
 		isNonstandard: "Past",
 	},
+	butterfreetite: {
+		name: "Butterfreetite",
+		spritenum: 608,
+		megaStone: { "Butterfree": "Butterfree-Mega" },
+		itemUser: ["Butterfree"],
+		onTakeItem(item, source) {
+			return !item.megaStone?.[source.baseSpecies.baseSpecies];
+		},
+		num: -4,
+		gen: 6,
+		isNonstandard: "Past",
+	},
 	victreebelite: {
 		name: "Victreebelite",
 		spritenum: 545,

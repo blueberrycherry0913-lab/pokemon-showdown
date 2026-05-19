@@ -5489,6 +5489,12 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		rating: 2,
 		num: 73,
 	},
+	specialist: {
+		flags: {},
+		name: "Specialist",
+		rating: 0,
+		num: 10003,
+	},
 	wildvines: {
 		onBasePowerPriority: 19,
 		onBasePower(basePower, attacker, defender, move) {

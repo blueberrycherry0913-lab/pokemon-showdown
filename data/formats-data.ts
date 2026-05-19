@@ -76,43 +76,34 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 		tier: "Illegal",
 	},
 	caterpie: {
-		isNonstandard: "Past",
-		tier: "Illegal",
-		natDexTier: "LC",
+		tier: "LC",
 	},
 	metapod: {
-		isNonstandard: "Past",
-		tier: "Illegal",
-		natDexTier: "NFE",
+		tier: "NFE",
 	},
 	butterfree: {
-		isNonstandard: "Past",
-		tier: "Illegal",
-		natDexTier: "RU",
+		tier: "ZU",
 	},
 	butterfreegmax: {
 		isNonstandard: "Past",
 		tier: "Illegal",
 	},
+	butterfreemega: {
+		isNonstandard: "custom",
+		tier: "Past",
+	},
 	weedle: {
-		isNonstandard: "Past",
-		tier: "Illegal",
-		natDexTier: "LC",
+		tier: "LC",
 	},
 	kakuna: {
-		isNonstandard: "Past",
-		tier: "Illegal",
-		natDexTier: "NFE",
+		tier: "NFE",
 	},
 	beedrill: {
-		isNonstandard: "Past",
-		tier: "Illegal",
-		natDexTier: "RU",
+		tier: "ZU",
 	},
 	beedrillmega: {
 		isNonstandard: "Past",
-		tier: "Illegal",
-		natDexTier: "RU",
+		tier: "Past",
 	},
 	pidgey: {
 		isNonstandard: "Past",
