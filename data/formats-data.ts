@@ -143,6 +143,9 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 		tier: "LC",
 	},
 	fearow: {
+		tier: "NFE",
+	},
+	fearowevo: {
 		tier: "ZU",
 	},
 	ekans: {
@@ -366,6 +369,9 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 		tier: "LC",
 	},
 	parasect: {
+		tier: "NFE",
+	},
+	parasectevo: {
 		tier: "ZU",
 	},
 	venonat: {
@@ -757,9 +763,10 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 		tier: "LC",
 	},
 	marowak: {
-		isNonstandard: "Past",
-		tier: "Illegal",
-		natDexTier: "RU",
+		tier: "ZU",
+	},
+	marowakf: {
+		tier: "ZU",
 	},
 	marowakalola: {
 		isNonstandard: "Past",
@@ -971,18 +978,12 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 	},
 	taurospaldeacombat: {
 		tier: "ZU",
-		doublesTier: "(DUU)",
-		natDexTier: "RU",
 	},
 	taurospaldeablaze: {
-		tier: "PU",
-		doublesTier: "(DUU)",
-		natDexTier: "RU",
+		tier: "ZU",
 	},
 	taurospaldeaaqua: {
-		tier: "NU",
-		doublesTier: "(DUU)",
-		natDexTier: "RU",
+		tier: "ZU",
 	},
 	magikarp: {
 		tier: "LC",
@@ -6199,5 +6200,9 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 	pokestarufopropu2: {
 		isNonstandard: "Custom",
 		tier: "Illegal",
+	},
+	falcuatro: {
+		isNonstandard: "custom",
+		tier: "ZU",
 	},
 };

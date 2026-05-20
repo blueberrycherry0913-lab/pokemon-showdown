@@ -2584,6 +2584,10 @@ export const Aliases: import('../sim/dex').AliasesTable = {
 	venomiconp: "Venomicon",
 	venomiconprologue: "Venomicon",
 	volk: "Volkraken",
+
+	// custom renames
+	magolem: "Golem-Alola",
+	cocommander: "Exeggutor",
 };
 
 /** This is what lets you type "tb"/"tbolt"/"bolt" to find "thunderbolt" in the
