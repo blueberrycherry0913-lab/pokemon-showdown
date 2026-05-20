@@ -7521,6 +7521,30 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
 		gen: 6,
 		isNonstandard: "Past",
 	},
+	kinglerite: {
+		name: "Kinglerite",
+		spritenum: 608,
+		megaStone: { "Kingler": "Kingler-Mega" },
+		itemUser: ["Kingler"],
+		onTakeItem(item, source) {
+			return !item.megaStone?.[source.baseSpecies.baseSpecies];
+		},
+		num: -5,
+		gen: 6,
+		isNonstandard: "Past",
+	},
+	laprasite: {
+		name: "Laprasite",
+		spritenum: 608,
+		megaStone: { "Lapras": "Lapras-Mega" },
+		itemUser: ["Lapras"],
+		onTakeItem(item, source) {
+			return !item.megaStone?.[source.baseSpecies.baseSpecies];
+		},
+		num: -6,
+		gen: 6,
+		isNonstandard: "Past",
+	},
 	victreebelite: {
 		name: "Victreebelite",
 		spritenum: 545,
