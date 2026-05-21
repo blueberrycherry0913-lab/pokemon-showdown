@@ -70,6 +70,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onBasePower(basePower, pokemon, target, move) {
 			if (move.typeChangerBoosted === this.effect) return this.chainModify([4915, 4096]);
 		},
+		shortDesc: "Turns Normal-type moves into Flying-type moves and increases their power by x1.2.",
 		flags: {},
 		name: "Aerilate",
 		rating: 4,
@@ -85,7 +86,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				}
 			}
 		},
-		shortDesc: "Explodes upon fainting, damaging the whole battlefield.",
+		shortDesc: "Explodes upon fainting, dealing 1/4th max HP damage to the whole battlefield.",
 		flags: {},
 		name: "Aftermath",
 		rating: 3,
@@ -106,6 +107,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			this.eachEvent('WeatherChange', this.effect);
 		},
 		suppressWeather: true,
+		shortDesc: "Eliminates the effects of weather.",
 		flags: {},
 		name: "Air Lock",
 		rating: 1.5,
@@ -119,7 +121,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify([5325, 4096]);
 			}
 		},
-		shortDesc: "Boosts move power when the Pokémon moves after its target.",
+		shortDesc: "Increases the power of moves by x1.3 if moving after all targets of the attack.",
 		flags: {},
 		name: "Analytic",
 		rating: 3,
@@ -132,6 +134,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.boost({ atk: 12 }, target, target);
 			}
 		},
+		shortDesc: "Maxes Attack after taking a critical hit.",
 		flags: {},
 		name: "Anger Point",
 		rating: 1,
@@ -163,6 +166,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.boost({ atk: 1, spa: 1, spe: 1, def: -1, spd: -1 }, target, target);
 			}
 		},
+		shortDesc: "Lowers Defense/Sp. Def by 1 stage and raises Attack/Sp. Atk/Speed by 1 stage when HP drops below half.",
 		flags: {},
 		name: "Anger Shell",
 		rating: 3,
@@ -214,7 +218,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onFoeAfterMove(source, target, move) {
 			(this.effectState.target.abilityState.anticipatedFoes as Set<Pokemon> | undefined)?.delete(source);
 		},
-		shortDesc: "Senses a foe's dangerous moves and makes the Pokémon more resilient to those moves.",
+		shortDesc: "Senses a foe's dangerous moves; if immediately attacked with one of those moves, the Pokémon takes 33% less damage.",
 		flags: {},
 		name: "Anticipation",
 		rating: 2,
@@ -244,7 +248,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				pokemon.maybeTrapped = true;
 			}
 		},
-		shortDesc: "Prevents both the Pokémon and grounded foes from fleeing.",
+		shortDesc: "Prevents both the Pokémon and foe from fleeing. Does not work on ungrounded targets.",
 		flags: {},
 		name: "Arena Trap",
 		rating: 4,
@@ -264,6 +268,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return false;
 			}
 		},
+		shortDesc: "Prevents opponents from using priority moves.",
 		flags: { breakable: 1 },
 		name: "Armor Tail",
 		rating: 2.5,
@@ -279,6 +284,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return null;
 			}
 		},
+		shortDesc: "Protects allies from attacks that limit their move choices. (Taunt, Encore, Cursed Body, etc.)",
 		flags: { breakable: 1 },
 		name: "Aroma Veil",
 		rating: 2,
@@ -303,6 +309,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.boost({ atk: length }, source, source, this.dex.abilities.get('chillingneigh'));
 			}
 		},
+		shortDesc: "Combines Unnerve and Chilling Neigh/Grim Neigh.",
 		flags: { failroleplay: 1, noreceiver: 1, noentrain: 1, notrace: 1, failskillswap: 1, cantsuppress: 1 },
 		name: "As One (Glastrier)",
 		rating: 3.5,
@@ -327,6 +334,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.boost({ spa: length }, source, source, this.dex.abilities.get('grimneigh'));
 			}
 		},
+		shortDesc: "Combines Unnerve and Chilling Neigh/Grim Neigh.",
 		flags: { failroleplay: 1, noreceiver: 1, noentrain: 1, notrace: 1, failskillswap: 1, cantsuppress: 1 },
 		name: "As One (Spectrier)",
 		rating: 3.5,
@@ -340,6 +348,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			if (target === source || move.category === 'Status') return;
 			move.hasAuraBreak = true;
 		},
+		shortDesc: "Reduces power of Dark- and Fairy-type moves.",
 		flags: { breakable: 1 },
 		name: "Aura Break",
 		rating: 1,
@@ -356,6 +365,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				}
 			}
 		},
+		shortDesc: "Prevents any positive effect of Sleep or Sleep-inducing moves for the foe, also deals 1/8th max HP damage to sleeping foes.",
 		flags: {},
 		name: "Bad Dreams",
 		rating: 1.5,
@@ -5533,7 +5543,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			if (stab <= 1) return 0.75; // non-STAB: 0.75x penalty
 			// STAB case: return undefined so the format handler applies type-order + 0.75
 		},
-		shortDesc: "Powers up moves that share their type with the Pokémon, but weakens moves of other types.",
+		shortDesc: "Increases STAB by an additional x0.75, but weakens non-STAB moves by a x0.75 multiplier.",
 		flags: {},
 		name: "Specialist",
 		rating: 3.5,
