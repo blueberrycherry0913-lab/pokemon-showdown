@@ -345,20 +345,18 @@ Added `Force IV 0` ruleset clause. statModify branches on `ruleTable.has('forcei
 - Type-order STAB labels in tooltip: `Pure STAB (×1.6)` / `Primary STAB (×1.5)` / `Secondary STAB (×1.4)`
 - See §17 for full technical detail
 
-### Domain field effects + Fire Domain (TEST) move (sessions 7–8)
-- Created `data/mods/champions/conditions.ts` with 19 Domain conditions (one per type, Normal through Cosmic). Domains use **pseudoWeather** (not terrain slot) to allow multiple domains active simultaneously. `onFieldStart`/`onFieldEnd` announce start/end. Duration: 5 turns each.
-- Added `firedomaintest` move to `data/moves.ts` (num -4, Fire type, Status, 10 PP, `pseudoWeather: 'firedomain'`). Taught to Charizard via `data/learnsets.ts` (`"9L1"`).
+### Domain field effects (sessions 7–9)
+- Created `data/mods/champions/conditions.ts` with 19 Domain conditions (one per type, Normal through Cosmic). Domains use **pseudoWeather** (not terrain) so multiple can be active at once. Duration: 5 turns. No grounding requirement — affects all Pokémon.
+- **Domain effects**: Each domain boosts same-type Pokémon Atk/Def/SpA/SpD by ×1.25 and grants same-type moves +10% accuracy. Handler patterns: `chainModify([5120, 4096])` for stats (priority 5 for atk/spa, 6 for def/spd), `chainModify(1.1)` for accuracy.
+- **19 Domain moves** in `data/moves.ts` — IDs `domain{type}`, nums -101 to -119, named "Domain: Fire" etc. Each carries `pseudoWeather: '{type}domain'`. Charizard has `domainfire: ["9L1"]` as example learnset.
+- **Custom move num log**: -2 (Shadow Strike), -3 (Polar Flare), -101…-119 (Domain: Bug through Domain: Water). Slot -4 is now unused.
 - **Stale dist bug**: Deleted stale champions dist artifacts. See §16 gotcha #19.
-- **Custom move `num`**: -2 (Shadow Strike), -3 (Polar Flare), -4 (Fire Domain TEST). Reserve -100s for domain-setting moves when all 19 are added.
-- **Domain-setting moves**: `pseudoWeather: 'firedomain'` on move definition triggers the pseudoWeather automatically. To set from code: `this.field.addPseudoWeather('firedomain', source)`. To check: `this.field.pseudoWeather['firedomain']` (truthy).
-- **Domain effects (session 8)**: All 19 domains now have full battle effects:
-  - `onModifyAtk/SpA` (priority 5): `chainModify([5120, 4096])` (×1.25) if attacker is matching type
-  - `onModifyDef/SpD` (priority 6): same if target is matching type
-  - `onModifyAccuracy`: `chainModify(1.1)` if `move.type === 'TypeName'` and accuracy is numeric
-- **Client tooltip changes (session 8)**:
-  - `calculateModifiedStats` in `battle-tooltips.ts`: applies 25% stat boost for all 4 combat stats when active domain matches Pokémon type → shows green `stat-boosted` display
-  - `showMoveTooltip`: when Alt held and domain matches move type, accuracy line shows breakdown: `Accuracy: 85% × Fire Domain (×1.1) = 93.5%`
-  - Domain type list is inline in both places (no shared constant needed, it's config data)
+- **Client tooltip changes**:
+  - `calculateModifiedStats`: applies domain stat boosts before `return stats` — shows green `stat-boosted` numbers in hover panel
+  - `showMoveTooltip`: when Alt held and domain matches move type, accuracy line shows: `Accuracy: 85% × Fire Domain (×1.1) = 93.5%`; if accuracy is 0 (Cannot Miss), breakdown is skipped
+  - Domain type list is duplicated inline in **both** of those locations — update both if adding a new type
+- **"Cannot Miss" label**: `ModifiableValue.toString()` returns `"Cannot Miss"` (not `"can't miss"`) when `value === 0` with `isAccuracy === true`. Applies to No Guard, sure-hit moves, etc.
+- **See §19** for the full domain system technical reference.
 
 ### Abilities work (sessions 6+)
 - Custom `origin` field added to `Ability` class (`sim/dex-abilities.ts`) and displayed in `/dt` output (`server/chat-commands/info.ts`) in place of generation number
@@ -433,7 +431,8 @@ console.log('overrideTier sample:', champ.overrideTier.venusaur);
 | Type chart | `data/typechart.ts` |
 | Custom Pokemon data | `data/pokedex.ts` |
 | Tier/legality tags | `data/formats-data.ts` |
-| Domain conditions (19 types) | `data/mods/champions/conditions.ts` |
+| Domain conditions (19 types, effects) | `data/mods/champions/conditions.ts` |
+| Domain-setting moves (19, IDs domain{type}, nums −101…−119) | `data/moves.ts` (end of file) |
 | Custom moves | `data/moves.ts` |
 | Custom items | `data/items.ts` |
 | Custom learnsets | `data/learnsets.ts` |
@@ -583,7 +582,15 @@ Listed for posterity so the next Claude doesn't repeat them:
 16. **Stacking a display element above an input in the same float cell raises the input.** If you add an element above an input in a `float:right` cell, the input moves down by that element's height. To add visual elements above a cell's input without displacing it, use `position:absolute` with a negative `top` value on the overlay element, anchored to a `position:relative` cell.
 17. **Content-box inputs vs border-box display divs mismatch.** When matching a `<div>`'s visual size to a `<input>`, remember the input is content-box in the PS client. A `<div>` with `box-sizing: border-box; width: 108px` has the same visual width as an `<input>` with `box-sizing: content-box; width: 104px; padding: 1px; border: 1px`.
 18. **Negative `top` absolute children appear outside the cell boundary, and that's fine.** `position:absolute; top:-13px` on a child of a `position:relative` float cell causes the child to appear 13px above the cell's top edge. Default `overflow: visible` lets it show. Adjacent cells at the same row don't conflict as long as horizontal positions don't overlap.
-19. **Stale `dist/data/mods/champions/` files silently shadow base data.** When the original champions mod data files were deleted from source (Step 3), `node build` left their compiled `.js` counterparts in `dist/data/mods/champions/` untouched. The dex merge logic uses child-wins-on-conflict: if a species key exists in the mod's learnsets/abilities/moves/etc., it *replaces* the base entry for that species rather than merging. Charizard had an entry in the old champions `learnsets.js`, so `Dex.mod('champions').species.getLearnsetData('charizard')` returned the stale champion-game learnset (no `firedomaintest`) instead of the updated base learnset. The worktree's dist was clean (no stale files) so validation passed there but failed on the running server. **Fix: manually delete any `.js`/`.js.map` file in `dist/data/mods/champions/` that has no corresponding `.ts` source file.** `node build` never deletes orphaned artifacts. Current legitimate champions dist files are: `conditions.js`, `rulesets.js`, `scripts.js` (plus `.map` siblings). If you see `abilities.js`, `formats-data.js`, `items.js`, `learnsets.js`, or `moves.js` in that folder, delete them — they are stale.
+19. **Stale `dist/data/mods/champions/` files silently shadow base data.** When the original champions mod data files were deleted from source (Step 3), `node build` left their compiled `.js` counterparts in `dist/data/mods/champions/` untouched. The dex merge logic uses child-wins-on-conflict: if a species key exists in the mod's learnsets/abilities/moves/etc., it *replaces* the base entry for that species rather than merging. Charizard had an entry in the old champions `learnsets.js`, so `Dex.mod('champions').species.getLearnsetData('charizard')` returned the stale champion-game learnset instead of the updated base learnset. The worktree's dist was clean (no stale files) so validation passed there but failed on the running server. **Fix: manually delete any `.js`/`.js.map` file in `dist/data/mods/champions/` that has no corresponding `.ts` source file.** `node build` never deletes orphaned artifacts. Current legitimate champions dist files are: `conditions.js`, `rulesets.js`, `scripts.js` (plus `.map` siblings). If you see `abilities.js`, `formats-data.js`, `items.js`, `learnsets.js`, or `moves.js` in that folder, delete them — they are stale.
+
+20. **`this.battle.hasPseudoWeather()` in the CLIENT uses the condition's `name`, not its ID.** The `-fieldstart` handler in `battle.ts` does `this.addPseudoWeather(effect.name, ...)` where `effect.name` is the human-readable name (e.g. `"Fire Domain"`). So client checks must use **`this.battle.hasPseudoWeather('Fire Domain')`** (capital F, with space) — NOT `'firedomain'`. Meanwhile the move definition's `pseudoWeather:` field and the server's `this.field.pseudoWeather` map both use the lowercase ID `'firedomain'`. This asymmetry is Showdown's own pattern (it matches how Electric Terrain etc. are checked on the client).
+
+21. **Domain type list is duplicated in two places in `battle-tooltips.ts`.** `calculateModifiedStats` (stat boost display) and `showMoveTooltip` (accuracy breakdown) each have their own inline `[string, string][]` array mapping domain name to type name. If you add a new domain type, **update both arrays**. The arrays are defined near `return stats` in `calculateModifiedStats` and near the accuracy display line in `showMoveTooltip`.
+
+22. **"Cannot Miss" (accuracy value 0) correctly skips domain accuracy breakdown.** `ModifiableValue.toString()` returns `"Cannot Miss"` when `value === 0` with `isAccuracy === true`. My domain accuracy display code gates on `accuracy.value > 0`, so moves affected by No Guard, sure-hit status moves, etc. still show "Cannot Miss" without a spurious breakdown. If you see "Cannot Miss" on a move that has numeric accuracy, check whether the Pokémon has No Guard — it zeroes accuracy first and returns early from `getMoveAccuracy`.
+
+23. **Domain moves use the lowercase condition ID in `pseudoWeather:`, while condition names use Title Case with a space.** Move definition: `pseudoWeather: 'firedomain'` (lowercase, no space). Condition `name`: `"Fire Domain"` (Title Case, space). The `battle-actions.ts` engine converts the move's `pseudoWeather` field to a condition lookup by ID, which finds `firedomain` in conditions and uses its `.name` for the `-fieldstart` message. So the client ends up tracking `"Fire Domain"` in its pseudoWeather array, not `"firedomain"`. Keep this distinction in mind whenever reading or checking domain state.
 
 ---
 
@@ -661,6 +668,34 @@ onModifySTAB(stab, attacker, defender, move) {
 
 This fires AFTER ability handlers (Adaptability gets its stab=2 result first and the format handler passes it through). The handler is on the format definition object because format objects are battle conditions and support `on*` event handlers.
 
+### Domain additions to the tooltip system (session 8–9)
+
+**Stat boost display** — `calculateModifiedStats` applies domain boosts just before `return stats`:
+```typescript
+const domainTypeEntries: [string, string][] = [
+    ['Fire Domain', 'Fire'], ['Water Domain', 'Water'], ... // all 19
+];
+for (const [domainName, typeName] of domainTypeEntries) {
+    if (this.battle.hasPseudoWeather(domainName) && this.pokemonHasType(pokemon, typeName as Dex.TypeName)) {
+        stats.atk = Math.floor(stats.atk * 1.25);
+        stats.def = Math.floor(stats.def * 1.25);
+        stats.spa = Math.floor(stats.spa * 1.25);
+        stats.spd = Math.floor(stats.spd * 1.25);
+        // No break — dual-type Pokémon get multiple domain boosts if both domains are active
+    }
+}
+```
+The `renderStats` function compares these boosted values to the base `serverPokemon.stats` and applies `class="stat-boosted"` (green) automatically.
+
+**Accuracy breakdown in Alt display** — replaces the plain accuracy line in `showMoveTooltip`:
+```
+Default:   Accuracy: 85%
+Alt held:  Accuracy: 85% × Fire Domain (×1.1) = 93.5%
+```
+Gated on `accuracy.value > 0` — moves that show "Cannot Miss" (value = 0) skip the breakdown.
+
+**"Cannot Miss" label** — `ModifiableValue.toString()` was changed from `"can't miss"` to `"Cannot Miss"`.
+
 ---
 
 ## 18. Champions-mode dual-ability teambuilder UI (session 5)
@@ -716,7 +751,110 @@ The Preact teambuilder has not been updated with these champions UI changes. Req
 
 ---
 
-## 19. Tone / collaboration notes
+## 19. Domain system technical reference
+
+### What domains are
+
+Domains replace terrains as the field-effect mechanic. 19 types, one domain per type (including Cosmic). Key differences from canon terrains:
+- Use **pseudoWeather** (not the terrain slot) → multiple domains can be active simultaneously
+- **No grounding requirement** — affect ALL Pokémon on the field unconditionally
+- Each domain's condition ID is `{type}domain` (lowercase, no space): `firedomain`, `waterdomain`, etc.
+- Each domain's condition name is `"{Type} Domain"` (Title Case, with space): `"Fire Domain"`, etc.
+
+### ID vs. name — the critical distinction
+
+| Context | Form | Example |
+|---|---|---|
+| Move definition `pseudoWeather:` field | Lowercase ID | `'firedomain'` |
+| Server: `this.field.pseudoWeather['firedomain']` | Lowercase ID | `'firedomain'` |
+| Server: `this.field.addPseudoWeather('firedomain', source)` | Lowercase ID | `'firedomain'` |
+| Client: `this.battle.hasPseudoWeather('Fire Domain')` | Title Case name | `'Fire Domain'` |
+| Battle log `-fieldstart` arg | `"move: Fire Domain"` prefix | `'move: Fire Domain'` |
+
+The mismatch exists because `battle.ts`'s `-fieldstart` handler calls `Dex.getEffect(args[1])` on the `"move: Fire Domain"` string, gets the condition, and stores `effect.name` (= `"Fire Domain"`) in `this.pseudoWeather`. So the client always knows domains by name, never by ID.
+
+### Effects (current spec)
+
+All 19 domains apply the same effect pattern, only the type differs:
+
+```typescript
+// In data/mods/champions/conditions.ts
+onModifyAtkPriority: 5,
+onModifyAtk(atk, attacker) {
+    if (attacker.hasType('Fire')) return this.chainModify([5120, 4096]); // ×1.25
+},
+onModifySpAPriority: 5,
+onModifySpA(spa, attacker) {
+    if (attacker.hasType('Fire')) return this.chainModify([5120, 4096]);
+},
+onModifyDefPriority: 6,
+onModifyDef(def, target) {        // target = the DEFENDING Pokémon
+    if (target.hasType('Fire')) return this.chainModify([5120, 4096]);
+},
+onModifySpDPriority: 6,
+onModifySpD(spd, target) {
+    if (target.hasType('Fire')) return this.chainModify([5120, 4096]);
+},
+onModifyAccuracy(accuracy, target, source, move) {
+    if (typeof accuracy !== 'number') return; // skip Cannot Miss
+    if (move.type === 'Fire') return this.chainModify(1.1);
+},
+```
+
+`[5120, 4096]` = 5120/4096 = exactly ×1.25. Using the fractional form preserves Showdown's internal chain-modifier precision.
+
+### Domain moves
+
+| Move name | Move ID | Num | pseudoWeather |
+|---|---|---|---|
+| Domain: Normal | `domainnormal` | -114 | `normaldomain` |
+| Domain: Fire | `domainfire` | -108 | `firedomain` |
+| Domain: Water | `domainwater` | -119 | `waterdomain` |
+| Domain: Electric | `domainelectric` | -105 | `electricdomain` |
+| Domain: Grass | `domaingrass` | -111 | `grassdomain` |
+| Domain: Ice | `domainice` | -113 | `icedomain` |
+| Domain: Fighting | `domainfighting` | -107 | `fightingdomain` |
+| Domain: Poison | `domainpoison` | -115 | `poisondomain` |
+| Domain: Ground | `domainground` | -112 | `grounddomain` |
+| Domain: Flying | `domainflying` | -109 | `flyingdomain` |
+| Domain: Psychic | `domainpsychic` | -116 | `psychicdomain` |
+| Domain: Bug | `domainbug` | -101 | `bugdomain` |
+| Domain: Rock | `domainrock` | -117 | `rockdomain` |
+| Domain: Ghost | `domainghost` | -110 | `ghostdomain` |
+| Domain: Dragon | `domaindragon` | -104 | `dragondomain` |
+| Domain: Dark | `domaindark` | -103 | `darkdomain` |
+| Domain: Steel | `domainsteel` | -118 | `steeldomain` |
+| Domain: Fairy | `domainfairy` | -106 | `fairydomain` |
+| Domain: Cosmic | `domaincosmic` | -102 | `cosmicdomain` |
+
+All moves: Status, `accuracy: true`, `basePower: 0`, `pp: 10`, `target: "all"`, `flags: {}`. Type matches the domain type.
+
+### Custom move num registry
+
+| Range | Assigned to |
+|---|---|
+| -2 | Shadow Strike |
+| -3 | Polar Flare |
+| -4 | (unused — was Fire Domain TEST) |
+| -101…-119 | Domain: Bug through Domain: Water (alphabetical by ID) |
+
+### Dual-type stacking
+
+If two domains are simultaneously active and a Pokémon is dual-typed (e.g. Charizard Fire/Flying with Fire Domain + Flying Domain), both domains fire their `onModifyAtk` etc. handlers independently. The stat gets boosted twice: ×1.25 × ×1.25 = ×1.5625. The client tooltip also applies both boosts (the `domainTypeEntries` loop has no `break`).
+
+### Adding a new domain (checklist)
+
+1. Add condition to `data/mods/champions/conditions.ts` with all 5 stat/accuracy handlers
+2. Add move to `data/moves.ts` with `pseudoWeather: '{type}domain'` and next available num
+3. Add learnset entry to `data/learnsets.ts` for any Pokémon that should know it
+4. Update the domain type list in `battle-tooltips.ts` — it appears in **two** places:
+   - `calculateModifiedStats` (stat boost display)
+   - `showMoveTooltip` (accuracy Alt breakdown)
+5. Run `node build` on server, `node build` on client, push both, run the bat
+
+---
+
+## 20. Tone / collaboration notes
 
 The user is technical enough to follow detailed explanations but not deep into Showdown internals. They want:
 - Concise summaries of what changed and why
