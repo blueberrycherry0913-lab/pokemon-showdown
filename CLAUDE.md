@@ -345,12 +345,20 @@ Added `Force IV 0` ruleset clause. statModify branches on `ruleTable.has('forcei
 - Type-order STAB labels in tooltip: `Pure STAB (×1.6)` / `Primary STAB (×1.5)` / `Secondary STAB (×1.4)`
 - See §17 for full technical detail
 
-### Domain field effects + Fire Domain (TEST) move (session 7)
-- Created `data/mods/champions/conditions.ts` with 19 Domain conditions (one per type, Normal through Cosmic). Domains use the terrain slot (`field.setTerrain`) so conflict-resolution (new domain replaces old) is free. No effects yet — just `onFieldStart`/`onFieldEnd` announcements. Duration: 5 turns each.
-- Added `firedomaintest` move to `data/moves.ts` (num -4, Fire type, Status, 10 PP, `terrain: 'firedomain'`). Taught to Charizard via `data/learnsets.ts` (`"9L1"`).
-- **Stale dist bug**: The old champions mod had `learnsets.js` in `dist/data/mods/champions/` that shadowed Charizard's base learnset. Deleted those stale artifacts. See §16 gotcha #19 for the full breakdown.
-- **Custom move `num`**: Moves with `num < 0` get `gen: 0`. This didn't cause the validation failure (the stale learnset shadow did) but is worth tracking. Numbering convention so far: -2 (Shadow Strike), -3 (Polar Flare), -4 (Fire Domain TEST). Reserve -100s onward for domain-setting moves when all 19 are added.
-- **Domain-setting moves**: To set a domain from code, use `this.field.setTerrain('firedomain', source)`. To check: `this.field.isTerrain('firedomain')`. The `terrain:` field on a move definition in `data/moves.ts` handles the `setTerrain` call automatically via `battle-actions.ts`.
+### Domain field effects + Fire Domain (TEST) move (sessions 7–8)
+- Created `data/mods/champions/conditions.ts` with 19 Domain conditions (one per type, Normal through Cosmic). Domains use **pseudoWeather** (not terrain slot) to allow multiple domains active simultaneously. `onFieldStart`/`onFieldEnd` announce start/end. Duration: 5 turns each.
+- Added `firedomaintest` move to `data/moves.ts` (num -4, Fire type, Status, 10 PP, `pseudoWeather: 'firedomain'`). Taught to Charizard via `data/learnsets.ts` (`"9L1"`).
+- **Stale dist bug**: Deleted stale champions dist artifacts. See §16 gotcha #19.
+- **Custom move `num`**: -2 (Shadow Strike), -3 (Polar Flare), -4 (Fire Domain TEST). Reserve -100s for domain-setting moves when all 19 are added.
+- **Domain-setting moves**: `pseudoWeather: 'firedomain'` on move definition triggers the pseudoWeather automatically. To set from code: `this.field.addPseudoWeather('firedomain', source)`. To check: `this.field.pseudoWeather['firedomain']` (truthy).
+- **Domain effects (session 8)**: All 19 domains now have full battle effects:
+  - `onModifyAtk/SpA` (priority 5): `chainModify([5120, 4096])` (×1.25) if attacker is matching type
+  - `onModifyDef/SpD` (priority 6): same if target is matching type
+  - `onModifyAccuracy`: `chainModify(1.1)` if `move.type === 'TypeName'` and accuracy is numeric
+- **Client tooltip changes (session 8)**:
+  - `calculateModifiedStats` in `battle-tooltips.ts`: applies 25% stat boost for all 4 combat stats when active domain matches Pokémon type → shows green `stat-boosted` display
+  - `showMoveTooltip`: when Alt held and domain matches move type, accuracy line shows breakdown: `Accuracy: 85% × Fire Domain (×1.1) = 93.5%`
+  - Domain type list is inline in both places (no shared constant needed, it's config data)
 
 ### Abilities work (sessions 6+)
 - Custom `origin` field added to `Ability` class (`sim/dex-abilities.ts`) and displayed in `/dt` output (`server/chat-commands/info.ts`) in place of generation number
