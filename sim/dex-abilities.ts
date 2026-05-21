@@ -39,6 +39,12 @@ export class Ability extends BasicEffect implements Readonly<BasicEffect> {
 	readonly suppressWeather: boolean;
 	readonly flags: AbilityFlags;
 	declare readonly condition?: ConditionData;
+	/**
+	 * How the ability was changed from canon for this fan-game.
+	 * One of: 'Unchanged' | 'Buffed' | 'Nerfed' | 'Altered' | 'Custom'
+	 * Empty string means not yet classified.
+	 */
+	readonly origin: string;
 
 	constructor(data: AnyObject) {
 		super(data);
@@ -48,6 +54,7 @@ export class Ability extends BasicEffect implements Readonly<BasicEffect> {
 		this.suppressWeather = !!data.suppressWeather;
 		this.flags = data.flags || {};
 		this.rating = data.rating || 0;
+		this.origin = data.origin || '';
 
 		if (!this.gen) {
 			if (this.num >= 268) {

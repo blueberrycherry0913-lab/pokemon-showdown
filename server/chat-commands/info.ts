@@ -855,7 +855,7 @@ export const commands: Chat.ChatCommands = {
 				buffer += `${prefix}${Chat.getDataAbilityHTML(ability)}\n`;
 				if (showDetails) {
 					details = {
-						Gen: String(ability.gen) || 'CAP',
+						Origin: ability.origin || '—',
 					};
 					if (ability.flags['cantsuppress']) details["&#10003; Not affected by Gastro Acid"] = "";
 					if (ability.flags['breakable']) details["&#10003; Ignored by Mold Breaker"] = "";
