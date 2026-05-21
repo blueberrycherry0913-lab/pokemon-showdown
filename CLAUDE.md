@@ -86,6 +86,7 @@ Pokémon Showdown's "champions" mod (at `data/mods/champions/`) was repurposed t
 
 - `data/mods/champions/scripts.ts` — `statModify` (SP math) + `formeChange` override (mega permanence — **DO NOT REMOVE**)
 - `data/mods/champions/rulesets.ts` — `Force IV 0`, overridden `standardag` (adds Adjust Level = 50), overridden `natdexmod` (custom-content gating), and `Gen 1 Only` clause
+- `data/mods/champions/conditions.ts` — Domain field effects (one per type, 19 total)
 
 ### SP system — how it works
 
@@ -344,6 +345,13 @@ Added `Force IV 0` ruleset clause. statModify branches on `ruleTable.has('forcei
 - Type-order STAB labels in tooltip: `Pure STAB (×1.6)` / `Primary STAB (×1.5)` / `Secondary STAB (×1.4)`
 - See §17 for full technical detail
 
+### Domain field effects + Fire Domain (TEST) move (session 7)
+- Created `data/mods/champions/conditions.ts` with 19 Domain conditions (one per type, Normal through Cosmic). Domains use the terrain slot (`field.setTerrain`) so conflict-resolution (new domain replaces old) is free. No effects yet — just `onFieldStart`/`onFieldEnd` announcements. Duration: 5 turns each.
+- Added `firedomaintest` move to `data/moves.ts` (num -4, Fire type, Status, 10 PP, `terrain: 'firedomain'`). Taught to Charizard via `data/learnsets.ts` (`"9L1"`).
+- **Stale dist bug**: The old champions mod had `learnsets.js` in `dist/data/mods/champions/` that shadowed Charizard's base learnset. Deleted those stale artifacts. See §16 gotcha #19 for the full breakdown.
+- **Custom move `num`**: Moves with `num < 0` get `gen: 0`. This didn't cause the validation failure (the stale learnset shadow did) but is worth tracking. Numbering convention so far: -2 (Shadow Strike), -3 (Polar Flare), -4 (Fire Domain TEST). Reserve -100s onward for domain-setting moves when all 19 are added.
+- **Domain-setting moves**: To set a domain from code, use `this.field.setTerrain('firedomain', source)`. To check: `this.field.isTerrain('firedomain')`. The `terrain:` field on a move definition in `data/moves.ts` handles the `setTerrain` call automatically via `battle-actions.ts`.
+
 ### Abilities work (sessions 6+)
 - Custom `origin` field added to `Ability` class (`sim/dex-abilities.ts`) and displayed in `/dt` output (`server/chat-commands/info.ts`) in place of generation number
 - Abilities implemented through rows 1–25 of the TSV design doc; see `CLAUDE_ABILITIES.md` for the full reference table and conventions
@@ -417,6 +425,7 @@ console.log('overrideTier sample:', champ.overrideTier.venusaur);
 | Type chart | `data/typechart.ts` |
 | Custom Pokemon data | `data/pokedex.ts` |
 | Tier/legality tags | `data/formats-data.ts` |
+| Domain conditions (19 types) | `data/mods/champions/conditions.ts` |
 | Custom moves | `data/moves.ts` |
 | Custom items | `data/items.ts` |
 | Custom learnsets | `data/learnsets.ts` |
@@ -566,6 +575,7 @@ Listed for posterity so the next Claude doesn't repeat them:
 16. **Stacking a display element above an input in the same float cell raises the input.** If you add an element above an input in a `float:right` cell, the input moves down by that element's height. To add visual elements above a cell's input without displacing it, use `position:absolute` with a negative `top` value on the overlay element, anchored to a `position:relative` cell.
 17. **Content-box inputs vs border-box display divs mismatch.** When matching a `<div>`'s visual size to a `<input>`, remember the input is content-box in the PS client. A `<div>` with `box-sizing: border-box; width: 108px` has the same visual width as an `<input>` with `box-sizing: content-box; width: 104px; padding: 1px; border: 1px`.
 18. **Negative `top` absolute children appear outside the cell boundary, and that's fine.** `position:absolute; top:-13px` on a child of a `position:relative` float cell causes the child to appear 13px above the cell's top edge. Default `overflow: visible` lets it show. Adjacent cells at the same row don't conflict as long as horizontal positions don't overlap.
+19. **Stale `dist/data/mods/champions/` files silently shadow base data.** When the original champions mod data files were deleted from source (Step 3), `node build` left their compiled `.js` counterparts in `dist/data/mods/champions/` untouched. The dex merge logic uses child-wins-on-conflict: if a species key exists in the mod's learnsets/abilities/moves/etc., it *replaces* the base entry for that species rather than merging. Charizard had an entry in the old champions `learnsets.js`, so `Dex.mod('champions').species.getLearnsetData('charizard')` returned the stale champion-game learnset (no `firedomaintest`) instead of the updated base learnset. The worktree's dist was clean (no stale files) so validation passed there but failed on the running server. **Fix: manually delete any `.js`/`.js.map` file in `dist/data/mods/champions/` that has no corresponding `.ts` source file.** `node build` never deletes orphaned artifacts. Current legitimate champions dist files are: `conditions.js`, `rulesets.js`, `scripts.js` (plus `.map` siblings). If you see `abilities.js`, `formats-data.js`, `items.js`, `learnsets.js`, or `moves.js` in that folder, delete them — they are stale.
 
 ---
 
