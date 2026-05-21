@@ -6,7 +6,7 @@
 export const Conditions: import('../../../sim/dex-conditions').ConditionDataTable = {
 	normaldomain: {
 		name: "Normal Domain",
-		effectType: 'Terrain',
+
 		duration: 5,
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -24,7 +24,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	firedomain: {
 		name: "Fire Domain",
-		effectType: 'Terrain',
+
 		duration: 5,
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -42,7 +42,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	waterdomain: {
 		name: "Water Domain",
-		effectType: 'Terrain',
+
 		duration: 5,
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -60,7 +60,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	electricdomain: {
 		name: "Electric Domain",
-		effectType: 'Terrain',
+
 		duration: 5,
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -78,7 +78,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	grassdomain: {
 		name: "Grass Domain",
-		effectType: 'Terrain',
+
 		duration: 5,
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -96,7 +96,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	icedomain: {
 		name: "Ice Domain",
-		effectType: 'Terrain',
+
 		duration: 5,
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -114,7 +114,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	fightingdomain: {
 		name: "Fighting Domain",
-		effectType: 'Terrain',
+
 		duration: 5,
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -132,7 +132,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	poisondomain: {
 		name: "Poison Domain",
-		effectType: 'Terrain',
+
 		duration: 5,
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -150,7 +150,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	grounddomain: {
 		name: "Ground Domain",
-		effectType: 'Terrain',
+
 		duration: 5,
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -168,7 +168,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	flyingdomain: {
 		name: "Flying Domain",
-		effectType: 'Terrain',
+
 		duration: 5,
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -186,7 +186,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	psychicdomain: {
 		name: "Psychic Domain",
-		effectType: 'Terrain',
+
 		duration: 5,
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -204,7 +204,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	bugdomain: {
 		name: "Bug Domain",
-		effectType: 'Terrain',
+
 		duration: 5,
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -222,7 +222,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	rockdomain: {
 		name: "Rock Domain",
-		effectType: 'Terrain',
+
 		duration: 5,
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -240,7 +240,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	ghostdomain: {
 		name: "Ghost Domain",
-		effectType: 'Terrain',
+
 		duration: 5,
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -258,7 +258,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	dragondomain: {
 		name: "Dragon Domain",
-		effectType: 'Terrain',
+
 		duration: 5,
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -276,7 +276,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	darkdomain: {
 		name: "Dark Domain",
-		effectType: 'Terrain',
+
 		duration: 5,
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -294,7 +294,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	steeldomain: {
 		name: "Steel Domain",
-		effectType: 'Terrain',
+
 		duration: 5,
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -312,7 +312,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	fairydomain: {
 		name: "Fairy Domain",
-		effectType: 'Terrain',
+
 		duration: 5,
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -330,7 +330,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	cosmicdomain: {
 		name: "Cosmic Domain",
-		effectType: 'Terrain',
+
 		duration: 5,
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {

@@ -21297,7 +21297,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		pp: 10,
 		priority: 0,
 		flags: {},
-		terrain: 'firedomain',
+		pseudoWeather: 'firedomain',
 		target: "all",
 		type: "Fire",
 	},
