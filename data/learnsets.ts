@@ -595,6 +595,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			facade: ["9M", "8M", "8V", "7M", "6M", "5M", "4M", "3M"],
 			falseswipe: ["8M"],
 			fireblast: ["9M", "8M", "8V", "7M", "7V", "6M", "5M", "4M", "3M"],
+			firedomaintest: ["9L1"],
 			firefang: ["9M", "9L19", "8M", "8L19", "7L28", "6L28", "6S1", "6S2", "5L28", "4L28"],
 			firepledge: ["9M", "8T", "7T", "6T", "6S4", "5T"],
 			firepunch: ["9M", "8M", "8V", "7T", "7V", "6T", "5T", "4T", "3T"],
