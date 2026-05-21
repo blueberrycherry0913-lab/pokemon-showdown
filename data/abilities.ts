@@ -85,6 +85,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				}
 			}
 		},
+		shortDesc: "Explodes upon fainting, damaging the whole battlefield.",
 		flags: {},
 		name: "Aftermath",
 		rating: 3,
@@ -118,6 +119,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify([5325, 4096]);
 			}
 		},
+		shortDesc: "Boosts move power when the Pokémon moves after its target.",
 		flags: {},
 		name: "Analytic",
 		rating: 3,
@@ -212,6 +214,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onFoeAfterMove(source, target, move) {
 			(this.effectState.target.abilityState.anticipatedFoes as Set<Pokemon> | undefined)?.delete(source);
 		},
+		shortDesc: "Senses a foe's dangerous moves and makes the Pokémon more resilient to those moves.",
 		flags: {},
 		name: "Anticipation",
 		rating: 2,
@@ -241,6 +244,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				pokemon.maybeTrapped = true;
 			}
 		},
+		shortDesc: "Prevents both the Pokémon and grounded foes from fleeing.",
 		flags: {},
 		name: "Arena Trap",
 		rating: 4,
@@ -5529,6 +5533,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			if (stab <= 1) return 0.75; // non-STAB: 0.75x penalty
 			// STAB case: return undefined so the format handler applies type-order + 0.75
 		},
+		shortDesc: "Powers up moves that share their type with the Pokémon, but weakens moves of other types.",
 		flags: {},
 		name: "Specialist",
 		rating: 3.5,
