@@ -78,13 +78,16 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	aftermath: {
 		onDamagingHitOrder: 1,
 		onDamagingHit(damage, target, source, move) {
-			if (!target.hp && this.checkMoveMakesContact(move, source, target, true)) {
-				this.damage(source.baseMaxhp / 4, source, target);
+			if (!target.hp) {
+				for (const pokemon of this.getAllActive()) {
+					if (pokemon === target) continue;
+					this.damage(pokemon.baseMaxhp / 4, pokemon, target);
+				}
 			}
 		},
 		flags: {},
 		name: "Aftermath",
-		rating: 2,
+		rating: 3,
 		num: 106,
 	},
 	airlock: {
@@ -109,23 +112,15 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	analytic: {
 		onBasePowerPriority: 21,
-		onBasePower(basePower, pokemon) {
-			let boosted = true;
-			for (const target of this.getAllActive()) {
-				if (target === pokemon) continue;
-				if (this.queue.willMove(target)) {
-					boosted = false;
-					break;
-				}
-			}
-			if (boosted) {
+		onBasePower(basePower, pokemon, target, move) {
+			if (target && !this.queue.willMove(target)) {
 				this.debug('Analytic boost');
 				return this.chainModify([5325, 4096]);
 			}
 		},
 		flags: {},
 		name: "Analytic",
-		rating: 2.5,
+		rating: 3,
 		num: 148,
 	},
 	angerpoint: {
@@ -173,24 +168,53 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	anticipation: {
 		onStart(pokemon) {
-			for (const target of pokemon.foes()) {
-				for (const moveSlot of target.moveSlots) {
+			// Initialize state and mark all current foes as already-seen so
+			// onAnySwitchIn doesn't re-fire for opponents already on the field.
+			pokemon.abilityState.seenFoes = new Set<Pokemon>();
+			pokemon.abilityState.anticipatedFoes = new Set<Pokemon>();
+			for (const foe of pokemon.foes()) {
+				pokemon.abilityState.seenFoes.add(foe);
+			}
+		},
+		onAnySwitchInPriority: -1,
+		onAnySwitchIn() {
+			const holder = this.effectState.target;
+			if (!holder.isActive) return;
+			if (!holder.abilityState.seenFoes) return;
+			for (const foe of holder.foes()) {
+				if ((holder.abilityState.seenFoes as Set<Pokemon>).has(foe)) continue;
+				(holder.abilityState.seenFoes as Set<Pokemon>).add(foe);
+				for (const moveSlot of foe.moveSlots) {
 					const move = this.dex.moves.get(moveSlot.move);
 					if (move.category === 'Status') continue;
-					const moveType = move.id === 'hiddenpower' ? target.hpType : move.type;
+					const moveType = move.id === 'hiddenpower' ? foe.hpType : move.type;
 					if (
-						this.dex.getImmunity(moveType, pokemon) && this.dex.getEffectiveness(moveType, pokemon) > 0 ||
-						move.ohko
+						(this.dex.getImmunity(moveType, holder) && this.dex.getEffectiveness(moveType, holder) > 0) ||
+						move.ohko || move.selfdestruct
 					) {
-						this.add('-ability', pokemon, 'Anticipation');
-						return;
+						this.add('-ability', holder, 'Anticipation');
+						(holder.abilityState.anticipatedFoes as Set<Pokemon>).add(foe);
+						break;
 					}
 				}
 			}
 		},
+		onModifyDamage(damage, source, target, move) {
+			if (!(target.abilityState.anticipatedFoes as Set<Pokemon> | undefined)?.has(source)) return;
+			const moveType = move.id === 'hiddenpower' ? source.hpType : move.type;
+			if (
+				(this.dex.getImmunity(moveType, target) && this.dex.getEffectiveness(moveType, target) > 0) ||
+				move.ohko || move.selfdestruct
+			) {
+				return this.chainModify(0.67);
+			}
+		},
+		onFoeAfterMove(source, target, move) {
+			(this.effectState.target.abilityState.anticipatedFoes as Set<Pokemon> | undefined)?.delete(source);
+		},
 		flags: {},
 		name: "Anticipation",
-		rating: 0.5,
+		rating: 2,
 		num: 107,
 	},
 	arenatrap: {
@@ -207,9 +231,19 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				pokemon.maybeTrapped = true;
 			}
 		},
+		onTrapPokemon(pokemon) {
+			if (pokemon.isGrounded()) {
+				pokemon.tryTrap(true);
+			}
+		},
+		onMaybeTrapPokemon(pokemon) {
+			if (pokemon.isGrounded(!pokemon.knownType)) {
+				pokemon.maybeTrapped = true;
+			}
+		},
 		flags: {},
 		name: "Arena Trap",
-		rating: 5,
+		rating: 4,
 		num: 71,
 	},
 	armortail: {
@@ -5490,9 +5524,14 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 73,
 	},
 	specialist: {
+		onModifySTAB(stab, source, target, move) {
+			if (move.type === '???') return; // typeless: no modification
+			if (stab <= 1) return 0.75; // non-STAB: 0.75x penalty
+			// STAB case: return undefined so the format handler applies type-order + 0.75
+		},
 		flags: {},
 		name: "Specialist",
-		rating: 0,
+		rating: 3.5,
 		num: 10003,
 	},
 	wildvines: {

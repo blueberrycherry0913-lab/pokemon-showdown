@@ -67,14 +67,20 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		//   Pure type (single type): ×1.6
 		//   Primary type (types[0]):  ×1.5
 		//   Secondary type (types[1]): ×1.4
-		// Adaptability overrides this (its own onModifySTAB fires and returns 2;
-		// we skip to avoid clobbering it). forceSTAB and non-type-matched cases
-		// fall through unchanged.
+		// Adaptability and Specialist bypass the standard table (their ability handlers
+		// fire first; we detect them here to avoid clobbering their values).
+		// Specialist adds +0.75 additively to the type-order base.
 		onModifySTAB(stab, attacker, defender, move) {
-			if (stab <= 1) return stab; // move has no STAB
+			if (stab <= 1) return stab; // move has no STAB (includes Specialist's 0.75x penalty)
 			if (attacker.hasAbility('adaptability')) return stab; // preserve Adaptability
 			const types = attacker.types;
 			if (!types.includes(move.type)) return stab; // forceSTAB edge case
+			if (attacker.hasAbility('specialist')) {
+				// Additive +0.75 on top of type-order base
+				if (types.length === 1) return 2.35; // 1.6 + 0.75
+				if (types[0] === move.type) return 2.25; // 1.5 + 0.75
+				return 2.15; // 1.4 + 0.75
+			}
 			if (types.length === 1) return 1.6; // pure type
 			if (types[0] === move.type) return 1.5; // primary
 			return 1.4; // secondary
