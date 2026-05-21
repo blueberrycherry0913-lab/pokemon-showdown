@@ -71,6 +71,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			if (move.typeChangerBoosted === this.effect) return this.chainModify([4915, 4096]);
 		},
 		shortDesc: "Turns Normal-type moves into Flying-type moves and increases their power by x1.2.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Aerilate",
 		rating: 4,
@@ -87,6 +88,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		shortDesc: "Explodes upon fainting, dealing 1/4th max HP damage to the whole battlefield.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Aftermath",
 		rating: 3,
@@ -108,6 +110,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		},
 		suppressWeather: true,
 		shortDesc: "Eliminates the effects of weather.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Air Lock",
 		rating: 1.5,
@@ -122,6 +125,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		shortDesc: "Increases the power of moves by x1.3 if moving after all targets of the attack.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Analytic",
 		rating: 3,
@@ -135,6 +139,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		shortDesc: "Maxes Attack after taking a critical hit.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Anger Point",
 		rating: 1,
@@ -167,6 +172,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		shortDesc: "Lowers Defense/Sp. Def by 1 stage and raises Attack/Sp. Atk/Speed by 1 stage when HP drops below half.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Anger Shell",
 		rating: 3,
@@ -219,6 +225,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			(this.effectState.target.abilityState.anticipatedFoes as Set<Pokemon> | undefined)?.delete(source);
 		},
 		shortDesc: "Senses a foe's dangerous moves; if immediately attacked with one of those moves, the Pokémon takes 33% less damage.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Anticipation",
 		rating: 2,
@@ -249,6 +256,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		shortDesc: "Prevents both the Pokémon and foe from fleeing. Does not work on ungrounded targets.",
+		origin: 'Nerfed',
 		flags: {},
 		name: "Arena Trap",
 		rating: 4,
@@ -269,6 +277,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		shortDesc: "Prevents opponents from using priority moves.",
+		origin: 'Unchanged',
 		flags: { breakable: 1 },
 		name: "Armor Tail",
 		rating: 2.5,
@@ -285,6 +294,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		shortDesc: "Protects allies from attacks that limit their move choices. (Taunt, Encore, Cursed Body, etc.)",
+		origin: 'Unchanged',
 		flags: { breakable: 1 },
 		name: "Aroma Veil",
 		rating: 2,
@@ -310,6 +320,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		shortDesc: "Combines Unnerve and Chilling Neigh/Grim Neigh.",
+		origin: 'Depreciated',
 		flags: { failroleplay: 1, noreceiver: 1, noentrain: 1, notrace: 1, failskillswap: 1, cantsuppress: 1 },
 		name: "As One (Glastrier)",
 		rating: 3.5,
@@ -335,6 +346,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		shortDesc: "Combines Unnerve and Chilling Neigh/Grim Neigh.",
+		origin: 'Depreciated',
 		flags: { failroleplay: 1, noreceiver: 1, noentrain: 1, notrace: 1, failskillswap: 1, cantsuppress: 1 },
 		name: "As One (Spectrier)",
 		rating: 3.5,
@@ -349,6 +361,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			move.hasAuraBreak = true;
 		},
 		shortDesc: "Reduces power of Dark- and Fairy-type moves.",
+		origin: 'Depreciated',
 		flags: { breakable: 1 },
 		name: "Aura Break",
 		rating: 1,
@@ -366,6 +379,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		shortDesc: "Prevents any positive effect of Sleep or Sleep-inducing moves for the foe, also deals 1/8th max HP damage to sleeping foes.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Bad Dreams",
 		rating: 1.5,
@@ -5544,6 +5558,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			// STAB case: return undefined so the format handler applies type-order + 0.75
 		},
 		shortDesc: "Increases STAB by an additional x0.75, but weakens non-STAB moves by a x0.75 multiplier.",
+		origin: 'Custom',
 		flags: {},
 		name: "Specialist",
 		rating: 3.5,
