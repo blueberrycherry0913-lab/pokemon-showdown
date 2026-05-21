@@ -378,7 +378,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				}
 			}
 		},
-		shortDesc: "Prevents any positive effect of Sleep or Sleep-inducing moves for the foe, also deals 1/8th max HP damage to sleeping foes.",
+		shortDesc: "Prevents any positive effect of Sleep or Sleep-inducing moves for the foe, also does 1/8th max HP damage to sleeping foes.",
 		origin: 'Buffed',
 		flags: {},
 		name: "Bad Dreams",
@@ -386,9 +386,42 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 123,
 	},
 	ballfetch: {
+		onTryHit(target, source, move) {
+			if (!move.flags['bullet'] || !source) return;
+			this.add('-ability', target, 'Ball Fetch');
+			if (move.basePower && move.category !== 'Status') {
+				const atkStat = move.category === 'Special' ? 'spa' : 'atk';
+				const defStat = move.category === 'Special' ? 'spd' : 'def';
+				const atk = source.getStat(atkStat);
+				const def = source.getStat(defStat);
+				const damage = Math.max(1, Math.floor(
+					Math.floor(Math.floor(2 * source.level / 5 + 2) * move.basePower * atk / def) / 50
+				) + 2);
+				this.damage(damage, source, target);
+			}
+			return null;
+		},
+		onAllyTryHit(target, source, move) {
+			if (!move.flags['bullet'] || !source) return;
+			const holder = this.effectState.target;
+			this.add('-ability', holder, 'Ball Fetch');
+			if (move.basePower && move.category !== 'Status') {
+				const atkStat = move.category === 'Special' ? 'spa' : 'atk';
+				const defStat = move.category === 'Special' ? 'spd' : 'def';
+				const atk = source.getStat(atkStat);
+				const def = source.getStat(defStat);
+				const damage = Math.max(1, Math.floor(
+					Math.floor(Math.floor(2 * source.level / 5 + 2) * move.basePower * atk / def) / 50
+				) + 2);
+				this.damage(damage, source, holder);
+			}
+			return null;
+		},
+		shortDesc: "Catches and returns foe's Ball/Bomb-based moves at full power, using the attacker's own stats.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Ball Fetch",
-		rating: 0,
+		rating: 2,
 		num: 237,
 	},
 	battery: {
@@ -396,9 +429,11 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onAllyBasePower(basePower, attacker, defender, move) {
 			if (attacker !== this.effectState.target && move.category === 'Special') {
 				this.debug('Battery boost');
-				return this.chainModify([5325, 4096]);
+				return this.chainModify([6144, 4096]);
 			}
 		},
+		shortDesc: "Raises power of teammates' Special moves by x1.5.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Battery",
 		rating: 0,
@@ -406,6 +441,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	battlearmor: {
 		onCriticalHit: false,
+		shortDesc: "The Pokémon is protected against critical hits.",
+		origin: 'Unchanged',
 		flags: { breakable: 1 },
 		name: "Battle Armor",
 		rating: 1,
@@ -446,6 +483,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			this.debug('Beads of Ruin SpD drop');
 			return this.chainModify(0.75);
 		},
+		shortDesc: "Lowers Special Defense of all Pokémon except itself.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Beads of Ruin",
 		rating: 4.5,
@@ -458,6 +497,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.boost({ [bestStat]: length }, source);
 			}
 		},
+		shortDesc: "The Pokémon boosts its most proficient stat each time it knocks out a Pokémon.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Beast Boost",
 		rating: 3.5,
@@ -486,9 +527,11 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			if (!lastAttackedBy) return;
 			const damage = move.multihit && !move.smartTarget ? move.totalDamage : lastAttackedBy.damage;
 			if (target.hp <= target.maxhp / 2 && target.hp + damage > target.maxhp / 2) {
-				this.boost({ spa: 1 }, target, target);
+				this.boost({ spa: 1, atk: 1 }, target, target);
 			}
 		},
+		shortDesc: "Raises Attack and Special Attack when HP drops below half.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Berserk",
 		rating: 2,
@@ -524,6 +567,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify(1.5);
 			}
 		},
+		shortDesc: "Powers up Fire-type moves in a pinch.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Blaze",
 		rating: 2,
