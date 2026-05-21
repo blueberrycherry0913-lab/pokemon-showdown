@@ -1,8 +1,7 @@
 // Domains — the champions-mod replacement for terrains.
 // One domain is active at a time (backed by the terrain slot).
 // Each affects all Pokémon on the field with no grounding requirement.
-// Effects are intentionally empty here; they will be filled in per-domain
-// when the design spec is finalised.
+// Effects: +25% Atk/SpA/Def/SpD for same-type Pokémon; +10% accuracy for same-type moves.
 export const Conditions: import('../../../sim/dex-conditions').ConditionDataTable = {
 	normaldomain: {
 		name: "Normal Domain",
@@ -19,6 +18,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldResidualSubOrder: 1,
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Normal Domain');
+		},
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker) {
+			if (attacker.hasType('Normal')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, attacker) {
+			if (attacker.hasType('Normal')) return this.chainModify([5120, 4096]);
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, target) {
+			if (target.hasType('Normal')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd, target) {
+			if (target.hasType('Normal')) return this.chainModify([5120, 4096]);
+		},
+		onModifyAccuracy(accuracy, target, source, move) {
+			if (typeof accuracy !== 'number') return;
+			if (move.type === 'Normal') return this.chainModify(1.1);
 		},
 	},
 
@@ -38,6 +57,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Fire Domain');
 		},
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker) {
+			if (attacker.hasType('Fire')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, attacker) {
+			if (attacker.hasType('Fire')) return this.chainModify([5120, 4096]);
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, target) {
+			if (target.hasType('Fire')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd, target) {
+			if (target.hasType('Fire')) return this.chainModify([5120, 4096]);
+		},
+		onModifyAccuracy(accuracy, target, source, move) {
+			if (typeof accuracy !== 'number') return;
+			if (move.type === 'Fire') return this.chainModify(1.1);
+		},
 	},
 
 	waterdomain: {
@@ -55,6 +94,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldResidualSubOrder: 3,
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Water Domain');
+		},
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker) {
+			if (attacker.hasType('Water')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, attacker) {
+			if (attacker.hasType('Water')) return this.chainModify([5120, 4096]);
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, target) {
+			if (target.hasType('Water')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd, target) {
+			if (target.hasType('Water')) return this.chainModify([5120, 4096]);
+		},
+		onModifyAccuracy(accuracy, target, source, move) {
+			if (typeof accuracy !== 'number') return;
+			if (move.type === 'Water') return this.chainModify(1.1);
 		},
 	},
 
@@ -74,6 +133,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Electric Domain');
 		},
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker) {
+			if (attacker.hasType('Electric')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, attacker) {
+			if (attacker.hasType('Electric')) return this.chainModify([5120, 4096]);
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, target) {
+			if (target.hasType('Electric')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd, target) {
+			if (target.hasType('Electric')) return this.chainModify([5120, 4096]);
+		},
+		onModifyAccuracy(accuracy, target, source, move) {
+			if (typeof accuracy !== 'number') return;
+			if (move.type === 'Electric') return this.chainModify(1.1);
+		},
 	},
 
 	grassdomain: {
@@ -91,6 +170,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldResidualSubOrder: 5,
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Grass Domain');
+		},
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker) {
+			if (attacker.hasType('Grass')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, attacker) {
+			if (attacker.hasType('Grass')) return this.chainModify([5120, 4096]);
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, target) {
+			if (target.hasType('Grass')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd, target) {
+			if (target.hasType('Grass')) return this.chainModify([5120, 4096]);
+		},
+		onModifyAccuracy(accuracy, target, source, move) {
+			if (typeof accuracy !== 'number') return;
+			if (move.type === 'Grass') return this.chainModify(1.1);
 		},
 	},
 
@@ -110,6 +209,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Ice Domain');
 		},
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker) {
+			if (attacker.hasType('Ice')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, attacker) {
+			if (attacker.hasType('Ice')) return this.chainModify([5120, 4096]);
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, target) {
+			if (target.hasType('Ice')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd, target) {
+			if (target.hasType('Ice')) return this.chainModify([5120, 4096]);
+		},
+		onModifyAccuracy(accuracy, target, source, move) {
+			if (typeof accuracy !== 'number') return;
+			if (move.type === 'Ice') return this.chainModify(1.1);
+		},
 	},
 
 	fightingdomain: {
@@ -127,6 +246,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldResidualSubOrder: 7,
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Fighting Domain');
+		},
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker) {
+			if (attacker.hasType('Fighting')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, attacker) {
+			if (attacker.hasType('Fighting')) return this.chainModify([5120, 4096]);
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, target) {
+			if (target.hasType('Fighting')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd, target) {
+			if (target.hasType('Fighting')) return this.chainModify([5120, 4096]);
+		},
+		onModifyAccuracy(accuracy, target, source, move) {
+			if (typeof accuracy !== 'number') return;
+			if (move.type === 'Fighting') return this.chainModify(1.1);
 		},
 	},
 
@@ -146,6 +285,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Poison Domain');
 		},
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker) {
+			if (attacker.hasType('Poison')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, attacker) {
+			if (attacker.hasType('Poison')) return this.chainModify([5120, 4096]);
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, target) {
+			if (target.hasType('Poison')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd, target) {
+			if (target.hasType('Poison')) return this.chainModify([5120, 4096]);
+		},
+		onModifyAccuracy(accuracy, target, source, move) {
+			if (typeof accuracy !== 'number') return;
+			if (move.type === 'Poison') return this.chainModify(1.1);
+		},
 	},
 
 	grounddomain: {
@@ -163,6 +322,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldResidualSubOrder: 9,
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Ground Domain');
+		},
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker) {
+			if (attacker.hasType('Ground')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, attacker) {
+			if (attacker.hasType('Ground')) return this.chainModify([5120, 4096]);
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, target) {
+			if (target.hasType('Ground')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd, target) {
+			if (target.hasType('Ground')) return this.chainModify([5120, 4096]);
+		},
+		onModifyAccuracy(accuracy, target, source, move) {
+			if (typeof accuracy !== 'number') return;
+			if (move.type === 'Ground') return this.chainModify(1.1);
 		},
 	},
 
@@ -182,6 +361,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Flying Domain');
 		},
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker) {
+			if (attacker.hasType('Flying')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, attacker) {
+			if (attacker.hasType('Flying')) return this.chainModify([5120, 4096]);
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, target) {
+			if (target.hasType('Flying')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd, target) {
+			if (target.hasType('Flying')) return this.chainModify([5120, 4096]);
+		},
+		onModifyAccuracy(accuracy, target, source, move) {
+			if (typeof accuracy !== 'number') return;
+			if (move.type === 'Flying') return this.chainModify(1.1);
+		},
 	},
 
 	psychicdomain: {
@@ -199,6 +398,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldResidualSubOrder: 11,
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Psychic Domain');
+		},
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker) {
+			if (attacker.hasType('Psychic')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, attacker) {
+			if (attacker.hasType('Psychic')) return this.chainModify([5120, 4096]);
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, target) {
+			if (target.hasType('Psychic')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd, target) {
+			if (target.hasType('Psychic')) return this.chainModify([5120, 4096]);
+		},
+		onModifyAccuracy(accuracy, target, source, move) {
+			if (typeof accuracy !== 'number') return;
+			if (move.type === 'Psychic') return this.chainModify(1.1);
 		},
 	},
 
@@ -218,6 +437,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Bug Domain');
 		},
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker) {
+			if (attacker.hasType('Bug')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, attacker) {
+			if (attacker.hasType('Bug')) return this.chainModify([5120, 4096]);
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, target) {
+			if (target.hasType('Bug')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd, target) {
+			if (target.hasType('Bug')) return this.chainModify([5120, 4096]);
+		},
+		onModifyAccuracy(accuracy, target, source, move) {
+			if (typeof accuracy !== 'number') return;
+			if (move.type === 'Bug') return this.chainModify(1.1);
+		},
 	},
 
 	rockdomain: {
@@ -235,6 +474,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldResidualSubOrder: 13,
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Rock Domain');
+		},
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker) {
+			if (attacker.hasType('Rock')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, attacker) {
+			if (attacker.hasType('Rock')) return this.chainModify([5120, 4096]);
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, target) {
+			if (target.hasType('Rock')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd, target) {
+			if (target.hasType('Rock')) return this.chainModify([5120, 4096]);
+		},
+		onModifyAccuracy(accuracy, target, source, move) {
+			if (typeof accuracy !== 'number') return;
+			if (move.type === 'Rock') return this.chainModify(1.1);
 		},
 	},
 
@@ -254,6 +513,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Ghost Domain');
 		},
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker) {
+			if (attacker.hasType('Ghost')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, attacker) {
+			if (attacker.hasType('Ghost')) return this.chainModify([5120, 4096]);
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, target) {
+			if (target.hasType('Ghost')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd, target) {
+			if (target.hasType('Ghost')) return this.chainModify([5120, 4096]);
+		},
+		onModifyAccuracy(accuracy, target, source, move) {
+			if (typeof accuracy !== 'number') return;
+			if (move.type === 'Ghost') return this.chainModify(1.1);
+		},
 	},
 
 	dragondomain: {
@@ -271,6 +550,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldResidualSubOrder: 15,
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Dragon Domain');
+		},
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker) {
+			if (attacker.hasType('Dragon')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, attacker) {
+			if (attacker.hasType('Dragon')) return this.chainModify([5120, 4096]);
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, target) {
+			if (target.hasType('Dragon')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd, target) {
+			if (target.hasType('Dragon')) return this.chainModify([5120, 4096]);
+		},
+		onModifyAccuracy(accuracy, target, source, move) {
+			if (typeof accuracy !== 'number') return;
+			if (move.type === 'Dragon') return this.chainModify(1.1);
 		},
 	},
 
@@ -290,6 +589,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Dark Domain');
 		},
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker) {
+			if (attacker.hasType('Dark')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, attacker) {
+			if (attacker.hasType('Dark')) return this.chainModify([5120, 4096]);
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, target) {
+			if (target.hasType('Dark')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd, target) {
+			if (target.hasType('Dark')) return this.chainModify([5120, 4096]);
+		},
+		onModifyAccuracy(accuracy, target, source, move) {
+			if (typeof accuracy !== 'number') return;
+			if (move.type === 'Dark') return this.chainModify(1.1);
+		},
 	},
 
 	steeldomain: {
@@ -307,6 +626,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldResidualSubOrder: 17,
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Steel Domain');
+		},
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker) {
+			if (attacker.hasType('Steel')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, attacker) {
+			if (attacker.hasType('Steel')) return this.chainModify([5120, 4096]);
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, target) {
+			if (target.hasType('Steel')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd, target) {
+			if (target.hasType('Steel')) return this.chainModify([5120, 4096]);
+		},
+		onModifyAccuracy(accuracy, target, source, move) {
+			if (typeof accuracy !== 'number') return;
+			if (move.type === 'Steel') return this.chainModify(1.1);
 		},
 	},
 
@@ -326,6 +665,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Fairy Domain');
 		},
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker) {
+			if (attacker.hasType('Fairy')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, attacker) {
+			if (attacker.hasType('Fairy')) return this.chainModify([5120, 4096]);
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, target) {
+			if (target.hasType('Fairy')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd, target) {
+			if (target.hasType('Fairy')) return this.chainModify([5120, 4096]);
+		},
+		onModifyAccuracy(accuracy, target, source, move) {
+			if (typeof accuracy !== 'number') return;
+			if (move.type === 'Fairy') return this.chainModify(1.1);
+		},
 	},
 
 	cosmicdomain: {
@@ -343,6 +702,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldResidualSubOrder: 19,
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Cosmic Domain');
+		},
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker) {
+			if (attacker.hasType('Cosmic')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, attacker) {
+			if (attacker.hasType('Cosmic')) return this.chainModify([5120, 4096]);
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, target) {
+			if (target.hasType('Cosmic')) return this.chainModify([5120, 4096]);
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd, target) {
+			if (target.hasType('Cosmic')) return this.chainModify([5120, 4096]);
+		},
+		onModifyAccuracy(accuracy, target, source, move) {
+			if (typeof accuracy !== 'number') return;
+			if (move.type === 'Cosmic') return this.chainModify(1.1);
 		},
 	},
 };
