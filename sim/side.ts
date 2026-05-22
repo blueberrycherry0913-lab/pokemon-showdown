@@ -58,6 +58,8 @@ export interface Choice {
 	ultra: boolean; // true if an ultra burst has already been selected
 	dynamax: boolean; // true if a dynamax has already been selected
 	terastallize: boolean; // true if a terastallization has already been inputted
+	/** Actions chosen for Mind Controlled opponent Pokémon (separate from own actions) */
+	controlledActions: ChosenAction[];
 }
 
 export interface PokemonSwitchRequestData {
@@ -152,6 +154,10 @@ export interface MoveRequest {
 	ally?: SideRequestData;
 	noCancel?: boolean;
 	update?: boolean;
+	/** Move data for Mind Controlled opponent Pokémon — this player chooses for them */
+	controlledActive?: PokemonMoveRequestData[];
+	/** The opponent side whose Pokémon are being controlled */
+	controlledSide?: SideRequestData;
 }
 export interface WaitRequest {
 	wait: true;
@@ -529,7 +535,15 @@ export class Side {
 
 		// current request is move/switch
 		this.getChoiceIndex(); // auto-pass
-		return this.choice.actions.length >= this.active.length;
+		if (this.choice.actions.length < this.active.length) return false;
+
+		// Also wait for controlled Pokémon choices (Mind Controlled mechanic)
+		const controlledActive = (this.activeRequest as MoveRequest)?.controlledActive;
+		if (controlledActive?.length) {
+			return this.choice.controlledActions.length >= controlledActive.length;
+		}
+
+		return true;
 	}
 
 	chooseMove(
@@ -1108,6 +1122,7 @@ export class Side {
 			ultra: false,
 			dynamax: false,
 			terastallize: false,
+			controlledActions: [],
 		};
 	}
 
@@ -1141,6 +1156,10 @@ export class Side {
 			}
 		}
 		this.battle.queue.addChoice(this.choice.actions);
+		// Add moves chosen for Mind Controlled opponent Pokémon
+		if (this.choice.controlledActions.length) {
+			this.battle.queue.addChoice(this.choice.controlledActions);
+		}
 	}
 
 	choose(input: string) {
@@ -1158,7 +1177,9 @@ export class Side {
 
 		const choiceStrings = (input.startsWith('team ') ? [input] : input.split(','));
 
-		if (choiceStrings.length > this.active.length) {
+		const controlledActive = (this.activeRequest as MoveRequest)?.controlledActive;
+		const maxChoices = this.active.length + (controlledActive?.length ?? 0);
+		if (choiceStrings.length > maxChoices) {
 			return this.emitChoiceError(
 				`Can't make choices: You sent choices for ${choiceStrings.length} Pokémon, but this is a ${this.battle.gameType} game!`
 			);
@@ -1252,6 +1273,14 @@ export class Side {
 			case 'default':
 				if (!this.autoChoose()) return false;
 				break;
+			case 'controlled': {
+				// Mind Controlled — this player picks a move for the opponent's MC'd Pokémon
+				// data here is the rest of the string after "controlled ", e.g. "move 1" or "1"
+				const [ctrlType, ctrlData] = Utils.splitFirst(data.trim(), ' ');
+				const ctrlMoveText = ctrlType === 'move' ? ctrlData : ctrlType;
+				if (!this.chooseControlled(ctrlMoveText)) return false;
+				break;
+			}
 			default:
 				this.emitChoiceError(`Unrecognized choice: ${choiceString}`);
 				break;
@@ -1313,6 +1342,72 @@ export class Side {
 
 		this.choice.actions.push({
 			choice: 'pass',
+		});
+		return true;
+	}
+
+	/** Choose a move for a Mind Controlled Pokémon on the opponent's side. */
+	chooseControlled(moveText?: string | number): boolean {
+		if (this.requestState !== 'move') {
+			return this.emitChoiceError(`Can't control: Not a move request`);
+		}
+		const controlledActive = (this.activeRequest as MoveRequest)?.controlledActive;
+		if (!controlledActive?.length) {
+			return this.emitChoiceError(`Can't control: No Mind Controlled Pokémon to control`);
+		}
+		const controlledIndex = this.choice.controlledActions.length;
+		if (controlledIndex >= controlledActive.length) {
+			return this.emitChoiceError(`Can't control: Already chose for all controlled Pokémon`);
+		}
+
+		// Find the nth Mind Controlled Pokémon on the foe's side
+		let mcPokemon: Pokemon | null = null;
+		let mcCount = 0;
+		for (const pokemon of this.foe.active) {
+			if (!pokemon || !pokemon.volatiles['mindcontrolled']) continue;
+			if (mcCount === controlledIndex) { mcPokemon = pokemon; break; }
+			mcCount++;
+		}
+		if (!mcPokemon) {
+			return this.emitChoiceError(`Can't control: Mind Controlled Pokémon not found`);
+		}
+
+		const request = controlledActive[controlledIndex];
+		let moveid = '';
+		let moveSlot: number | undefined;
+
+		if (!moveText) moveText = 1;
+		if (typeof moveText === 'number' || /^[0-9]+$/.test(String(moveText))) {
+			const moveIndex = Number(moveText) - 1;
+			if (moveIndex < 0 || moveIndex >= request.moves.length || !request.moves[moveIndex]) {
+				return this.emitChoiceError(`Can't control: Controlled Pokémon doesn't have move ${Number(moveText)}`);
+			}
+			if (request.moves[moveIndex].disabled) {
+				return this.emitChoiceError(`Can't control: Move ${Number(moveText)} is disabled for the controlled Pokémon`);
+			}
+			moveSlot = moveIndex;
+			moveid = request.moves[moveIndex].id;
+		} else {
+			moveid = toID(moveText as string);
+			for (const [i, move] of request.moves.entries()) {
+				if (move.id !== moveid) continue;
+				if (move.disabled) {
+					return this.emitChoiceError(`Can't control: ${mcPokemon.name}'s ${move.move} is disabled`);
+				}
+				moveSlot = i;
+				break;
+			}
+			if (moveSlot === undefined) {
+				return this.emitChoiceError(`Can't control: Controlled Pokémon doesn't have move ${moveid}`);
+			}
+		}
+
+		this.choice.controlledActions.push({
+			choice: 'move',
+			pokemon: mcPokemon,
+			moveid,
+			moveSlot,
+			targetLoc: 0,
 		});
 		return true;
 	}

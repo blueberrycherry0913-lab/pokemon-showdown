@@ -724,4 +724,32 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			if (move.type === 'Cosmic') return this.chainModify(1.1);
 		},
 	},
+
+	// ── Volatile status conditions ────────────────────────────────────────────
+
+	mindcontrolled: {
+		name: 'mindcontrolled',
+		duration: 2,
+		onTryAddVolatile(status, target) {
+			// Psychic types are immune (§1.5 blanket effect)
+			if (target.hasType('Psychic')) {
+				this.add('-immune', target, '[from] type: Psychic');
+				return null;
+			}
+		},
+		onStart(target, source) {
+			// Overrides Confusion per §4 volatile stacking rules
+			if (target.volatiles['confusion']) target.removeVolatile('confusion');
+			this.add('-start', target, 'move: Mind Controlled', `[of] ${source}`);
+		},
+		onEnd(target) {
+			this.add('-end', target, 'move: Mind Controlled');
+		},
+		// Cure immediately if the afflicted Pokémon takes 50%+ max HP in a single hit
+		onDamagingHit(damage, target, source, move) {
+			if (damage >= target.baseMaxhp / 2) {
+				target.removeVolatile('mindcontrolled');
+			}
+		},
+	},
 };

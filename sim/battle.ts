@@ -1455,6 +1455,36 @@ export class Battle {
 					(requests[i] as MoveRequest).ally = side.allySide.getRequestData(true);
 				}
 			}
+
+			// Mind Control: route MC'd Pokémon's move data to the controlling opponent
+			for (let i = 0; i < this.sides.length; i++) {
+				if (!requests[i] || (requests[i] as WaitRequest).wait) continue;
+				const side = this.sides[i];
+				const moveReq = requests[i] as MoveRequest;
+
+				const mcSlots = side.active
+					.map((p, idx) => ({ p, idx }))
+					.filter(({ p }) => p?.volatiles['mindcontrolled']);
+				if (!mcSlots.length) continue;
+
+				for (let k = 0; k < this.sides.length; k++) {
+					if (k === i || !requests[k] || (requests[k] as WaitRequest).wait) continue;
+					const foeReq = requests[k] as MoveRequest;
+					if (!foeReq.controlledActive) {
+						foeReq.controlledActive = [];
+						foeReq.controlledSide = side.getRequestData();
+					}
+					for (const { idx } of mcSlots) {
+						foeReq.controlledActive.push(moveReq.active[idx]);
+					}
+				}
+
+				// If ALL active Pokémon on this side are MC'd, convert their request to wait
+				const totalActive = side.active.filter(p => p).length;
+				if (mcSlots.length >= totalActive) {
+					requests[i] = { wait: true, side: side.getRequestData() };
+				}
+			}
 			break;
 		}
 
