@@ -362,6 +362,38 @@ Added `Force IV 0` ruleset clause. statModify branches on `ruleTable.has('forcei
 - Custom `origin` field added to `Ability` class (`sim/dex-abilities.ts`) and displayed in `/dt` output (`server/chat-commands/info.ts`) in place of generation number
 - Abilities implemented through rows 1–25 of the TSV design doc; see `CLAUDE_ABILITIES.md` for the full reference table and conventions
 
+### Mind Controlled volatile status (session 10)
+
+Full implementation of §4's Mind Controlled mechanic — the opposing player actually picks moves for the afflicted Pokémon.
+
+**Server changes:**
+- `data/mods/champions/conditions.ts`: `mindcontrolled` volatile. Duration 2 turns. `onDamagingHit` cures it when damage ≥ 50% max HP. `onTryAddVolatile` blocks application on Psychic types. `onStart` removes Confusion (volatile override per §4). `onEnd` announces end.
+- `sim/side.ts`:
+  - `MoveRequest` extended: `controlledActive?: PokemonMoveRequestData[]`, `controlledSide?: SideRequestData`
+  - `Choice` extended: `controlledActions: ChosenAction[]`
+  - `clearChoice()` initializes `controlledActions: []`
+  - `isChoiceDone()` returns false until `controlledActions.length >= controlledActive.length`
+  - `commitChoices()` also calls `battle.queue.addChoice(this.choice.controlledActions)`
+  - `choose()`: max-choice length check accounts for `controlledActive`; new `case 'controlled':` routes to `chooseControlled()`
+  - `chooseControlled(moveText)`: validates move against the MC'd Pokémon's request data; pushes action to `controlledActions` with a reference to the actual MC'd Pokemon object on `this.foe`
+- `sim/battle.ts`: `getRequests()` default case — after building regular requests, iterates all sides; for each MC'd Pokémon, pushes its move data into the opponent's `controlledActive`; converts afflicted side to `{wait: true}` when all active Pokémon are MC'd
+
+**Client changes:**
+- `play.pokemonshowdown.com/src/battle-choices.ts`:
+  - `BattleMoveRequest`: `controlledActive?`, `controlledSide?` fields added
+  - `BattleChoiceBuilder`: `controlledChoices: string[]` array; `isDone()` waits for controlled too; `toString()` concatenates both arrays; `addChoice()` intercepts `"controlled move X"` strings into `controlledChoices`; `isControlledDone()` helper
+- `play.pokemonshowdown.com/src/panel-battle.tsx`:
+  - `renderControlledMoveMenu()`: renders move buttons with `cmd: "controlled move ${i+1}"`
+  - `case 'move':` block: after own choices are done, shows the controlled section if `!choices.isControlledDone()`
+
+**Protocol flow (singles):**
+1. P1's Pokémon gets Mind Controlled
+2. Next `makeRequest('move')`: P1 → `{wait: true}`; P2 → `{active: [...], controlledActive: [...], controlledSide: ...}`
+3. P2 sees own move buttons, submits their own choice; controlled section then appears
+4. P2 picks move for P1's Pokémon, submission becomes `"move 1, controlled move 2"`
+5. Server `side.choose("move 1, controlled move 1")` routes: `"move 1"` → own action; `"controlled move 1"` → `chooseControlled()` → `controlledActions`
+6. `commitChoices()` queues both into the battle queue; MC'd Pokémon executes the chosen move
+
 ---
 
 ## 13. Open questions / likely next steps
