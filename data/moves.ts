@@ -21559,4 +21559,17 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		type: "Fire",
 		contestType: "Beautiful",
 	},
+	mindcontrolledtest: {
+		num: -4,
+		accuracy: 100,
+		basePower: 0,
+		category: "Status",
+		name: "MindControlled TEST",
+		pp: 10,
+		priority: 0,
+		flags: { protect: 1, reflectable: 1, mirror: 1 },
+		volatileStatus: 'mindcontrolled',
+		target: "normal",
+		type: "Psychic",
+	},
 };

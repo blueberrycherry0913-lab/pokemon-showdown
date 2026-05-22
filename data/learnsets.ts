@@ -14108,6 +14108,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			confide: ["7M", "6M"],
 			confuseray: ["9M"],
 			confusion: ["9L1", "8V", "7L1", "7V", "6L1", "5L1", "4L1", "3L1"],
+				mindcontrolledtest: ["9L1"],
 			counter: ["7V", "3T"],
 			curse: ["9M", "7V"],
 			dazzlinggleam: ["9M", "8V", "7M", "6M"],
