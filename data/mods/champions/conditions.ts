@@ -730,13 +730,6 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 	mindcontrolled: {
 		name: 'mindcontrolled',
 		duration: 2,
-		onTryAddVolatile(status, target) {
-			// Psychic types are immune (§1.5 blanket effect)
-			if (target.hasType('Psychic')) {
-				this.add('-immune', target, '[from] type: Psychic');
-				return null;
-			}
-		},
 		onStart(target, source) {
 			// Overrides Confusion per §4 volatile stacking rules
 			if (target.volatiles['confusion']) target.removeVolatile('confusion');

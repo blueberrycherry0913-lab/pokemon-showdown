@@ -21569,6 +21569,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		priority: 0,
 		flags: { protect: 1, reflectable: 1, mirror: 1 },
 		volatileStatus: 'mindcontrolled',
+		onTryHit(target) {
+			// Psychic types are immune — check on the move so it fails cleanly
+			// before any volatile or flinch is applied.
+			if (target.hasType('Psychic')) {
+				this.add('-immune', target);
+				return null;
+			}
+		},
 		onHit(target) {
 			// Flinch the target if Mind Control landed — prevents their queued action
 			// this turn only if they haven't moved yet (i.e. Hypno outsped them).
