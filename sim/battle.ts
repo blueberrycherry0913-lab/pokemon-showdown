@@ -2768,6 +2768,7 @@ export class Battle {
 			this.actions.runMove(action.move, action.pokemon, action.targetLoc, {
 				sourceEffect: action.sourceEffect, zMove: action.zmove,
 				maxMove: action.maxMove, originalTarget: action.originalTarget,
+				externalMove: action.externalMove,
 			});
 			break;
 		case 'megaEvo':

@@ -50,6 +50,8 @@ export interface MoveAction {
 	maxMove?: string;
 	/** effect that called the move (eg Instruct) if any */
 	sourceEffect?: Effect | null;
+	/** if true, skip PP deduction and LockMove (used for Mind Control self-hit) */
+	externalMove?: boolean;
 }
 
 /** A switch action */

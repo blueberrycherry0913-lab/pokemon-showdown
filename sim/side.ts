@@ -43,6 +43,7 @@ export interface ChosenAction {
 	maxMove?: string; // if dynamaxed, the name of the max move
 	terastallize?: string; // if terastallizing, tera type
 	priority?: number; // priority of the action
+	externalMove?: boolean; // if true, skip PP deduction when resolving (Mind Control self-hit)
 }
 
 /** One single turn's choice for one single player. */
@@ -1375,13 +1376,17 @@ export class Side {
 		const request = controlledActive[controlledIndex];
 		const moveTextStr = String(moveText ?? '').trim();
 
-		// Force self-hit: queues a hidden move that applies confusion-style self-damage
+		// Force self-hit: queues a hidden move that applies confusion-style self-damage.
+		// externalMove:true skips the PP deduction check — the MC'd Pokémon won't
+		// have mindcontrolselfdamage in their moveSlots, so deductPP would return
+		// false and produce "no PP left" without this flag.
 		if (moveTextStr === 'selfdamage') {
 			this.choice.controlledActions.push({
 				choice: 'move',
 				pokemon: mcPokemon,
 				moveid: 'mindcontrolselfdamage' as ID,
 				targetLoc: 0,
+				externalMove: true,
 			});
 			return true;
 		}

@@ -734,6 +734,10 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			// Overrides Confusion per §4 volatile stacking rules
 			if (target.volatiles['confusion']) target.removeVolatile('confusion');
 			this.add('-start', target, 'move: Mind Controlled', `[of] ${source}`);
+			// Flinch the target — prevents their queued action this turn only if
+			// they haven't moved yet (i.e. Hypno outsped them). Moved here from
+			// the move's onHit so that reapplication attempts never grant a flinch.
+			target.addVolatile('flinch');
 		},
 		onEnd(target) {
 			this.add('-end', target, 'move: Mind Controlled');
