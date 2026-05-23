@@ -21569,6 +21569,13 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		priority: 0,
 		flags: { protect: 1, reflectable: 1, mirror: 1 },
 		volatileStatus: 'mindcontrolled',
+		onHit(target) {
+			// Flinch the target if Mind Control landed — prevents their queued action
+			// this turn only if they haven't moved yet (i.e. Hypno outsped them).
+			if (target.volatiles['mindcontrolled']) {
+				target.addVolatile('flinch');
+			}
+		},
 		target: "normal",
 		type: "Psychic",
 	},
