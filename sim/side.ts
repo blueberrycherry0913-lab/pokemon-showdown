@@ -1373,6 +1373,39 @@ export class Side {
 		}
 
 		const request = controlledActive[controlledIndex];
+		const moveTextStr = String(moveText ?? '').trim();
+
+		// Force self-hit: queues a hidden move that applies confusion-style self-damage
+		if (moveTextStr === 'selfdamage') {
+			this.choice.controlledActions.push({
+				choice: 'move',
+				pokemon: mcPokemon,
+				moveid: 'mindcontrolselfdamage' as ID,
+				targetLoc: 0,
+			});
+			return true;
+		}
+
+		// Force switch: picks a random benched non-fainted Pokémon and queues a switch
+		if (moveTextStr === 'switch') {
+			if (request.trapped) {
+				return this.emitChoiceError(`Can't control: The Mind Controlled Pokémon is trapped and cannot switch out`);
+			}
+			const validTargets = this.foe.pokemon.filter(
+				p => !p.fainted && !this.foe.active.includes(p)
+			);
+			if (!validTargets.length) {
+				return this.emitChoiceError(`Can't control: No Pokémon available to switch in`);
+			}
+			const switchTarget = this.battle.sample(validTargets);
+			this.choice.controlledActions.push({
+				choice: 'switch',
+				pokemon: mcPokemon,
+				target: switchTarget,
+			});
+			return true;
+		}
+
 		let moveid = '';
 		let moveSlot: number | undefined;
 

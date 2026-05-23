@@ -21587,4 +21587,28 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		target: "normal",
 		type: "Psychic",
 	},
+	/**
+	 * Hidden mechanic move — queued by the server when the Mind Control player
+	 * chooses "Self-Hit". Applies confusion-style self-damage (Physical, 40 BP,
+	 * bypasses type effectiveness). Not available in learnsets or teambuilder.
+	 */
+	mindcontrolselfdamage: {
+		num: -5,
+		accuracy: true,
+		basePower: 0,
+		category: "Status",
+		name: "Mind Control: Self-Hit",
+		pp: 1,
+		flags: {},
+		target: "self",
+		type: "Normal",
+		isNonstandard: "Custom" as const,
+		onHit(target) {
+			// Confusion-style self-damage: no type effectiveness, no abilities, no weather
+			const damage = this.actions.getConfusionDamage(target, 40);
+			if (typeof damage !== 'number') return false;
+			const activeMove = {id: this.toID('mindcontrolled'), effectType: 'Move' as const, type: '???' as const};
+			this.damage(damage, target, target, activeMove as ActiveMove);
+		},
+	},
 };
