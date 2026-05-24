@@ -616,6 +616,8 @@ export class BattleActions {
 	}
 	hitStepInvulnerabilityEvent(targets: Pokemon[], pokemon: Pokemon, move: ActiveMove) {
 		if (move.id === 'helpinghand') return new Array(targets.length).fill(true);
+		// Bone category moves bypass semi-invulnerability (Dig, Fly, Dive, Phantom Force, etc.)
+		if (move.flags['bone']) return new Array(targets.length).fill(true);
 		const hitResults: boolean[] = [];
 		for (const [i, target] of targets.entries()) {
 			if (target.volatiles['commanding']) {
@@ -637,6 +639,9 @@ export class BattleActions {
 		return hitResults;
 	}
 	hitStepTryHitEvent(targets: Pokemon[], pokemon: Pokemon, move: ActiveMove) {
+		// Bone category moves bypass all TryHit ability/item immunities including Wonder Guard,
+		// Flash Fire, Volt Absorb, Water Absorb, Sap Sipper, Air Balloon, etc.
+		if (move.flags['bone']) return new Array(targets.length).fill(true);
 		const hitResults = this.battle.runEvent('TryHit', targets, pokemon, move);
 		if (!hitResults.includes(true) && hitResults.includes(false)) {
 			this.battle.add('-fail', pokemon);
@@ -651,6 +656,9 @@ export class BattleActions {
 		if (move.ignoreImmunity === undefined) {
 			move.ignoreImmunity = (move.category === 'Status');
 		}
+		// Bone category moves bypass all type-chart immunities (0× matchups, Ground-immune floating, etc.)
+		// runImmunity() fast-returns true when ignoreImmunity === true, skipping isGrounded/getImmunity checks.
+		if (move.flags['bone']) move.ignoreImmunity = true;
 
 		const hitResults = [];
 		for (const i of targets.keys()) {
@@ -660,6 +668,8 @@ export class BattleActions {
 		return hitResults;
 	}
 	hitStepTryImmunity(targets: Pokemon[], pokemon: Pokemon, move: ActiveMove) {
+		// Bone category moves bypass move-based immunities (powder check, TryImmunity event, etc.)
+		if (move.flags['bone']) return new Array(targets.length).fill(true);
 		const hitResults = [];
 		for (const [i, target] of targets.entries()) {
 			if (this.battle.gen >= 6 && move.flags['powder'] && target !== pokemon && !this.dex.getImmunity('powder', target)) {
@@ -1800,6 +1810,9 @@ export class BattleActions {
 		// types
 		let typeMod = target.runEffectiveness(move);
 		typeMod = this.battle.clampIntRange(typeMod, -6, 6);
+		// Bone category moves have a neutral damage floor: immune targets (typeMod 0 after getEffectiveness
+		// default-returns 0 for immune matchups) are treated as neutral, never less than 1×.
+		if (move.flags['bone'] && typeMod < 0) typeMod = 0;
 		target.getMoveHitData(move).typeMod = typeMod;
 		if (typeMod > 0) {
 			if (!suppressMessages) this.battle.add('-supereffective', target);
@@ -1837,6 +1850,11 @@ export class BattleActions {
 				this.battle.add('-ability', pokemon, bypassProtect.name);
 			}
 			this.battle.add('-zbroken', target);
+		}
+
+		// Piercing moves pierce Protect/Detect at 50% damage.
+		if (target.getMoveHitData(move).piercingHit) {
+			baseDamage = this.battle.modify(baseDamage, 0.5);
 		}
 
 		// Generation 6-7 moves the check for minimum 1 damage after the final modifier...

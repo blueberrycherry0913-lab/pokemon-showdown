@@ -854,7 +854,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 						(target.side.getSideCondition('lightscreen') && this.getCategory(move) === 'Special')) {
 						return;
 					}
-					if (!target.getMoveHitData(move).crit && !move.infiltrates) {
+					if (!target.getMoveHitData(move).crit && !move.infiltrates && !move.flags['bullet']) {
 						this.debug('Aurora Veil weaken');
 						if (this.activePerHalf > 1) return this.chainModify([2732, 4096]);
 						return this.chainModify(0.5);
@@ -1646,7 +1646,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		name: "Bone Club",
 		pp: 20,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, metronome: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, bone: 1 },
 		secondary: {
 			chance: 10,
 			volatileStatus: 'flinch',
@@ -1664,7 +1664,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		name: "Bonemerang",
 		pp: 10,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, metronome: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, bone: 1 },
 		multihit: 2,
 		target: "normal",
 		type: "Ground",
@@ -1679,7 +1679,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		name: "Bone Rush",
 		pp: 10,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, metronome: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, bone: 1 },
 		multihit: [2, 5],
 		target: "normal",
 		type: "Ground",
@@ -10333,7 +10333,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 			},
 			onAnyModifyDamage(damage, source, target, move) {
 				if (target !== source && this.effectState.target.hasAlly(target) && this.getCategory(move) === 'Special') {
-					if (!target.getMoveHitData(move).crit && !move.infiltrates) {
+					if (!target.getMoveHitData(move).crit && !move.infiltrates && !move.flags['bullet']) {
 						this.debug('Light Screen weaken');
 						if (this.activePerHalf > 1) return this.chainModify([2732, 4096]);
 						return this.chainModify(0.5);
@@ -14865,7 +14865,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 			},
 			onAnyModifyDamage(damage, source, target, move) {
 				if (target !== source && this.effectState.target.hasAlly(target) && this.getCategory(move) === 'Physical') {
-					if (!target.getMoveHitData(move).crit && !move.infiltrates) {
+					if (!target.getMoveHitData(move).crit && !move.infiltrates && !move.flags['bullet']) {
 						this.debug('Reflect weaken');
 						if (this.activePerHalf > 1) return this.chainModify([2732, 4096]);
 						return this.chainModify(0.5);
@@ -16051,7 +16051,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		name: "Shadow Bone",
 		pp: 10,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, metronome: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, bone: 1 },
 		secondary: {
 			chance: 20,
 			boosts: {

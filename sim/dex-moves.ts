@@ -29,7 +29,7 @@ interface MoveFlags {
 	allyanim?: 1; // The move plays its animation when used on an ally.
 	bypasssub?: 1; // Ignores a target's substitute.
 	bite?: 1; // Power is multiplied by 1.5 when used by a Pokemon with the Ability Strong Jaw.
-	bullet?: 1; // Has no effect on Pokemon with the Ability Bulletproof.
+	bullet?: 1; // Has no effect on Pokemon with the Ability Bulletproof. Fully bypasses Aurora Veil, Reflect, and Light Screen.
 	cantusetwice?: 1; // The user cannot select this move after a previous successful use.
 	charge?: 1; // The user is unable to make a move between turns.
 	contact?: 1; // Makes contact.
@@ -62,8 +62,26 @@ interface MoveFlags {
 	reflectable?: 1; // Bounced back to the original user by Magic Coat or the Ability Magic Bounce.
 	slicing?: 1; // Power is multiplied by 1.5 when used by a Pokemon with the Ability Sharpness.
 	snatch?: 1; // Can be stolen from the original user and instead used by another Pokemon using Snatch.
-	sound?: 1; // Has no effect on Pokemon with the Ability Soundproof.
+	sound?: 1; // Has no effect on Pokemon with the Ability Soundproof. Inherently bypasses Substitute (see sub condition in data/moves.ts).
 	wind?: 1; // Activates the Wind Power and Wind Rider Abilities.
+
+	// === Custom Categories (§5 of master reference) ===
+
+	// Category-only tags — no inherent mechanical effect.
+	// Exist as hooks for abilities, items, and other systems to reference.
+	ball?: 1; // Category tag: ball-type projectile moves. (Examples: Energy Ball, Shadow Ball)
+	beam?: 1; // Category tag: beam attacks. (Examples: Hyper Beam, Ice Beam, Solar Beam)
+	exploding?: 1; // Category tag: explosion/self-destruction moves. (Examples: Self-Destruct, Explosion)
+	heavyprojectile?: 1; // Category tag: heavy thrown projectile moves.
+	kicking?: 1; // Category tag: kicks.
+	light?: 1; // Category tag: light-based moves.
+	vine?: 1; // Category tag: vine or whip attacks. (Examples: Vine Whip, Power Whip, Grass Knot)
+
+	// Tags with inherent mechanical effects — see engine implementations noted below.
+	bone?: 1; // Ignores ALL immunities: type-based (ignoreImmunity), ability-based (bypasses TryHit event including Wonder Guard), item-based (Air Balloon), and semi-invulnerability. Always deals at least neutral (1×) damage. (mechanics: hitStep* functions in sim/battle-actions.ts)
+	bursting?: 1; // On hit, also strikes each adjacent target at 25% of base power. Splash respects type chart and defenses normally. (mechanics: TODO)
+	corrosive?: 1; // Poison-type matchup overrides: no SE vs. Grass or Fairy (→ 1×); always 2× SE vs. Steel (ignores Steel's Poison immunity). Canon resistances unchanged. (mechanics: TODO)
+	piercing?: 1; // Bypasses Protect and Detect at 50% power rather than being fully blocked. (mechanics: checkMoveBypassesProtect in sim/battle.ts + getDamage in sim/battle-actions.ts)
 }
 
 export interface HitEffect {
@@ -303,6 +321,11 @@ interface MoveHitData {
 		 * (does 0.25x regular damage)
 		 */
 		bypassProtect: boolean | Effect,
+		/**
+		 * Did this Piercing move pierce through Protect/Detect?
+		 * (does 0.5x regular damage; set in checkMoveBypassesProtect)
+		 */
+		piercingHit?: boolean,
 	};
 }
 
