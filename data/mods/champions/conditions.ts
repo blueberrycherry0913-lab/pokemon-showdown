@@ -729,18 +729,55 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	mindcontrolled: {
 		name: 'mindcontrolled',
-		duration: 2,
+		// No turn-based duration — we track "instances" manually.
+		// Two move-slots must be consumed before MC expires:
+		//   • flinch counts as one instance (Hypno-faster case)
+		//   • each forced MC'd move counts as one instance
+		// A turn where MC is applied but the target already moved (Hypno
+		// slower) does NOT consume an instance — that's the whole point.
 		onStart(target, source) {
 			// Overrides Confusion per §4 volatile stacking rules
 			if (target.volatiles['confusion']) target.removeVolatile('confusion');
 			this.add('-start', target, 'move: Mind Controlled', `[of] ${source}`);
-			// Flinch the target — prevents their queued action this turn only if
-			// they haven't moved yet (i.e. Hypno outsped them). Moved here from
-			// the move's onHit so that reapplication attempts never grant a flinch.
-			target.addVolatile('flinch');
+			// Initialize instance budget
+			target.volatiles['mindcontrolled'].instances = 2;
+			// Mark that the first residual is the application turn
+			target.volatiles['mindcontrolled'].firstResidual = true;
+			// Flinch only if the target hasn't moved yet this turn (i.e. Hypno
+			// was faster). If they've already moved, flinch would be wasted and
+			// the application turn should not eat into the instance budget.
+			if (!target.moveThisTurn) {
+				target.addVolatile('flinch');
+			}
 		},
 		onEnd(target) {
 			this.add('-end', target, 'move: Mind Controlled');
+		},
+		onResidualOrder: 11,
+		onResidual(target) {
+			const volatile = target.volatiles['mindcontrolled'];
+			if (!volatile) return;
+
+			if (volatile.firstResidual) {
+				// End of the turn MC was applied.
+				volatile.firstResidual = false;
+				if (!target.moveThisTurn) {
+					// Target couldn't move (flinch fired) → one instance consumed.
+					volatile.instances--;
+				}
+				// If target already moved before MC was applied (Hypno slower),
+				// moveThisTurn is non-empty — don't consume an instance.
+			} else {
+				// Subsequent turns: check whether the forced MC'd move was used.
+				if (target.moveThisTurn) {
+					volatile.instances--;
+				}
+				// Couldn't move (sleep, paralysis, etc.) — don't count.
+			}
+
+			if (volatile.instances <= 0) {
+				target.removeVolatile('mindcontrolled');
+			}
 		},
 		// Cure immediately if the afflicted Pokémon takes 50%+ max HP in a single hit
 		onDamagingHit(damage, target, source, move) {
