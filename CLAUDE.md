@@ -362,29 +362,37 @@ Added `Force IV 0` ruleset clause. statModify branches on `ruleTable.has('forcei
 - Custom `origin` field added to `Ability` class (`sim/dex-abilities.ts`) and displayed in `/dt` output (`server/chat-commands/info.ts`) in place of generation number
 - Abilities implemented through rows 1–25 of the TSV design doc; see `CLAUDE_ABILITIES.md` for the full reference table and conventions
 
-### Mind Controlled volatile status (session 10)
+### Mind Controlled volatile status (sessions 10–11)
 
-Full implementation of §4's Mind Controlled mechanic — the opposing player actually picks moves for the afflicted Pokémon.
+Full implementation of §4's Mind Controlled mechanic — the opposing player actually picks moves for the afflicted Pokémon. See §21 for the full technical reference.
 
 **Server changes:**
-- `data/mods/champions/conditions.ts`: `mindcontrolled` volatile. Duration 2 turns. `onDamagingHit` cures it when damage ≥ 50% max HP. `onTryAddVolatile` blocks application on Psychic types. `onStart` removes Confusion (volatile override per §4). `onEnd` announces end.
+- `data/mods/champions/conditions.ts`: `mindcontrolled` volatile. Instance-based duration (see §21). `onDamagingHit` cures it when damage ≥ 50% max HP. `onStart` removes Confusion (volatile override per §4) and applies flinch only if target hasn't moved yet (Hypno faster). `onResidual` tracks instance consumption. `onEnd` announces end.
+- `data/moves.ts`: `mindcontrolledtest` move (num -4) — `onTryHit` blocks Psychic types (immune) and already-MC'd targets (immune, no flinch on reapplication). `mindcontrolselfdamage` move (num -5) — `category: "Physical"`, `damageCallback` + `ignoreImmunity: true` (confusion-style damage, 40 BP).
 - `sim/side.ts`:
   - `MoveRequest` extended: `controlledActive?: PokemonMoveRequestData[]`, `controlledSide?: SideRequestData`
+  - `ChosenAction` extended: `externalMove?: boolean`
   - `Choice` extended: `controlledActions: ChosenAction[]`
   - `clearChoice()` initializes `controlledActions: []`
   - `isChoiceDone()` returns false until `controlledActions.length >= controlledActive.length`
   - `commitChoices()` also calls `battle.queue.addChoice(this.choice.controlledActions)`
   - `choose()`: max-choice length check accounts for `controlledActive`; new `case 'controlled':` routes to `chooseControlled()`
-  - `chooseControlled(moveText)`: validates move against the MC'd Pokémon's request data; pushes action to `controlledActions` with a reference to the actual MC'd Pokemon object on `this.foe`
-- `sim/battle.ts`: `getRequests()` default case — after building regular requests, iterates all sides; for each MC'd Pokémon, pushes its move data into the opponent's `controlledActive`; converts afflicted side to `{wait: true}` when all active Pokémon are MC'd
+  - `chooseControlled(moveText)`: validates move against the MC'd Pokémon's request data; pushes action to `controlledActions` with `externalMove: true` for the selfdamage case
+- `sim/battle.ts`: `getRequests()` — after building regular requests, iterates all sides; for each MC'd Pokémon, pushes its move data into the opponent's `controlledActive`; converts afflicted side to `{wait: true}` when all active Pokémon are MC'd. Move-action resolver propagates `externalMove` field.
+- `sim/battle-queue.ts`: `MoveAction` interface extended with `externalMove?: boolean`.
 
 **Client changes:**
 - `play.pokemonshowdown.com/src/battle-choices.ts`:
   - `BattleMoveRequest`: `controlledActive?`, `controlledSide?` fields added
   - `BattleChoiceBuilder`: `controlledChoices: string[]` array; `isDone()` waits for controlled too; `toString()` concatenates both arrays; `addChoice()` intercepts `"controlled move X"` strings into `controlledChoices`; `isControlledDone()` helper
 - `play.pokemonshowdown.com/src/panel-battle.tsx`:
-  - `renderControlledMoveMenu()`: renders move buttons with `cmd: "controlled move ${i+1}"`
+  - `renderControlledMoveMenu()`: renders move buttons with `cmd: "/controlled move ${i+1}"` plus Self-Hit and Force Switch buttons
   - `case 'move':` block: after own choices are done, shows the controlled section if `!choices.isControlledDone()`
+  - Back button (`data-cmd="/cancel"`) in the MC panel's `whatdo` resets `BattleChoiceBuilder` without sending `/undo` (safe because `isDone()` and `isEmpty()` are both false mid-MC)
+- `play.pokemonshowdown.com/js/client-battle.js`:
+  - MC panel renders Self-Hit and Force Switch buttons
+  - `<button name="clearChoice">Back</button>` lets player return to their own move selection
+  - Timer wrapped in `<span style="float:right">` so it doesn't push the 4th move slot down
 
 **Protocol flow (singles):**
 1. P1's Pokémon gets Mind Controlled
@@ -623,6 +631,16 @@ Listed for posterity so the next Claude doesn't repeat them:
 22. **"Cannot Miss" (accuracy value 0) correctly skips domain accuracy breakdown.** `ModifiableValue.toString()` returns `"Cannot Miss"` when `value === 0` with `isAccuracy === true`. My domain accuracy display code gates on `accuracy.value > 0`, so moves affected by No Guard, sure-hit status moves, etc. still show "Cannot Miss" without a spurious breakdown. If you see "Cannot Miss" on a move that has numeric accuracy, check whether the Pokémon has No Guard — it zeroes accuracy first and returns early from `getMoveAccuracy`.
 
 23. **Domain moves use the lowercase condition ID in `pseudoWeather:`, while condition names use Title Case with a space.** Move definition: `pseudoWeather: 'firedomain'` (lowercase, no space). Condition `name`: `"Fire Domain"` (Title Case, space). The `battle-actions.ts` engine converts the move's `pseudoWeather` field to a condition lookup by ID, which finds `firedomain` in conditions and uses its `.name` for the `-fieldstart` message. So the client ends up tracking `"Fire Domain"` in its pseudoWeather array, not `"firedomain"`. Keep this distinction in mind whenever reading or checking domain state.
+
+24. **`onHit` + `this.damage()` silently fails for Status moves with `basePower: 0`.** `getDamage` returns `undefined` early when `!basePower` — it never reaches the `damageCallback` check. When `spreadMoveHit` receives `undefined` damage it exits without inflicting anything. The move "announces" but no damage is dealt. Fix: use `category: "Physical"` + `damageCallback` + `ignoreImmunity: true` (exactly the pattern used for confusion self-damage). The `damageCallback` field is checked BEFORE the `!basePower` early return, so it always runs.
+
+25. **`duration: 2` counts residuals, not "effective turns".** When a volatile is applied after the target already moved (e.g. Hypno slower), the residual fires at end of the SAME turn — decrementing duration to 1 and leaving only ONE effective turn of control instead of two. If your mechanic needs "N times the target's move slot is consumed", do NOT use `duration`. Use a manual `instances` counter in `onResidual` and only decrement it when `target.moveThisTurn` reflects the target actually acting (or failing to act due to a condition-applied flinch). See §21 for the full Mind Control instance-tracking pattern.
+
+26. **`deductPP` returns false for moves not in the Pokémon's moveset, triggering the "no PP left" bail.** When the MC user submits `mindcontrolselfdamage` for the MC'd Pokémon, `runMove` calls `pokemon.deductPP('mindcontrolselfdamage')`, which walks `moveSlots` looking for the ID and returns false when not found. The battle then adds `cant` with reason `nopp` and cancels the move. Fix: add `externalMove: true` to the `ChosenAction` in `chooseControlled()` and thread it through `MoveAction` → `runMove` options. The `externalMove` flag bypasses `deductPP` entirely (same mechanism Dancer uses). Must be declared in both `ChosenAction` (side.ts) and `MoveAction` (battle-queue.ts) for TypeScript to accept it.
+
+27. **Inline `getTimerHTML()` in a `whatdo` div adds to the div's flow height, pushing elements below.** The timer button has non-trivial height. If it word-wraps to a new line inside `whatdo`, the entire `movecontrols` section below is pushed down — visually the 4th move slot appears oddly low. Fix: wrap the timer call in `<span style="float:right">`, which takes it out of the normal flow. The `whatdo` text is then a single line and the move buttons sit at their correct height.
+
+28. **The Preact client's `/cancel` command is safe to use as a "Back" button from the MC panel.** The `'cancel,undo'` handler in `panel-chat.tsx` first checks `room.choices.isDone() || room.choices.isEmpty()` — if either is true it sends `/undo` to the server. When the player is in the MC panel, `isDone()` is false (controlled choices not done) and `isEmpty()` is false (own move is chosen), so `/undo` is NOT sent. The handler then does `room.choices = new BattleChoiceBuilder(room.request)` which resets all local choice state (own choices AND controlledChoices cleared) and triggers a re-render back at the own-move picker. No server state is disturbed.
 
 ---
 
@@ -867,7 +885,8 @@ All moves: Status, `accuracy: true`, `basePower: 0`, `pp: 10`, `target: "all"`, 
 |---|---|
 | -2 | Shadow Strike |
 | -3 | Polar Flare |
-| -4 | (unused — was Fire Domain TEST) |
+| -4 | Mind Controlled (the move Hypno uses, `mindcontrolledtest`) |
+| -5 | Mind Control: Self-Hit (`mindcontrolselfdamage`) |
 | -101…-119 | Domain: Bug through Domain: Water (alphabetical by ID) |
 
 ### Dual-type stacking
@@ -886,7 +905,125 @@ If two domains are simultaneously active and a Pokémon is dual-typed (e.g. Char
 
 ---
 
-## 20. Tone / collaboration notes
+## 20. Mind Control system technical reference
+
+### Overview
+
+Mind Control is a volatile status (`mindcontrolled`) that lets the MC user's player pick moves for the afflicted Pokémon. It's analogous to Freeze/Thaw in that it lasts a fixed number of "instances" (effective turn consumptions), not a fixed number of calendar turns.
+
+### Duration: instance-based, not turn-based
+
+`mindcontrolled` has NO `duration` field. It uses a manual `instances: 2` counter managed in `onResidual`.
+
+**What counts as an instance:**
+- The flinch firing on the application turn (Hypno faster — target couldn't move)
+- Each turn the MC'd Pokémon uses a forced MC'd move
+
+**What does NOT count as an instance:**
+- The application turn when the target already moved (Hypno slower — `moveThisTurn` non-empty, flinch not added)
+- Turns where the target couldn't move for an unrelated reason (sleep, full paralysis, etc.) — those don't decrement
+
+**`onStart` logic:**
+```typescript
+onStart(target, source) {
+    target.volatiles['mindcontrolled'].instances = 2;
+    target.volatiles['mindcontrolled'].firstResidual = true;
+    // Only add flinch if target hasn't moved yet this turn
+    if (!target.moveThisTurn) target.addVolatile('flinch');
+}
+```
+
+**`onResidual` logic (onResidualOrder: 11):**
+```typescript
+onResidual(target) {
+    const volatile = target.volatiles['mindcontrolled'];
+    if (volatile.firstResidual) {
+        volatile.firstResidual = false;
+        if (!target.moveThisTurn) volatile.instances--; // flinch fired
+        // if target already moved (Hypno slower): skip
+    } else {
+        if (target.moveThisTurn) volatile.instances--; // forced move used
+    }
+    if (volatile.instances <= 0) target.removeVolatile('mindcontrolled');
+}
+```
+
+**Case walkthrough:**
+
+| Scenario | Turn T | Residual T | Turn T+1 | Residual T+1 | Turn T+2 | Residual T+2 |
+|---|---|---|---|---|---|---|
+| Hypno faster | target flinches | instances 2→1 | forced move | instances 1→0 → expire | — | — |
+| Hypno slower | target moves freely, MC applied | instances stays 2 | forced move | instances 2→1 | forced move | instances 1→0 → expire |
+
+### `mindcontrolselfdamage` move
+
+The "Self-Hit" option in the MC panel. Key fields:
+```typescript
+{
+    category: "Physical",   // NOT Status — Status hits getDamage's basePower:0 early-return
+    basePower: 0,
+    damageCallback(pokemon) { return this.actions.getConfusionDamage(pokemon, 40); },
+    ignoreImmunity: true,   // Ghost-type bypass
+    isNonstandard: "Custom",
+}
+```
+`damageCallback` is checked BEFORE the `!basePower` early-return in `getDamage`, so it always fires. The move must be submitted with `externalMove: true` (set in `chooseControlled()` in `side.ts`) to bypass `deductPP` — since `mindcontrolselfdamage` is not in the MC'd Pokémon's moveset, `deductPP` would otherwise return false and trigger "no PP left."
+
+### `mindcontrolledtest` move (the actual Mind Controlled move)
+
+Key `onTryHit` behavior:
+```typescript
+onTryHit(target) {
+    if (target.hasType('Psychic')) { this.add('-immune', target); return null; }
+    if (target.volatiles['mindcontrolled']) { this.add('-immune', target); return null; }
+}
+```
+- Psychic types are permanently immune
+- Already-MC'd targets are immune (prevents reapplication AND prevents re-granting flinch)
+
+### externalMove flag threading
+
+`externalMove: true` must be declared and passed through four files:
+1. `sim/side.ts` — `ChosenAction` interface: `externalMove?: boolean`; set to `true` in `chooseControlled()` for the selfdamage action
+2. `sim/battle-queue.ts` — `MoveAction` interface: `externalMove?: boolean`
+3. `sim/battle.ts` — move-action resolver passes `externalMove: action.externalMove` to `runMove`
+4. `sim/battle-actions.ts` — `runMove` reads `options?.externalMove` and skips `deductPP` when true
+
+### Client-side MC panel structure
+
+**Legacy (`client-battle.js`):**
+```javascript
+'<div class="whatdo">' +
+'<button name="clearChoice">Back</button> ' +
+'Mind Control: Choose for <strong>' + name + '</strong>! ' +
+'<span style="float:right">' + this.getTimerHTML() + '</span>' +
+'</div>' +
+'<div class="movecontrols"><div class="movemenu">' + movebuttons + specialButtons + '</div></div>'
+```
+- `name="clearChoice"` → calls `clearChoice()` → `this.choice = null` → re-render from own-move selection
+- Timer in `float:right` span → doesn't add height to the `whatdo` div
+
+**Preact (`panel-battle.tsx`):**
+```tsx
+<div class="whatdo">
+    <button data-cmd="/cancel" class="button">Back</button> {}
+    {this.renderOldChoices(request, choices)}
+    Choose a move for your opponent's <strong>{controlledPokemonName}</strong>!
+</div>
+```
+- `data-cmd="/cancel"` → handled by `'cancel,undo'` in `panel-chat.tsx` → `room.choices = new BattleChoiceBuilder(room.request)` (no `/undo` sent — safe because choices aren't done or empty)
+
+### Request protocol
+
+When a Pokémon is MC'd, `getRequests()` in `battle.ts`:
+- Sends `{wait: true}` to the MC'd player's side
+- Injects `controlledActive` (the MC'd Pokémon's move data) and `controlledSide` (their team info) into the MC user's request
+
+Submission format: `"move 1, controlled move 2"` — own move first, then controlled move. The server's `side.choose()` splits on `, ` and routes `"controlled move N"` to `chooseControlled()`.
+
+---
+
+## 21. Tone / collaboration notes
 
 The user is technical enough to follow detailed explanations but not deep into Showdown internals. They want:
 - Concise summaries of what changed and why
