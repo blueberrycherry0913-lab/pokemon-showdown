@@ -402,6 +402,21 @@ Full implementation of §4's Mind Controlled mechanic — the opposing player ac
 5. Server `side.choose("move 1, controlled move 1")` routes: `"move 1"` → own action; `"controlled move 1"` → `chooseControlled()` → `controlledActions`
 6. `commitChoices()` queues both into the battle queue; MC'd Pokémon executes the chosen move
 
+### Move category framework — §5 (current session)
+
+- **Sound/bypasssub refactor**: Removed `bypasssub: 1` from all 31 sound moves (only those that also had `sound: 1`). Substitute bypass is now an inherent engine effect of `sound`: the substitute condition's `onTryPrimaryHit` in `data/moves.ts` checks `move.flags['sound']` directly alongside `move.flags['bypasssub']`.
+- **New MoveFlags** declared in `sim/dex-moves.ts`: `ball`, `beam`, `bone`, `bursting`, `corrosive`, `exploding`, `heavyprojectile`, `kicking`, `light`, `piercing`, `vine`. Also added `piercingHit?: boolean` to `MoveHitData` interface.
+- **Bullet screen bypass**: `bullet` flag now also bypasses Reflect, Light Screen, and Aurora Veil. Added `&& !move.flags['bullet']` to all three screen conditions' `onAnyModifyDamage` handlers in `data/moves.ts`. The existing `bullet` flag (Bulletproof hook) and the user's "Bullet" category are the same flag — resolved by giving the existing flag a second effect.
+- **Piercing protect bypass**: `checkMoveBypassesProtect` in `sim/battle.ts` — when protect would block a `piercing` move, sets `piercingHit = true` on the hit data and returns `true` (move hits). `getDamage` in `sim/battle-actions.ts` applies 0.5× modifier when `piercingHit` is set (after the Z-move `bypassProtect` block).
+- **Bone immunity bypass**: Full implementation across 4 hit pipeline steps in `sim/battle-actions.ts` plus a damage floor in `getDamage`:
+  - `hitStepInvulnerabilityEvent` — bone moves bypass semi-invulnerability (Dig, Fly, Phantom Force, etc.)
+  - `hitStepTryHitEvent` — bone moves skip the entire `TryHit` event, bypassing Wonder Guard, Flash Fire, Volt Absorb, Water Absorb, Sap Sipper, Air Balloon, etc.
+  - `hitStepTypeImmunity` — bone moves set `move.ignoreImmunity = true`, bypassing type chart 0× matchups and `isGrounded()` (Levitate, Magnet Rise, etc.)
+  - `hitStepTryImmunity` — bone moves skip powder immunity and `TryImmunity` event
+  - `getDamage` — `if (move.flags['bone'] && typeMod < 0) typeMod = 0` clamps to neutral floor (normally automatic since `getEffectiveness` returns 0 for immune matchups anyway)
+- Applied `bone: 1` to Bone Club, Bonemerang, Bone Rush, Shadow Bone in `data/moves.ts`.
+- **Pending**: `bursting` (splash damage to adjacent targets), `corrosive` (custom type matchup overrides). See §22 for the full move category technical reference.
+
 ---
 
 ## 13. Open questions / likely next steps
@@ -410,7 +425,7 @@ Based on the master reference's roadmap (line 19-25):
 
 - **"Plan 2: Edit stats for Generation 1 Pokémon"** — the user has been doing this in `data/formats-data.ts` and `data/pokedex.ts`. They tag reworked species with `*` and new species with `**` (suffix notation in their Pokemon_Reworked.tsv — see master ref §"File Conventions").
 - **"Plan 3: Add a few New Pokémon"** — the `isNonstandard: 'custom'` (lowercase) tag is ready to bucket these under a "Custom" UI header.
-- **"Plan 4: Add mechanical/functionality changes"** — the master reference §1.5 (Blanket Type Effects), §2 (Weather), §3 (Terrain), §4 (Status Conditions), §5 (Move Categories), ~~§6 (Typing Order STAB — DONE)~~, §7 (Speed Ties), §8 (Dual Ability System), §11 (Generation Gimmick Reworks) all describe pending mechanical work.
+- **"Plan 4: Add mechanical/functionality changes"** — the master reference §1.5 (Blanket Type Effects), §2 (Weather), §3 (Terrain), §4 (Status Conditions), §5 (Move Categories — **partially done**: Sound ✓, Bullet ✓, Piercing ✓, Bone ✓; Bursting and Corrosive pending — see §22), ~~§6 (Typing Order STAB — DONE)~~, §7 (Speed Ties), §8 (Dual Ability System), §11 (Generation Gimmick Reworks) all describe pending mechanical work.
 - **"Plan 5: Edit stats for Gen 8 Pokémon"** — will require lifting the Gen 1 Only clause (or replacing with a "Gen 1 + Gen 8 only" variant).
 
 **When new mechanical work starts**, expect to touch `sim/battle-actions.ts`, `sim/battle.ts`, `sim/pokemon.ts`, `data/abilities.ts`, `data/conditions.ts`, `data/moves.ts`, `data/scripts.ts` — but for Testing Standard-specific overrides, prefer `data/mods/champions/scripts.ts` and `rulesets.ts` to keep canon Showdown code paths intact.
@@ -489,6 +504,10 @@ console.log('overrideTier sample:', champ.overrideTier.venusaur);
 | Ability implementations | `data/abilities.ts` |
 | Ability class + origin field | `sim/dex-abilities.ts` |
 | /dt ability display | `server/chat-commands/info.ts` |
+| Move category flags (`MoveFlags` + `MoveHitData`) | `sim/dex-moves.ts` (MoveFlags interface ~line 28, MoveHitData ~line 295) |
+| Hit pipeline (invulnerability / TryHit / TypeImmunity / TryImmunity) | `sim/battle-actions.ts` (`hitStep*` functions) |
+| Protect bypass hook (`checkMoveBypassesProtect`) | `sim/battle.ts` |
+| Piercing damage modifier + bone neutral floor | `sim/battle-actions.ts` (`getDamage`) |
 
 ---
 
@@ -641,6 +660,18 @@ Listed for posterity so the next Claude doesn't repeat them:
 27. **Inline `getTimerHTML()` in a `whatdo` div adds to the div's flow height, pushing elements below.** The timer button has non-trivial height. If it word-wraps to a new line inside `whatdo`, the entire `movecontrols` section below is pushed down — visually the 4th move slot appears oddly low. Fix: wrap the timer call in `<span style="float:right">`, which takes it out of the normal flow. The `whatdo` text is then a single line and the move buttons sit at their correct height.
 
 28. **The Preact client's `/cancel` command is safe to use as a "Back" button from the MC panel.** The `'cancel,undo'` handler in `panel-chat.tsx` first checks `room.choices.isDone() || room.choices.isEmpty()` — if either is true it sends `/undo` to the server. When the player is in the MC panel, `isDone()` is false (controlled choices not done) and `isEmpty()` is false (own move is chosen), so `/undo` is NOT sent. The handler then does `room.choices = new BattleChoiceBuilder(room.request)` which resets all local choice state (own choices AND controlledChoices cleared) and triggers a re-render back at the own-move picker. No server state is disturbed.
+
+29. **The existing `bullet` flag (Bulletproof hook) doubles as the "Bullet" screen-bypass category.** All canonical Bullet-category moves (Bullet Seed, Rock Blast, Gyro Ball, etc.) already had `bullet: 1` for Bulletproof interactions. There is no second `bulletcategory` flag. When implementing screen bypass, add `&& !move.flags['bullet']` to the existing screen conditions' `onAnyModifyDamage` in `data/moves.ts` — don't create a new flag.
+
+30. **`getEffectiveness()` returns 0 (neutral) for immune type matchups, not a large negative.** In `sim/dex.ts`, `damageTaken = 3` maps to `case 3:` which falls through to `default: return 0`. So bypassing type immunity with `move.ignoreImmunity = true` naturally produces typeMod = 0 (1× damage floor) with no extra work. The explicit `if (move.flags['bone'] && typeMod < 0) typeMod = 0` clamp in getDamage is a defensive guard for edge cases only.
+
+31. **Wonder Guard lacks `flags['breakable']` — `move.ignoreAbility = true` does NOT bypass it.** `suppressingAbility()` in `battle.ts` only suppresses abilities that have `effect.flags['breakable']`. Wonder Guard intentionally omits this flag. To bypass Wonder Guard for Bone moves, skip the entire `hitStepTryHitEvent` by returning `new Array(targets.length).fill(true)` before `runEvent('TryHit', ...)` is called — `move.ignoreAbility` alone won't do it.
+
+32. **The Mold Breaker mechanism is two-part: `move.ignoreAbility = true` PLUS `effect.flags['breakable']` on the ability.** `suppressingAbility()` returns true only when both conditions hold. Setting `ignoreAbility` on a move only affects abilities that explicitly opted in via `breakable: 1` in their definition. Abilities like Wonder Guard (and any custom ability without `breakable`) are unaffected.
+
+33. **The hit pipeline in `trySpreadMoveHit` runs 8 ordered steps.** In gen ≥ 7: 0 InvulnerabilityEvent → 1 TryHitEvent → 2 TypeImmunity → 3 TryImmunity → 4 Accuracy → 5 BreakProtect → 6 StealBoosts → 7 MoveHitLoop. In gen ≤ 6, steps 1 and 2 are swapped (TypeImmunity runs before TryHitEvent). Bone bypasses steps 0–3 individually by returning `new Array(targets.length).fill(true)` in each hitStep* function.
+
+34. **`runImmunity()` fast-returns `true` when `source.ignoreImmunity === true`.** In `sim/pokemon.ts` (line ~2268), the very first check is `if (source && source.ignoreImmunity === true) return true`. This short-circuits ALL subsequent logic — the type chart lookup, `isGrounded()` for Ground immunity (which also handles Levitate and Magnet Rise volatile), and the `hasType('Flying')` ground-exemption. Setting `move.ignoreImmunity = true` in `hitStepTypeImmunity` is the cleanest single-line bypass for all type-based and grounding-based immunities simultaneously.
 
 ---
 
@@ -1034,6 +1065,133 @@ The user is technical enough to follow detailed explanations but not deep into S
 They iterate. They'll often realize partway through that they want something slightly different. Don't push back on revisions; just implement them. Use `AskUserQuestion` when there's a genuine fork in the design — they appreciate being asked rather than having you commit to one path.
 
 They use a Windows machine with PowerShell. Use `Set-Location` and `Remove-Item` in PowerShell tool, not POSIX equivalents. Path separators: backslashes for Windows-style paths in tool args.
+
+---
+
+---
+
+## 22. Move category system technical reference
+
+### Overview
+
+§5 of the master reference defines 11 new move category flags. Most are tag-only (for ability hooks); a few have inherent mechanical effects. The existing `bullet` flag predates this session but gained a second mechanical effect during it.
+
+| Flag | Status | Mechanical effect |
+|---|---|---|
+| `ball` | Tag only | None inherent — for BulletProof-style ability hooks |
+| `beam` | Tag only | None inherent |
+| `bone` | **Implemented** | Bypasses all immunities; neutral damage floor |
+| `bursting` | Pending | On hit, also strike each adjacent target at 25% base power |
+| `corrosive` | Pending | Poison moves: no SE vs Grass/Fairy (→1×); always 2× SE vs Steel |
+| `exploding` | Tag only | None inherent |
+| `heavyprojectile` | Tag only | None inherent |
+| `kicking` | Tag only | None inherent |
+| `light` | Tag only | None inherent |
+| `piercing` | **Implemented** | Bypasses Protect/Detect at 50% damage |
+| `vine` | Tag only | None inherent |
+
+The pre-existing `bullet` flag also has a mechanical effect (added this session):
+- **Bullet**: bypasses Reflect, Light Screen, and Aurora Veil
+
+### Hit pipeline — `trySpreadMoveHit` in `sim/battle-actions.ts`
+
+8 ordered steps (gen ≥ 7; in gen ≤ 6, steps 1 and 2 are swapped):
+
+| Step | Function | What it does | Bone bypass |
+|---|---|---|---|
+| 0 | `hitStepInvulnerabilityEvent` | Blocks vs. semi-invulnerable targets (Dig, Fly, Phantom Force, etc.) | `return new Array(targets.length).fill(true)` at top |
+| 1 | `hitStepTryHitEvent` | Fires `TryHit` event — Wonder Guard, Flash Fire, Volt Absorb, Sap Sipper, Air Balloon, etc. | `return fill(true)` before `runEvent('TryHit', ...)` |
+| 2 | `hitStepTypeImmunity` | Type chart 0× matchups + `isGrounded()` (Levitate, Magnet Rise) | `move.ignoreImmunity = true` |
+| 3 | `hitStepTryImmunity` | Powder immunity, `TryImmunity` event | `return fill(true)` at top |
+| 4 | `hitStepAccuracy` | Accuracy roll | Normal |
+| 5 | `hitStepBreakProtect` → `checkMoveBypassesProtect` | Protect/Detect block | Piercing: sets `piercingHit = true`, returns `true` |
+| 6 | `hitStepStealBoosts` | Spectral Thief | Normal |
+| 7 | `hitStepMoveHitLoop` → `getDamage` | Damage calculation | Bone: `typeMod = max(0, typeMod)`; Piercing: `baseDamage × 0.5` |
+
+### Bullet screen bypass
+
+All three screen conditions in `data/moves.ts` (`reflect`, `lightscreen`, `auroraveil`) have this guard added to their `onAnyModifyDamage` handler:
+
+```typescript
+if (!crit && !infiltrates && !move.flags['bullet']) {
+    // apply damage reduction
+}
+```
+
+When `move.flags['bullet']` is set, the reduction block is skipped entirely.
+
+### Piercing protect bypass
+
+`checkMoveBypassesProtect` in `sim/battle.ts` — inside the block where protect would block a non-status move:
+
+```typescript
+if (move.flags['piercing']) {
+    defender.getMoveHitData(move).piercingHit = true;
+    return true; // move hits through protect at reduced damage
+}
+return false; // normally blocked
+```
+
+`getDamage` in `sim/battle-actions.ts` — after the Z-move `bypassProtect` block:
+
+```typescript
+if (target.getMoveHitData(move).piercingHit) {
+    baseDamage = this.battle.modify(baseDamage, 0.5);
+}
+```
+
+### Bone immunity bypass
+
+Four locations in `sim/battle-actions.ts`:
+
+**`hitStepInvulnerabilityEvent`** — first line inside the function body:
+```typescript
+if (move.flags['bone']) return new Array(targets.length).fill(true);
+```
+
+**`hitStepTryHitEvent`** — before the `runEvent('TryHit', ...)` call (bypasses Wonder Guard, Flash Fire, Volt Absorb, Sap Sipper, Air Balloon, etc.):
+```typescript
+if (move.flags['bone']) return new Array(targets.length).fill(true);
+```
+
+**`hitStepTypeImmunity`** — at the top (causes `runImmunity()` in `pokemon.ts` to fast-return `true` before type chart and `isGrounded()` checks, handling Levitate + Magnet Rise):
+```typescript
+if (move.flags['bone']) move.ignoreImmunity = true;
+```
+
+**`hitStepTryImmunity`** — first line:
+```typescript
+if (move.flags['bone']) return new Array(targets.length).fill(true);
+```
+
+**Damage floor in `getDamage`** (normally redundant — `getEffectiveness()` returns 0 for immune matchups anyway, but guards edge cases):
+```typescript
+let typeMod = target.runEffectiveness(move);
+typeMod = this.battle.clampIntRange(typeMod, -6, 6);
+if (move.flags['bone'] && typeMod < 0) typeMod = 0;
+target.getMoveHitData(move).typeMod = typeMod;
+```
+
+### Moves with bone flag applied (current)
+
+| Move | Flag |
+|---|---|
+| Bone Club | `bone: 1` |
+| Bonemerang | `bone: 1` |
+| Bone Rush | `bone: 1` |
+| Shadow Bone | `bone: 1` |
+
+### Pending: bursting
+
+On hit, also strike each adjacent target at 25% base power. Needs multi-target secondary hit logic — not yet started.
+
+### Pending: corrosive
+
+Custom Poison-type matchup overrides:
+- Poison-type moves no longer deal SE damage vs Grass or Fairy (→ 1× neutral)
+- Poison-type moves always deal 2× SE vs Steel (Steel no longer resists Poison)
+
+Implementation will require hooking into `runEffectiveness` or the type chart event system. Not yet started.
 
 ---
 
