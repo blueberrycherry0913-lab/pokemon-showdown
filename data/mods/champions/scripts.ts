@@ -43,6 +43,15 @@ export const Scripts: ModdedBattleScriptsData = {
 			if (statusId === 'slp' && this.hasType('Cosmic') && source !== this) {
 				return false;
 			}
+			// Electric types are immune to both Stunned and Paralyzed.
+			if ((statusId === 'stun' || statusId === 'par') && this.hasType('Electric')) {
+				return false;
+			}
+			// Stunned → Paralyzed escalation: re-applying Stun (or directly inflicting Par) to
+			// an already-Stunned Pokémon escalates to Paralyzed. Resets lockout flag via onStart.
+			if (this.status === 'stun' && (statusId === 'stun' || statusId === 'par')) {
+				return this.setStatus('par', source, sourceEffect);
+			}
 			if (this.status === 'psn' && statusId === 'psn') {
 				return this.setStatus('tox', source, sourceEffect);
 			}

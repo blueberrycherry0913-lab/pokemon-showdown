@@ -949,6 +949,94 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 	},
 
+	stun: {
+		name: 'stun',
+		effectType: 'Status',
+		onStart(target, source, sourceEffect) {
+			if (sourceEffect?.effectType === 'Ability') {
+				this.add('-status', target, 'stun', '[from] ability: ' + sourceEffect.name, `[of] ${source}`);
+			} else {
+				this.add('-status', target, 'stun');
+			}
+			// First-action lockout: the Pokémon loses its next possible action.
+			// Persists through switching — fires on the Pokémon's next onBeforeMove.
+			target.statusData.lockoutPending = true;
+		},
+		onBeforeMove(pokemon, target, move) {
+			// Serve pending lockout first (takes precedence over everything else)
+			if (pokemon.statusData.lockoutPending) {
+				pokemon.statusData.lockoutPending = false;
+				this.add('cant', pokemon, 'stun');
+				return false;
+			}
+			// Ongoing pivot block: Stunned Pokémon cannot use switching moves
+			if (move.selfSwitch) {
+				this.add('cant', pokemon, 'stun');
+				return false;
+			}
+		},
+		// Grey out pivot moves in the move menu
+		onDisableMove(pokemon) {
+			for (const moveSlot of pokemon.moveSlots) {
+				const move = this.dex.moves.get(moveSlot.id);
+				if (move.selfSwitch) pokemon.disableMove(moveSlot.id);
+			}
+		},
+		// -33% Speed while Stunned. Applied at -101 priority so it stacks after all other mods.
+		onModifySpePriority: -101,
+		onModifySpe(spe) {
+			spe = this.finalModify(spe);
+			return Math.floor(spe * 2 / 3);
+		},
+	},
+
+	par: {
+		name: 'par',
+		effectType: 'Status',
+		onStart(target, source, sourceEffect) {
+			if (sourceEffect && sourceEffect.id === 'thunderwave') {
+				this.add('-status', target, 'par', '[from] move: Thunder Wave');
+			} else if (sourceEffect?.effectType === 'Ability') {
+				this.add('-status', target, 'par', '[from] ability: ' + sourceEffect.name, `[of] ${source}`);
+			} else {
+				this.add('-status', target, 'par');
+			}
+			// First-action lockout (resets on escalation from Stunned, giving a second lockout)
+			target.statusData.lockoutPending = true;
+		},
+		onBeforeMove(pokemon, target, move) {
+			// Serve pending lockout first
+			if (pokemon.statusData.lockoutPending) {
+				pokemon.statusData.lockoutPending = false;
+				this.add('cant', pokemon, 'par');
+				return false;
+			}
+			// Ongoing pivot block: Paralyzed Pokémon cannot use switching moves
+			if (move.selfSwitch) {
+				this.add('cant', pokemon, 'par');
+				return false;
+			}
+		},
+		// Grey out pivot moves in the move menu
+		onDisableMove(pokemon) {
+			for (const moveSlot of pokemon.moveSlots) {
+				const move = this.dex.moves.get(moveSlot.id);
+				if (move.selfSwitch) pokemon.disableMove(moveSlot.id);
+			}
+		},
+		// -50% Speed while Paralyzed
+		onModifySpePriority: -101,
+		onModifySpe(spe) {
+			spe = this.finalModify(spe);
+			return Math.floor(spe * 1 / 2);
+		},
+		// Priority suppression: moves with effective priority > 0 are reduced by 1 bracket (floor: 0).
+		// Quick Attack (+1) → 0, Extreme Speed (+2) → +1, etc.
+		onModifyPriority(priority, pokemon, target, move) {
+			if (priority > 0) return Math.max(priority - 1, 0);
+		},
+	},
+
 	slp: {
 		name: 'slp',
 		effectType: 'Status',
