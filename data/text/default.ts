@@ -210,6 +210,24 @@ export const DefaultText: { [id: IDEntry]: DefaultText } = {
 		alreadyStarted: "#psn",
 		damage: "#psn",
 	},
+	scr: {
+		start: "  [POKEMON] was scorched!",
+		alreadyStarted: "  [POKEMON] is already scorched!",
+		end: "  [POKEMON]'s scorch was healed!",
+		damage: "  [POKEMON] was hurt by its scorch!",
+	},
+	cor: {
+		start: "  [POKEMON] was corroded!",
+		alreadyStarted: "  [POKEMON] is already corroded!",
+		end: "  [POKEMON]'s corrosion was healed!",
+		damage: "  [POKEMON] was hurt by corrosion!",
+	},
+	mlt: {
+		start: "  [POKEMON] is melting!",
+		alreadyStarted: "  [POKEMON] is already melting!",
+		end: "  [POKEMON] was cured of its melting!",
+		damage: "  [POKEMON] was hurt by melting!",
+	},
 	slp: {
 		start: "  [POKEMON] fell asleep!",
 		startFromRest: "  [POKEMON] slept and became healthy!",
