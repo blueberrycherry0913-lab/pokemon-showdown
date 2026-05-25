@@ -787,6 +787,30 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 	},
 
+	charmed: {
+		name: 'charmed',
+		duration: 3,
+		// Replaces canon Infatuation (§4). Gender-agnostic, 3 turns deterministic.
+		// Damaging moves by the Charmed Pokémon targeting the source deal ×0.25 damage.
+		// Status moves are unaffected.
+		onStart(target, source) {
+			this.add('-start', target, 'move: Charmed', `[of] ${source}`);
+		},
+		onUpdate(pokemon) {
+			if (this.effectState.source && !this.effectState.source.isActive && pokemon.volatiles['charmed']) {
+				pokemon.removeVolatile('charmed');
+			}
+		},
+		onEnd(target) {
+			this.add('-end', target, 'move: Charmed');
+		},
+		onBasePower(basePower, attacker, defender, move) {
+			if (move.category === 'Status') return;
+			if (defender !== this.effectState.source) return;
+			return this.chainModify(0.25);
+		},
+	},
+
 	// --- Status condition overrides ---
 	// §4 of the master reference: every status has both a damage component and a stat-reduction
 	// component.
