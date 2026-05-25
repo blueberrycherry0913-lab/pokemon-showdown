@@ -48,6 +48,7 @@ export const Rulesets: import('../../../sim/dex-formats').ModdedFormatDataTable 
 		desc: "Only Pokémon descended from a Gen 1 species (Bulbasaur-Mew, num 1-151) and their Mega/Primal/Ultra/G-Max formes are legal.",
 		onValidateSet(set) {
 			const species = this.dex.species.get(set.species);
+			if ((species as any).canLearnAnyMove) return; // utility test species, always legal
 			if (!isGen1Lineage(this.dex, species)) {
 				return [`${set.name || set.species} is not available yet.`];
 			}
@@ -66,6 +67,7 @@ export const Rulesets: import('../../../sim/dex-formats').ModdedFormatDataTable 
 		desc: "A Pokémon may only use abilities listed in its Pokédex entry.",
 		onValidateSet(set) {
 			const species = this.dex.species.get(set.species);
+			if ((species as any).canLearnAnyMove) return; // utility test species, skip ability gating
 			const source = (species as any).isMega
 				? this.dex.species.get(species.baseSpecies)
 				: species;
@@ -85,6 +87,7 @@ export const Rulesets: import('../../../sim/dex-formats').ModdedFormatDataTable 
 		desc: "A Pokémon may not have the same ability in both its basic and awakened slots.",
 		onValidateSet(set) {
 			const species = this.dex.species.get(set.species);
+			if ((species as any).canLearnAnyMove) return; // utility test species, skip dup check
 			const awakened = species.abilities['H'];
 			if (awakened && this.toID(set.ability) === this.toID(awakened)) {
 				return [`${set.name || set.species} has duplicate abilities.`];

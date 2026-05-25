@@ -21583,4 +21583,80 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		target: "normal",
 		type: "Poison",
 	},
+	// §4 Marked relational status — test move for playtesting.
+	// Applies the 'marked' volatile to the target; fails if already Marked.
+	marktest: {
+		num: -7,
+		accuracy: 100,
+		basePower: 0,
+		category: "Status",
+		name: "Mark (TEST)",
+		pp: 10,
+		priority: 0,
+		flags: { protect: 1, mirror: 1 },
+		volatileStatus: 'marked',
+		onTryHit(target, source, move) {
+			// Fail if the target is already Marked (on-field) or was Marked while
+			// off-field (markedHunter property set by the marked condition's onStart).
+			if (target.volatiles['marked'] || (target as any).markedHunter) {
+				this.add('-immune', target);
+				return null;
+			}
+		},
+		target: "normal",
+		type: "Normal",
+	},
+	// §4 test moves — apply each reworked status for playtesting.
+	frostbitetest: {
+		num: -8,
+		accuracy: 100,
+		basePower: 0,
+		category: "Status",
+		name: "Frostbite (TEST)",
+		pp: 10,
+		priority: 0,
+		flags: { protect: 1, reflectable: 1, mirror: 1 },
+		status: 'frb',
+		target: "normal",
+		type: "Ice",
+	},
+	freezetest: {
+		num: -9,
+		accuracy: 100,
+		basePower: 0,
+		category: "Status",
+		name: "Freeze (TEST)",
+		pp: 10,
+		priority: 0,
+		flags: { protect: 1, reflectable: 1, mirror: 1 },
+		status: 'frz',
+		target: "normal",
+		type: "Ice",
+	},
+	charmedtest: {
+		num: -10,
+		accuracy: 100,
+		basePower: 0,
+		category: "Status",
+		name: "Charmed (TEST)",
+		pp: 10,
+		priority: 0,
+		flags: { protect: 1, reflectable: 1, mirror: 1 },
+		volatileStatus: 'charmed',
+		target: "normal",
+		type: "Normal",
+	},
+	stunnedtest: {
+		num: -11,
+		accuracy: 100,
+		basePower: 0,
+		category: "Status",
+		name: "Stunned (TEST)",
+		pp: 10,
+		priority: 0,
+		flags: { protect: 1, reflectable: 1, mirror: 1 },
+		status: 'stun',
+		target: "normal",
+		type: "Electric",
+	},
 };

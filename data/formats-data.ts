@@ -6205,4 +6205,8 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 		isNonstandard: "custom",
 		tier: "ZU",
 	},
+	tester: {
+		isNonstandard: "custom",
+		tier: "ZU",
+	},
 };

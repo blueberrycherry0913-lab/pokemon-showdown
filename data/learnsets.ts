@@ -1440,6 +1440,11 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	},
 	pidgeot: {
 		learnset: {
+			marktest: ["9L1"],
+			frostbitetest: ["9L1"],
+			freezetest: ["9L1"],
+			charmedtest: ["9L1"],
+			stunnedtest: ["9L1"],
 			aerialace: ["7M", "6M", "5M", "4M", "3M"],
 			agility: ["8V", "7L32", "7V", "6L32", "5L32", "4L32", "3L48"],
 			aircutter: ["4T"],
@@ -100415,5 +100420,30 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 		eventData: [
 			{generation: 5, level: 47, moves: ["darkpulse", "flamethrower", "hyperbeam", "icebeam"]},
 		],
+	},
+	// TESTER — utility mon that can use every move. The validator bypasses the
+	// learnset check for canLearnAnyMove species (team-validator.ts patch), so
+	// this entry only needs to exist so the teambuilder populates correctly.
+	// Custom test moves are listed explicitly; all canon moves are allowed by
+	// the bypass and appear in the teambuilder via the full dex move list.
+	tester: {
+		learnset: {
+			marktest: ["9L1"],
+			frostbitetest: ["9L1"],
+			freezetest: ["9L1"],
+			charmedtest: ["9L1"],
+			stunnedtest: ["9L1"],
+			// Domain moves
+			domainbug: ["9L1"], domaincosmic: ["9L1"], domaindark: ["9L1"],
+			domaindragon: ["9L1"], domainelectric: ["9L1"], domainfairy: ["9L1"],
+			domainfighting: ["9L1"], domainfire: ["9L1"], domainflying: ["9L1"],
+			domainghost: ["9L1"], domaingrass: ["9L1"], domainground: ["9L1"],
+			domainice: ["9L1"], domainnormal: ["9L1"], domainpoison: ["9L1"],
+			domainpsychic: ["9L1"], domainrock: ["9L1"], domainsteel: ["9L1"],
+			domainwater: ["9L1"],
+			// Other custom moves
+			shadowstrike: ["9L1"], polarflare: ["9L1"],
+			mindcontrolledtest: ["9L1"], corrosiontest: ["9L1"],
+		},
 	},
 };

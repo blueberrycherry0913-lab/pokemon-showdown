@@ -811,6 +811,35 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 	},
 
+	marked: {
+		name: 'marked',
+		noCopy: true,
+		// Relational status (§4). The Marked Pokémon carries this volatile; the Hunter
+		// is the Pokémon that inflicted it (stored in effectState.source).
+		// Hunter's attacks vs. the Marked deal ×1.5 damage and cannot miss.
+		// Only one Mark per Pokémon; persists through switches on both sides;
+		// cleared only when the Marked Pokémon faints.
+		onStart(target, source) {
+			// Mirror the hunter reference directly on the Pokemon object so it
+			// survives switch-out (volatiles are cleared but the object persists).
+			(target as any).markedHunter = source;
+			this.add('-start', target, 'move: Marked', `[of] ${source}`);
+		},
+		onEnd(target) {
+			this.add('-end', target, 'move: Marked');
+		},
+		onSourceModifyDamage(damage, source, target, move) {
+			if (!this.effectState.source || source !== this.effectState.source) return;
+			if (move.category === 'Status') return;
+			return this.chainModify(1.5);
+		},
+		onAccuracy(accuracy, target, source, move) {
+			if (!this.effectState.source || source !== this.effectState.source) return;
+			if (move.category === 'Status') return;
+			return true; // cannot miss
+		},
+	},
+
 	// --- Status condition overrides ---
 	// §4 of the master reference: every status has both a damage component and a stat-reduction
 	// component.

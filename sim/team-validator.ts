@@ -868,7 +868,12 @@ export class TeamValidator {
 
 		let moveProblems;
 		if (ruleTable.has('obtainablemoves')) {
-			moveProblems = this.validateMoves(outOfBattleSpecies, set.moves, setSources, set, name, moveLegalityWhitelist);
+			// canLearnAnyMove: utility species (e.g. TESTER) that bypass learnset checks.
+			if ((outOfBattleSpecies as any).canLearnAnyMove) {
+				moveProblems = [];
+			} else {
+				moveProblems = this.validateMoves(outOfBattleSpecies, set.moves, setSources, set, name, moveLegalityWhitelist);
+			}
 			problems.push(...moveProblems);
 
 			const incompatibleMoves = setSources.goIncompatibleMoves;
@@ -1747,6 +1752,10 @@ export class TeamValidator {
 	checkSpecies(set: PokemonSet, species: Species, tierSpecies: Species, setHas: { [k: string]: true }) {
 		const dex = this.dex;
 		const ruleTable = this.ruleTable;
+
+		// canLearnAnyMove: utility species (e.g. TESTER) are fully legal in any format
+		// that's running the champions mod. Skip all existence / tier checks for them.
+		if ((species as any).canLearnAnyMove) return null;
 
 		// https://www.smogon.com/forums/posts/8659168
 		if (

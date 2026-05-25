@@ -85,5 +85,23 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			if (types[0] === move.type) return 1.5; // primary
 			return 1.4; // secondary
 		},
+		// Marked persistence (§4): the marked volatile is re-added when the Marked Pokémon
+		// switches back in, because Pokemon objects persist for the whole battle but volatiles
+		// are cleared on switch-out. markedHunter is set in the marked condition's onStart.
+		onSwitchIn(pokemon) {
+			const hunter = (pokemon as any).markedHunter;
+			if (hunter && !pokemon.volatiles['marked']) {
+				pokemon.addVolatile('marked', hunter);
+			}
+		},
+		// Mark is only cleared when the Marked Pokémon faints (§4).
+		onFaint(pokemon) {
+			if ((pokemon as any).markedHunter) {
+				delete (pokemon as any).markedHunter;
+				// volatile will already have been removed when the pokemon fainted,
+				// but guard in case the order differs.
+				if (pokemon.volatiles['marked']) pokemon.removeVolatile('marked');
+			}
+		},
 	},
 ];

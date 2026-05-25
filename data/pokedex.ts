@@ -21125,4 +21125,18 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		color: "Green",
 		eggGroups: ["Undiscovered"],
 	},
+	// Utility Pokémon for playtesting — learns every move, pure Normal, all-100 stats.
+	// canLearnAnyMove bypasses learnset / species / Gen 1 Only checks in the validator.
+	tester: {
+		num: 10002,
+		name: "TESTER",
+		types: ["Normal"],
+		baseStats: {hp: 100, atk: 100, def: 100, spa: 100, spd: 100, spe: 100},
+		abilities: { 0: "No Ability", 1: "No Ability", H: "No Ability" },
+		heightm: 1.0,
+		weightkg: 10,
+		color: "White",
+		eggGroups: ["Field"],
+		canLearnAnyMove: true,
+	} as any,
 };
