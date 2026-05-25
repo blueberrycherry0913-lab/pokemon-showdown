@@ -21623,6 +21623,5 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		status: 'cor',
 		target: "normal",
 		type: "Poison",
-		isNonstandard: "Custom" as const,
 	},
 };
