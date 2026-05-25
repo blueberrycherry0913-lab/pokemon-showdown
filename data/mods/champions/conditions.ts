@@ -1019,12 +1019,12 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			}
 			// First-action lockout: the Pokémon loses its next possible action.
 			// Persists through switching — fires on the Pokémon's next onBeforeMove.
-			target.statusData.lockoutPending = true;
+			target.statusState.lockoutPending = true;
 		},
 		onBeforeMove(pokemon, target, move) {
 			// Serve pending lockout first (takes precedence over everything else)
-			if (pokemon.statusData.lockoutPending) {
-				pokemon.statusData.lockoutPending = false;
+			if (pokemon.statusState.lockoutPending) {
+				pokemon.statusState.lockoutPending = false;
 				this.add('cant', pokemon, 'stun');
 				return false;
 			}
@@ -1061,12 +1061,12 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				this.add('-status', target, 'par');
 			}
 			// First-action lockout (resets on escalation from Stunned, giving a second lockout)
-			target.statusData.lockoutPending = true;
+			target.statusState.lockoutPending = true;
 		},
 		onBeforeMove(pokemon, target, move) {
 			// Serve pending lockout first
-			if (pokemon.statusData.lockoutPending) {
-				pokemon.statusData.lockoutPending = false;
+			if (pokemon.statusState.lockoutPending) {
+				pokemon.statusState.lockoutPending = false;
 				this.add('cant', pokemon, 'par');
 				return false;
 			}
@@ -1105,14 +1105,14 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			} else {
 				this.add('-status', target, 'slp');
 			}
-			target.statusData.sleepTurns = 0;
+			target.statusState.sleepTurns = 0;
 		},
 		onBeforeMove(pokemon, target, move) {
 			// Sleep Talk and Snore can still be used while asleep — don't count those turns
 			if (move.id === 'sleeptalk' || move.id === 'snore') return;
 			if (pokemon.status !== 'slp' || !pokemon.hp) return;
-			pokemon.statusData.sleepTurns++;
-			if (pokemon.statusData.sleepTurns > 2) {
+			pokemon.statusState.sleepTurns++;
+			if (pokemon.statusState.sleepTurns > 2) {
 				// Third turn: Pokémon wakes up and can move this turn
 				pokemon.cureStatus();
 				return;
@@ -1173,13 +1173,13 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				this.add('-status', target, 'frz');
 			}
 			// Phase 1 — Frozen Solid: 1-turn lockout + 50% damage reduction
-			target.statusData.frozenPhase = 1;
-			target.statusData.lockoutPending = true;
+			target.statusState.frozenPhase = 1;
+			target.statusState.lockoutPending = true;
 		},
 		onBeforeMove(pokemon, target, move) {
 			// Phase 1 lockout: Pokémon loses its first action
-			if (pokemon.statusData.frozenPhase === 1 && pokemon.statusData.lockoutPending) {
-				pokemon.statusData.lockoutPending = false;
+			if (pokemon.statusState.frozenPhase === 1 && pokemon.statusState.lockoutPending) {
+				pokemon.statusState.lockoutPending = false;
 				this.add('cant', pokemon, 'frz');
 				return false;
 			}
@@ -1189,29 +1189,29 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			if (!pokemon.hp || pokemon.status !== 'frz') return;
 			// 1/8 chip damage in both phases
 			this.damage(Math.floor(pokemon.baseMaxhp / 8));
-			if (pokemon.statusData.frozenPhase === 1) {
+			if (pokemon.statusState.frozenPhase === 1) {
 				// End of Phase 1 turn — transition to Phase 2 (sustained Frozen)
-				pokemon.statusData.frozenPhase = 2;
-				pokemon.statusData.lockoutPending = false; // discard any unserved lockout
+				pokemon.statusState.frozenPhase = 2;
+				pokemon.statusState.lockoutPending = false; // discard any unserved lockout
 			}
 		},
 		// Phase 1 damage reduction: takes 50% less from non-Ice attacking moves while Frozen Solid.
 		// onSourceModifyDamage fires on the DEFENDER's conditions; source = attacker, target = frozen Pokémon.
 		onSourceModifyDamage(damage, source, target, move) {
-			if (target.statusData.frozenPhase !== 1) return;
+			if (target.statusState.frozenPhase !== 1) return;
 			if (move.type === 'Ice') return; // Ice moves bypass the reduction (§4)
 			return this.chainModify(0.5);
 		},
 		// Phase 2: -50% Special Attack while Frozen (sustained)
 		onModifySpAPriority: -101,
 		onModifySpA(spa, pokemon) {
-			if (pokemon.statusData.frozenPhase !== 2) return;
+			if (pokemon.statusState.frozenPhase !== 2) return;
 			spa = this.finalModify(spa);
 			return Math.floor(spa * 1 / 2);
 		},
 		// Thermal counter (§4): Fire move ≥65 BP demotes Phase 1 Frozen Solid → Frostbitten on hit.
 		onDamagingHit(damage, target, source, move) {
-			if (target.statusData.frozenPhase !== 1) return;
+			if (target.statusState.frozenPhase !== 1) return;
 			if (move.type !== 'Fire' || move.basePower < 65) return;
 			target.cureStatus();
 			target.setStatus('frb', source, move);

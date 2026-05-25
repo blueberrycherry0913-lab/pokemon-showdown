@@ -59,9 +59,9 @@ export const Scripts: ModdedBattleScriptsData = {
 			// Frostbite-on-Phase 2 Frozen: resets back to Phase 1 (Frozen Solid + fresh lockout).
 			// Mirrors the reverse thermal rule — a Frostbite proc "shatters" the sustained freeze.
 			if (this.status === 'frz' && statusId === 'frb') {
-				if (this.statusData.frozenPhase === 2) {
-					this.statusData.frozenPhase = 1;
-					this.statusData.lockoutPending = true;
+				if (this.statusState.frozenPhase === 2) {
+					this.statusState.frozenPhase = 1;
+					this.statusState.lockoutPending = true;
 					this.battle.add('-activate', this, 'move: Frostbite');
 				}
 				return false;
