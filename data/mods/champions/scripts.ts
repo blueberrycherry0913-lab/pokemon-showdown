@@ -41,6 +41,9 @@ export const Scripts: ModdedBattleScriptsData = {
 			if (this.status === 'psn' && statusId === 'psn') {
 				return this.setStatus('tox', source, sourceEffect);
 			}
+			if (this.status === 'brn' && statusId === 'brn') {
+				return this.setStatus('scr', source, sourceEffect);
+			}
 			return this.setStatus(this.status || status, source, sourceEffect);
 		},
 

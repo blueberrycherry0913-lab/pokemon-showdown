@@ -789,7 +789,62 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	// --- Status condition overrides ---
 	// §4 of the master reference: every status has both a damage component and a stat-reduction
-	// component. Poison family: Poisoned = 1/16 chip + -33% SpDef; Toxic = escalating chip + -50% SpDef.
+	// component.
+	// Poison family: Poisoned = 1/16 chip + -33% SpDef; Toxic = escalating chip + -50% SpDef.
+	// Burn family:   Burned   = 1/16 chip + -33% Atk;  Scorched = 1/8 chip + -50% Atk.
+
+	brn: {
+		name: 'brn',
+		effectType: 'Status',
+		onStart(target, source, sourceEffect) {
+			if (sourceEffect && sourceEffect.id === 'flameorb') {
+				this.add('-status', target, 'brn', '[from] item: Flame Orb');
+			} else if (sourceEffect && sourceEffect.effectType === 'Ability') {
+				this.add('-status', target, 'brn', '[from] ability: ' + sourceEffect.name, `[of] ${source}`);
+			} else {
+				this.add('-status', target, 'brn');
+			}
+		},
+		onResidualOrder: 10,
+		onResidual(pokemon) {
+			// 1/16 per turn (canon value, unchanged)
+			this.damage(pokemon.baseMaxhp / 16);
+		},
+		// -33% Attack while Burned (nerfed from canon's -50%, which was hardcoded in getDamage).
+		// Moved to event handler so Scorched can use the same pattern at -50%.
+		onModifyAtkPriority: -101,
+		onModifyAtk(atk, pokemon, target, move) {
+			if (move.category === 'Physical' && !pokemon.hasAbility('guts')) {
+				atk = this.finalModify(atk);
+				return Math.floor(atk * 2 / 3);
+			}
+		},
+	},
+
+	scr: {
+		name: 'scr',
+		effectType: 'Status',
+		onStart(target, source, sourceEffect) {
+			if (sourceEffect && sourceEffect.effectType === 'Ability') {
+				this.add('-status', target, 'scr', '[from] ability: ' + sourceEffect.name, `[of] ${source}`);
+			} else {
+				this.add('-status', target, 'scr');
+			}
+		},
+		onResidualOrder: 10,
+		onResidual(pokemon) {
+			// 1/8 per turn (doubled from Burned)
+			this.damage(pokemon.baseMaxhp / 8);
+		},
+		// -50% Attack while Scorched
+		onModifyAtkPriority: -101,
+		onModifyAtk(atk, pokemon, target, move) {
+			if (move.category === 'Physical' && !pokemon.hasAbility('guts')) {
+				atk = this.finalModify(atk);
+				return Math.floor(atk * 1 / 2);
+			}
+		},
+	},
 
 	psn: {
 		name: 'psn',
