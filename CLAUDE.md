@@ -417,6 +417,24 @@ Full implementation of §4's Mind Controlled mechanic — the opposing player ac
 - Applied `bone: 1` to Bone Club, Bonemerang, Bone Rush, Shadow Bone in `data/moves.ts`.
 - **Pending**: `bursting` (splash damage to adjacent targets), `corrosive` (custom type matchup overrides). See §22 for the full move category technical reference.
 
+### §4 Status conditions rework (this session)
+
+Full implementation of the reworked status conditions from §4 of the master reference. All conditions live in `data/mods/champions/conditions.ts` as overrides; type immunities and escalation logic live in `trySetStatus` in `data/mods/champions/scripts.ts`. Client changes in `battle.ts` (type unions + parseHealth) and `battle-tooltips.ts` (stat reduction display). See §23 for full technical reference.
+
+**Implemented:**
+- **Sleep (`slp`)**: 2-turn deterministic lockout (checked in `onBeforeMove`), 1/10 HP heal-tax per turn (`onResidual`), +10% incoming damage (`onSourceModifyDamage`), instant wake on ≥50% single-hit (`onDamagingHit`). Cosmic type immune to foe-inflicted sleep (in `trySetStatus`).
+- **Stunned (`stun`, new minor)**: First-action lockout (`lockoutPending` pattern), pivot move block (`onDisableMove` + `onBeforeMove`), -33% Speed (`onModifySpe` at priority −101). Electric type immune.
+- **Paralyzed (`par`, rework)**: Same as Stun + -50% Speed and priority suppression (`onModifyPriority` lowers effective priority >0 by one bracket). Stun escalates to Par on reapplication (`trySetStatus`).
+- **Frostbitten (`frb`, new minor)**: 1/16 HP chip per turn, -33% SpA. Ice type immune.
+- **Frozen (`frz`, rework)**: Two-phase system. Phase 1: frozen-solid lockout (`lockoutPending`), -50% incoming damage except from Ice-type moves (`onSourceModifyDamage`). Phase 2: -50% SpA. Transition from Phase 1→2 happens in `onResidual`. Fire ≥65 BP hit on Phase 1 demotes to Frostbitten. Frostbite-on-Phase-2 resets to Phase 1 (direct `statusData` manipulation in `trySetStatus`). Frostbite escalates to Frozen on reapplication.
+- **Confusion (rework)**: Removes self-hit RNG entirely. Confused Pokémon uses a randomly-selected move from their PP-available moveset. 2-turn deterministic duration. Psychic type immune (blocked in `onStart` via return-false mechanism). Recursion guarded with `effectState.redirecting` flag.
+- **Scorched (`scr`) thermal demotion**: Added `onDamagingHit` to existing `scr` condition — Ice ≥65 BP hit demotes `scr` → `brn` via `cureStatus()` + `setStatus()`.
+
+**Custom statuses requiring client registration** (`stun`, `frb`):
+- Type union extension in `battle.ts` `Pokemon` class (~line 102) and `PokemonHealth` interface (~line 1028)
+- Added to `parseHealth` allowlist (~line 3355)
+- Stat reduction entry in `calculateModifiedStats` in `battle-tooltips.ts`
+
 ---
 
 ## 13. Open questions / likely next steps
@@ -425,7 +443,7 @@ Based on the master reference's roadmap (line 19-25):
 
 - **"Plan 2: Edit stats for Generation 1 Pokémon"** — the user has been doing this in `data/formats-data.ts` and `data/pokedex.ts`. They tag reworked species with `*` and new species with `**` (suffix notation in their Pokemon_Reworked.tsv — see master ref §"File Conventions").
 - **"Plan 3: Add a few New Pokémon"** — the `isNonstandard: 'custom'` (lowercase) tag is ready to bucket these under a "Custom" UI header.
-- **"Plan 4: Add mechanical/functionality changes"** — the master reference §1.5 (Blanket Type Effects), §2 (Weather), §3 (Terrain), §4 (Status Conditions), §5 (Move Categories — **partially done**: Sound ✓, Bullet ✓, Piercing ✓, Bone ✓; Bursting and Corrosive pending — see §22), ~~§6 (Typing Order STAB — DONE)~~, §7 (Speed Ties), §8 (Dual Ability System), §11 (Generation Gimmick Reworks) all describe pending mechanical work.
+- **"Plan 4: Add mechanical/functionality changes"** — the master reference §1.5 (Blanket Type Effects), §2 (Weather), §3 (Terrain), §4 (Status Conditions — **partially done**: Sleep ✓, Stun/Par ✓, Frostbite/Frozen ✓, Confusion ✓; pending: Drowsy/Yawn rework, Interlocked volatile, Charmed volatile, Marked relational status, blanket type immunity effects — see §23), §5 (Move Categories — **partially done**: Sound ✓, Bullet ✓, Piercing ✓, Bone ✓; Bursting and Corrosive pending — see §22), ~~§6 (Typing Order STAB — DONE)~~, §7 (Speed Ties), §8 (Dual Ability System), §11 (Generation Gimmick Reworks) all describe pending mechanical work.
 - **"Plan 5: Edit stats for Gen 8 Pokémon"** — will require lifting the Gen 1 Only clause (or replacing with a "Gen 1 + Gen 8 only" variant).
 
 **When new mechanical work starts**, expect to touch `sim/battle-actions.ts`, `sim/battle.ts`, `sim/pokemon.ts`, `data/abilities.ts`, `data/conditions.ts`, `data/moves.ts`, `data/scripts.ts` — but for Testing Standard-specific overrides, prefer `data/mods/champions/scripts.ts` and `rulesets.ts` to keep canon Showdown code paths intact.
@@ -486,7 +504,7 @@ console.log('overrideTier sample:', champ.overrideTier.venusaur);
 | Type chart | `data/typechart.ts` |
 | Custom Pokemon data | `data/pokedex.ts` |
 | Tier/legality tags | `data/formats-data.ts` |
-| Domain conditions (19 types, effects) | `data/mods/champions/conditions.ts` |
+| Domain conditions (19 types, effects) + Status condition overrides (slp, stun, par, frb, frz, confusion, scr demotion) | `data/mods/champions/conditions.ts` |
 | Domain-setting moves (19, IDs domain{type}, nums −101…−119) | `data/moves.ts` (end of file) |
 | Custom moves | `data/moves.ts` |
 | Custom items | `data/items.ts` |
@@ -672,6 +690,24 @@ Listed for posterity so the next Claude doesn't repeat them:
 33. **The hit pipeline in `trySpreadMoveHit` runs 8 ordered steps.** In gen ≥ 7: 0 InvulnerabilityEvent → 1 TryHitEvent → 2 TypeImmunity → 3 TryImmunity → 4 Accuracy → 5 BreakProtect → 6 StealBoosts → 7 MoveHitLoop. In gen ≤ 6, steps 1 and 2 are swapped (TypeImmunity runs before TryHitEvent). Bone bypasses steps 0–3 individually by returning `new Array(targets.length).fill(true)` in each hitStep* function.
 
 34. **`runImmunity()` fast-returns `true` when `source.ignoreImmunity === true`.** In `sim/pokemon.ts` (line ~2268), the very first check is `if (source && source.ignoreImmunity === true) return true`. This short-circuits ALL subsequent logic — the type chart lookup, `isGrounded()` for Ground immunity (which also handles Levitate and Magnet Rise volatile), and the `hasType('Flying')` ground-exemption. Setting `move.ignoreImmunity = true` in `hitStepTypeImmunity` is the cleanest single-line bypass for all type-based and grounding-based immunities simultaneously.
+
+35. **`onSourceModifyDamage` fires on the DEFENDER's conditions, not the attacker's.** The argument order is `(damage, source, target, move)` where `source` = the attacking Pokémon and `target` = the defending Pokémon that holds the condition. If you write `if (source.hasType(...))` you are checking the attacker; `if (target.hasType(...))` checks the defender. Used for sleep's +10% damage amplification and Frozen Phase 1's 50% damage reduction — these fire when the sleeping/frozen Pokémon is hit, and the modifier applies to the incoming attack.
+
+36. **`onStart` returning `false` from a volatile condition deletes the just-added volatile.** PS's `addVolatile` adds the volatile to `this.volatiles[id]` FIRST, then calls `singleEvent('Start', ...)`. If `onStart` returns `false`, `addVolatile` calls `delete this.volatiles[id]` and returns `false` to the caller. This is the correct mechanism for blocking a volatile from within its own `onStart` — used for the Psychic confusion immunity. Don't call `removeVolatile` yourself from inside `onStart`; just `return false`.
+
+37. **`statusData` (= `effectState` inside status condition hooks) persists through switching.** When a Pokémon switches out and back in, its `pokemon.statusData` object is preserved intact — including custom flags like `lockoutPending`, `frozenPhase`, etc. This means a lockout that was "earned" on turn T is still pending on switch-back, which is the intended behavior. No special code needed to persist these — Showdown handles it automatically.
+
+38. **Confusion's `onBeforeMove` calls `useMove()` recursively — guard with a redirecting flag.** When `this.actions.useMove(randomMoveId, pokemon)` is called inside `onBeforeMove` for the confusion volatile, the move execution pipeline fires `onBeforeMove` again for the same confusion volatile on the same Pokémon. Without a guard this becomes infinite recursion. Fix: set `this.effectState.redirecting = true` before calling `useMove`. The recursive invocation checks this flag first, clears it, and returns immediately (allowing the random move to proceed). The `confusionTurns` counter must NOT increment on the recursive call.
+
+39. **Frozen Phase 1 → Phase 2 transition happens in `onResidual`, not in `onBeforeMove`.** Phase 1's lockout is "served" in `onBeforeMove` (return false + clear `lockoutPending`), but the phase itself doesn't advance until end-of-turn `onResidual`. This means Phase 1's 50% damage reduction applies for the entire turn including hits from faster opponents. Any unserved lockout (e.g. if the Pokémon switches out mid-turn) is explicitly cleared in `onResidual` (`lockoutPending = false`) when Phase 1 ends. Do NOT advance the phase inside `onBeforeMove`.
+
+40. **Comatose (Komala's ability) never receives the `slp` status — the new sleep hooks never fire for it.** Comatose works by keeping the Pokémon perpetually in the `slp` status from before the battle begins. But it sets this via a direct flag at initialization, not via `trySetStatus` or `setStatus`. When an opponent tries to inflict sleep on a Comatose Pokémon, the `onTrySetStatus` hook on the Comatose ability returns `false` before anything reaches the new `slp` condition code. No code changes needed for Comatose compatibility.
+
+41. **Frostbite-on-Phase-2-Frozen must be handled via direct `statusData` mutation, not `setStatus`.** `setStatus('frb', ...)` will silently fail when the target already has `frz` status (you can't set a new status when one is already active). The solution: in `trySetStatus`, detect this case, directly mutate `this.statusData.frozenPhase = 1` and `this.statusData.lockoutPending = true`, fire the activation message, and return `false` (leaving the `frz` status intact but reset to Phase 1). The status ID never changes — only the phase/lockout data does.
+
+42. **`cureStatus()` + `setStatus()` is the correct sequence for thermal demotion (frz→frb, scr→brn).** `cureStatus()` clears the current status and its `statusData`; then `setStatus()` applies the new status (which fires `onStart` and sets up fresh `statusData`). Do NOT try to mutate `this.status` directly — always go through these methods. This pattern is used in `onDamagingHit` on both `frz` (Fire hit demotes Phase 1 to frb) and `scr` (Ice hit demotes scr to brn).
+
+43. **`move.selfSwitch` is the correct check for "pivot moves" in the pivot block.** Moves like U-turn, Volt Switch, Flip Turn, Baton Pass, Shed Tail all have `selfSwitch` set (values: `true`, `'copyvolatile'`, `'shedtail'`). Checking `move.selfSwitch` in `onBeforeMove` (to block the move) and checking `move.selfSwitch` in `onDisableMove` (to grey them out in the UI via `pokemon.disableMove(moveSlot.id)`) covers all pivot moves without needing to enumerate them by ID.
 
 ---
 
@@ -1192,6 +1228,188 @@ Custom Poison-type matchup overrides:
 - Poison-type moves always deal 2× SE vs Steel (Steel no longer resists Poison)
 
 Implementation will require hooking into `runEffectiveness` or the type chart event system. Not yet started.
+
+---
+
+---
+
+## 23. Status condition system technical reference
+
+### Overview
+
+All status condition overrides live in `data/mods/champions/conditions.ts` in the champions mod. They override Showdown's base condition behavior entirely. Type immunities and escalation rules (psn→tox, brn→scr, etc.) live in `trySetStatus` in `data/mods/champions/scripts.ts`.
+
+The conditions implemented this session follow patterns documented below. When implementing more status conditions from §4, use these as templates.
+
+### Standard hook reference
+
+| Hook | When it fires | Typical use |
+|---|---|---|
+| `onStart(target, source, sourceEffect)` | When status is first applied | Initialize `statusData`, announce message. Return `false` to abort (deletes the just-added volatile for volatiles). |
+| `onBeforeMove(pokemon, target, move)` | When Pokémon tries to act | Lockout logic — return `false` to prevent the move. Also check/clear `lockoutPending`. |
+| `onResidualOrder: N` + `onResidual(pokemon)` | End of turn | Chip damage, heal-tax, duration tracking, phase transitions. |
+| `onModify[Stat]Priority: -101` + `onModify[Stat](stat, pokemon)` | Stat calculation | Stat reductions. Priority −101 fires AFTER all other modifiers (domain boosts, stat stages). Use `this.finalModify(stat)` + `Math.floor()`. |
+| `onSourceModifyDamage(damage, source, target, move)` | When the condition-holder is HIT | Damage amplification or reduction. `source` = attacker, `target` = defending Pokémon with the condition. |
+| `onDamagingHit(damage, target, source, move)` | After a hit lands on condition-holder | Wake-on-hit logic, thermal demotion. `target` = the Pokémon with the condition. |
+| `onDisableMove(pokemon)` | Each time the move UI is built | Grey out moves in the client. Call `pokemon.disableMove(moveSlot.id)` for each move to disable. |
+| `onModifyPriority(priority, pokemon, target, move)` | Priority bracket calculation | Priority suppression — lower effective priority >0 by one bracket. |
+
+### The `lockoutPending` pattern (deterministic first-action lockout)
+
+Used by `stun`, `par`, and `frz` (Phase 1) to skip the Pokémon's first available action:
+
+```typescript
+onStart(target) {
+    target.statusData.lockoutPending = true;
+},
+onBeforeMove(pokemon, target, move) {
+    if (pokemon.statusData.lockoutPending) {
+        pokemon.statusData.lockoutPending = false;
+        this.add('cant', pokemon, 'conditionName');
+        return false;  // move prevented
+    }
+    // other checks (pivot block, etc.)
+},
+```
+
+`statusData` persists through switching — the lockout is still pending on switch-back if not yet served.
+
+### The `frozenPhase` two-phase pattern
+
+`frz` uses a `frozenPhase` field (1 or 2) to track which phase is active:
+
+```typescript
+onStart(target) {
+    target.statusData.frozenPhase = 1;
+    target.statusData.lockoutPending = true;
+},
+onBeforeMove(pokemon, target, move) {
+    // Phase 1: serve the lockout
+    if (pokemon.statusData.frozenPhase === 1 && pokemon.statusData.lockoutPending) {
+        pokemon.statusData.lockoutPending = false;
+        this.add('cant', pokemon, 'frz');
+        return false;
+    }
+    // Phase 2: no movement restriction
+},
+onResidual(pokemon) {
+    // Phase 1 → Phase 2 transition happens here (end of turn), not in onBeforeMove
+    this.damage(Math.floor(pokemon.baseMaxhp / 8));
+    if (pokemon.statusData.frozenPhase === 1) {
+        pokemon.statusData.frozenPhase = 2;
+        pokemon.statusData.lockoutPending = false;  // clear any unserved lockout
+    }
+},
+onSourceModifyDamage(damage, source, target, move) {
+    if (target.statusData.frozenPhase !== 1) return;  // Phase 2: no reduction
+    if (move.type === 'Ice') return;                   // Ice bypasses reduction
+    return this.chainModify(0.5);
+},
+onModifySpAPriority: -101,
+onModifySpA(spa, pokemon) {
+    if (pokemon.statusData.frozenPhase !== 2) return;  // only Phase 2 reduces SpA
+    spa = this.finalModify(spa);
+    return Math.floor(spa * 1 / 2);
+},
+```
+
+### `trySetStatus` — type immunities and escalations
+
+All type immunity and escalation logic goes here (not in `onStart`). `trySetStatus` in `scripts.ts`:
+
+```typescript
+trySetStatus(status, source = null, sourceEffect = null) {
+    const statusId = this.battle.dex.conditions.get(status).id;
+    // Type immunities:
+    if (statusId === 'slp' && this.hasType('Cosmic') && source !== this) return false;
+    if ((statusId === 'stun' || statusId === 'par') && this.hasType('Electric')) return false;
+    if ((statusId === 'frb' || statusId === 'frz') && this.hasType('Ice')) return false;
+    // Escalations:
+    if (this.status === 'stun' && (statusId === 'stun' || statusId === 'par')) {
+        return this.setStatus('par', source, sourceEffect);
+    }
+    if (this.status === 'frb' && (statusId === 'frb' || statusId === 'frz')) {
+        return this.setStatus('frz', source, sourceEffect);
+    }
+    // Frostbite-on-Phase-2-Frozen: reset to Phase 1 (direct statusData mutation, no status change)
+    if (this.status === 'frz' && statusId === 'frb') {
+        if (this.statusData.frozenPhase === 2) {
+            this.statusData.frozenPhase = 1;
+            this.statusData.lockoutPending = true;
+            this.battle.add('-activate', this, 'move: Frostbite');
+        }
+        return false;  // frz stays as-is; frb never applied
+    }
+    // Existing escalations (brn→scr, psn→tox, cor→mlt):
+    if (this.status === 'psn' && statusId === 'psn') return this.setStatus('tox', source, sourceEffect);
+    if (this.status === 'brn' && statusId === 'brn') return this.setStatus('scr', source, sourceEffect);
+    if (this.status === 'cor' && statusId === 'cor') return this.setStatus('mlt', source, sourceEffect);
+    return this.setStatus(this.status || status, source, sourceEffect);
+},
+```
+
+**Key rule**: `setStatus()` blocks if the Pokémon already has a different status. To change an existing status (demotion, escalation), call `cureStatus()` first then `setStatus()` — or handle it directly in `trySetStatus` via `setStatus('newstatus', ...)` which PS allows because you're in the status-setting pipeline.
+
+### Custom status client registration
+
+Every non-canon status needs three client-side registrations:
+
+**1. Type union in `battle.ts`** — two places, same union:
+```typescript
+// Pokemon class (~line 102)
+status: Dex.StatusName | 'tox' | 'scr' | 'cor' | 'mlt' | 'stun' | 'frb' | '' | '???'
+// PokemonHealth interface (~line 1028) — same union
+```
+
+**2. `parseHealth` allowlist (~line 3355):**
+```typescript
+} else if (status === 'par' || status === 'brn' || status === 'slp' || status === 'frz' || status === 'tox' ||
+        status === 'scr' || status === 'cor' || status === 'mlt' || status === 'stun' || status === 'frb') {
+    output.status = status as any;
+```
+
+**3. Stat reduction block in `calculateModifiedStats` in `battle-tooltips.ts`:**
+```typescript
+const status = (pokemon.status || serverPokemon.status) as string;
+if ((status === 'brn' || status === 'scr') && ability !== 'guts') {
+    stats.atk = Math.floor(stats.atk * (status === 'brn' ? 2 / 3 : 1 / 2));
+} else if (status === 'psn' || status === 'tox') {
+    stats.spd = Math.floor(stats.spd * (status === 'psn' ? 2 / 3 : 1 / 2));
+} else if (status === 'cor' || status === 'mlt') {
+    stats.def = Math.floor(stats.def * (status === 'cor' ? 2 / 3 : 1 / 2));
+} else if (status === 'slp') {
+    // +10% damage taken displayed as ×10/11 effective Def/SpD
+    stats.def = Math.floor(stats.def * 10 / 11);
+    stats.spd = Math.floor(stats.spd * 10 / 11);
+} else if (status === 'stun' || status === 'par') {
+    stats.spe = Math.floor(stats.spe * (status === 'stun' ? 2 / 3 : 1 / 2));
+} else if (status === 'frb' || status === 'frz') {
+    // frz tooltip shows Phase 2 SpA reduction (the sustained state)
+    stats.spa = Math.floor(stats.spa * (status === 'frb' ? 2 / 3 : 1 / 2));
+}
+```
+
+Note: `frz` is already in `Dex.StatusName` (canonical status), so it doesn't need the type union extension. Only statuses not in canon Showdown need to be added to the union.
+
+### Implemented conditions summary
+
+| Condition | Tier | Key effects | Type immune | Escalates to |
+|---|---|---|---|---|
+| `slp` | Status | 2-turn lockout, 1/10 heal-tax/turn, +10% dmg taken, wake on ≥50% hit | Cosmic (foe-inflicted) | — |
+| `stun` | Status (new minor) | 1st-action lockout, pivot block, -33% Spe | Electric | `par` |
+| `par` | Status (rework) | 1st-action lockout, pivot block, -50% Spe, priority suppression | Electric | — |
+| `frb` | Status (new minor) | 1/16 chip/turn, -33% SpA | Ice | `frz` |
+| `frz` | Status (rework) | Phase 1: lockout + -50% dmg (except Ice); Phase 2: -50% SpA, 1/8 chip/turn | Ice | — |
+| `confusion` | Volatile | 2-turn duration, random move redirect (no self-hit) | Psychic | — |
+| `scr` | Status (existing) | Added: Ice ≥65 BP hit demotes to `brn` | — | — |
+
+### Pending §4 conditions (not yet implemented)
+
+- **Drowsy/Yawn rework** — sleep buildup over turns (the pre-sleep volatile)
+- **Interlocked** — volatile; prevents target from switching or using moves that affect the field
+- **Charmed** — volatile; forces target to attack the Charmer
+- **Marked** — relational status; source remembers the marked target; interaction with multi-hit tracking
+- **Blanket type effects** — type-specific passive immunities beyond what's in `trySetStatus` (§1.5 of master ref)
 
 ---
 
