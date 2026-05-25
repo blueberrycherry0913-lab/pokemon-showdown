@@ -790,8 +790,55 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 	// --- Status condition overrides ---
 	// §4 of the master reference: every status has both a damage component and a stat-reduction
 	// component.
-	// Poison family: Poisoned = 1/16 chip + -33% SpDef; Toxic = escalating chip + -50% SpDef.
-	// Burn family:   Burned   = 1/16 chip + -33% Atk;  Scorched = 1/8 chip + -50% Atk.
+	// Poison family:    Poisoned = 1/16 chip + -33% SpDef; Toxic    = escalating chip + -50% SpDef.
+	// Burn family:      Burned   = 1/16 chip + -33% Atk;   Scorched = 1/8 chip + -50% Atk.
+	// Corrosion family: Corroded = 1/16 chip + -33% Def;   Melting  = 1/8 chip + -50% Def.
+
+	cor: {
+		name: 'cor',
+		effectType: 'Status',
+		onStart(target, source, sourceEffect) {
+			if (sourceEffect && sourceEffect.effectType === 'Ability') {
+				this.add('-status', target, 'cor', '[from] ability: ' + sourceEffect.name, `[of] ${source}`);
+			} else {
+				this.add('-status', target, 'cor');
+			}
+		},
+		onResidualOrder: 9,
+		onResidual(pokemon) {
+			// 1/16 per turn
+			this.damage(pokemon.baseMaxhp / 16);
+		},
+		// -33% Defense while Corroded. Fires last so it stacks correctly with domain boosts.
+		onModifyDefPriority: -101,
+		onModifyDef(def) {
+			def = this.finalModify(def);
+			return Math.floor(def * 2 / 3);
+		},
+	},
+
+	mlt: {
+		name: 'mlt',
+		effectType: 'Status',
+		onStart(target, source, sourceEffect) {
+			if (sourceEffect && sourceEffect.effectType === 'Ability') {
+				this.add('-status', target, 'mlt', '[from] ability: ' + sourceEffect.name, `[of] ${source}`);
+			} else {
+				this.add('-status', target, 'mlt');
+			}
+		},
+		onResidualOrder: 9,
+		onResidual(pokemon) {
+			// 1/8 per turn (doubled from Corroded)
+			this.damage(pokemon.baseMaxhp / 8);
+		},
+		// -50% Defense while Melting
+		onModifyDefPriority: -101,
+		onModifyDef(def) {
+			def = this.finalModify(def);
+			return Math.floor(def * 1 / 2);
+		},
+	},
 
 	brn: {
 		name: 'brn',
