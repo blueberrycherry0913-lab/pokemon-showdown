@@ -786,4 +786,64 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			}
 		},
 	},
+
+	// --- Status condition overrides ---
+	// §4 of the master reference: every status has both a damage component and a stat-reduction
+	// component. Poison family: Poisoned = 1/16 chip + -33% SpDef; Toxic = escalating chip + -50% SpDef.
+
+	psn: {
+		name: 'psn',
+		effectType: 'Status',
+		onStart(target, source, sourceEffect) {
+			if (sourceEffect && sourceEffect.effectType === 'Ability') {
+				this.add('-status', target, 'psn', '[from] ability: ' + sourceEffect.name, `[of] ${source}`);
+			} else {
+				this.add('-status', target, 'psn');
+			}
+		},
+		onResidualOrder: 9,
+		onResidual(pokemon) {
+			// 1/16 per turn (halved from canon's 1/8)
+			this.damage(pokemon.baseMaxhp / 16);
+		},
+		// -33% SpDef while Poisoned. Fires at -101 priority so it applies after all other
+		// modifiers (domain boosts, stat stages, etc.) have already been chained in.
+		onModifySpDPriority: -101,
+		onModifySpD(spd) {
+			spd = this.finalModify(spd);
+			return Math.floor(spd * 2 / 3);
+		},
+	},
+
+	tox: {
+		name: 'tox',
+		effectType: 'Status',
+		onStart(target, source, sourceEffect) {
+			this.effectState.stage = 0;
+			if (sourceEffect && sourceEffect.id === 'toxicorb') {
+				this.add('-status', target, 'tox', '[from] item: Toxic Orb');
+			} else if (sourceEffect && sourceEffect.effectType === 'Ability') {
+				this.add('-status', target, 'tox', '[from] ability: ' + sourceEffect.name, `[of] ${source}`);
+			} else {
+				this.add('-status', target, 'tox');
+			}
+		},
+		onSwitchIn() {
+			this.effectState.stage = 0;
+		},
+		onResidualOrder: 9,
+		onResidual(pokemon) {
+			// Escalating: 1/16 on turn 1, +1/16 each subsequent turn (canon-preserved)
+			if (this.effectState.stage < 15) {
+				this.effectState.stage++;
+			}
+			this.damage(this.clampIntRange(pokemon.baseMaxhp / 16, 1) * this.effectState.stage);
+		},
+		// -50% SpDef while Toxicked. Same late-priority pattern as psn.
+		onModifySpDPriority: -101,
+		onModifySpD(spd) {
+			spd = this.finalModify(spd);
+			return Math.floor(spd * 1 / 2);
+		},
+	},
 };
