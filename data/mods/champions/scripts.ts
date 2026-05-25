@@ -33,6 +33,17 @@ export const Scripts: ModdedBattleScriptsData = {
 		return stat;
 	},
 	pokemon: {
+		// Poisoned → Toxic escalation: re-applying Poisoned to an already-Poisoned Pokémon
+		// escalates to Toxic instead of failing. Mirrors §4 of the master reference:
+		// "Re-applying the minor version while it's active escalates to the severe version."
+		trySetStatus(status, source = null, sourceEffect = null) {
+			const statusId = this.battle.dex.conditions.get(status).id;
+			if (this.status === 'psn' && statusId === 'psn') {
+				return this.setStatus('tox', source, sourceEffect);
+			}
+			return this.setStatus(this.status || status, source, sourceEffect);
+		},
+
 		// Don't revert Mega Evolutions (or Primal Reversions / Z-bursts) after fainting.
 		// Diverges from base sim/pokemon.ts:formeChange by omitting `this.formeRegression = true`
 		// inside the `source.effectType === 'Item'` branch. Everything else in this function
