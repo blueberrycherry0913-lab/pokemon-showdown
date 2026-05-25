@@ -47,6 +47,25 @@ export const Scripts: ModdedBattleScriptsData = {
 			if ((statusId === 'stun' || statusId === 'par') && this.hasType('Electric')) {
 				return false;
 			}
+			// Ice types are immune to Frostbitten and Frozen (§1.5).
+			if ((statusId === 'frb' || statusId === 'frz') && this.hasType('Ice')) {
+				return false;
+			}
+			// Frostbitten → Frozen escalation: re-applying Frostbitten (or directly inflicting Frozen)
+			// while Frostbitten escalates to Frozen. onStart sets Phase 1 + new lockout.
+			if (this.status === 'frb' && (statusId === 'frb' || statusId === 'frz')) {
+				return this.setStatus('frz', source, sourceEffect);
+			}
+			// Frostbite-on-Phase 2 Frozen: resets back to Phase 1 (Frozen Solid + fresh lockout).
+			// Mirrors the reverse thermal rule — a Frostbite proc "shatters" the sustained freeze.
+			if (this.status === 'frz' && statusId === 'frb') {
+				if (this.statusData.frozenPhase === 2) {
+					this.statusData.frozenPhase = 1;
+					this.statusData.lockoutPending = true;
+					this.battle.add('-activate', this, 'move: Frostbite');
+				}
+				return false;
+			}
 			// Stunned → Paralyzed escalation: re-applying Stun (or directly inflicting Par) to
 			// an already-Stunned Pokémon escalates to Paralyzed. Resets lockout flag via onStart.
 			if (this.status === 'stun' && (statusId === 'stun' || statusId === 'par')) {

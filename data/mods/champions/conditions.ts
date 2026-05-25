@@ -891,6 +891,12 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				return Math.floor(atk * 1 / 2);
 			}
 		},
+		// Thermal counter (§4): Ice move ≥65 BP demotes Scorched to Burned on hit
+		onDamagingHit(damage, target, source, move) {
+			if (move.type !== 'Ice' || move.basePower < 65) return;
+			target.cureStatus();
+			target.setStatus('brn', source, move);
+		},
 	},
 
 	psn: {
@@ -1078,6 +1084,84 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			if (damage >= target.baseMaxhp / 2) {
 				target.cureStatus();
 			}
+		},
+	},
+
+	frb: {
+		name: 'frb',
+		effectType: 'Status',
+		onStart(target, source, sourceEffect) {
+			if (sourceEffect?.effectType === 'Ability') {
+				this.add('-status', target, 'frb', '[from] ability: ' + sourceEffect.name, `[of] ${source}`);
+			} else {
+				this.add('-status', target, 'frb');
+			}
+		},
+		onResidualOrder: 9,
+		onResidual(pokemon) {
+			// 1/16 per turn (mirrors Burned/Poisoned/Corroded minor-tier chip)
+			this.damage(Math.floor(pokemon.baseMaxhp / 16));
+		},
+		// -33% Special Attack while Frostbitten
+		onModifySpAPriority: -101,
+		onModifySpA(spa, pokemon) {
+			spa = this.finalModify(spa);
+			return Math.floor(spa * 2 / 3);
+		},
+	},
+
+	frz: {
+		name: 'frz',
+		effectType: 'Status',
+		onStart(target, source, sourceEffect) {
+			if (sourceEffect?.effectType === 'Ability') {
+				this.add('-status', target, 'frz', '[from] ability: ' + sourceEffect.name, `[of] ${source}`);
+			} else {
+				this.add('-status', target, 'frz');
+			}
+			// Phase 1 — Frozen Solid: 1-turn lockout + 50% damage reduction
+			target.statusData.frozenPhase = 1;
+			target.statusData.lockoutPending = true;
+		},
+		onBeforeMove(pokemon, target, move) {
+			// Phase 1 lockout: Pokémon loses its first action
+			if (pokemon.statusData.frozenPhase === 1 && pokemon.statusData.lockoutPending) {
+				pokemon.statusData.lockoutPending = false;
+				this.add('cant', pokemon, 'frz');
+				return false;
+			}
+		},
+		onResidualOrder: 9,
+		onResidual(pokemon) {
+			if (!pokemon.hp || pokemon.status !== 'frz') return;
+			// 1/8 chip damage in both phases
+			this.damage(Math.floor(pokemon.baseMaxhp / 8));
+			if (pokemon.statusData.frozenPhase === 1) {
+				// End of Phase 1 turn — transition to Phase 2 (sustained Frozen)
+				pokemon.statusData.frozenPhase = 2;
+				pokemon.statusData.lockoutPending = false; // discard any unserved lockout
+			}
+		},
+		// Phase 1 damage reduction: takes 50% less from non-Ice attacking moves while Frozen Solid.
+		// onSourceModifyDamage fires on the DEFENDER's conditions; source = attacker, target = frozen Pokémon.
+		onSourceModifyDamage(damage, source, target, move) {
+			if (target.statusData.frozenPhase !== 1) return;
+			if (move.type === 'Ice') return; // Ice moves bypass the reduction (§4)
+			return this.chainModify(0.5);
+		},
+		// Phase 2: -50% Special Attack while Frozen (sustained)
+		onModifySpAPriority: -101,
+		onModifySpA(spa, pokemon) {
+			if (pokemon.statusData.frozenPhase !== 2) return;
+			spa = this.finalModify(spa);
+			return Math.floor(spa * 1 / 2);
+		},
+		// Thermal counter (§4): Fire move ≥65 BP demotes Phase 1 Frozen Solid → Frostbitten on hit.
+		onDamagingHit(damage, target, source, move) {
+			if (target.statusData.frozenPhase !== 1) return;
+			if (move.type !== 'Fire' || move.basePower < 65) return;
+			target.cureStatus();
+			target.setStatus('frb', source, move);
 		},
 	},
 };
