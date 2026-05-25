@@ -38,6 +38,11 @@ export const Scripts: ModdedBattleScriptsData = {
 		// "Re-applying the minor version while it's active escalates to the severe version."
 		trySetStatus(status, source = null, sourceEffect = null) {
 			const statusId = this.battle.dex.conditions.get(status).id;
+			// Cosmic types are immune to foe-inflicted Sleep.
+			// Rest (source === this) bypasses this immunity so Cosmic Pokémon can still use Rest.
+			if (statusId === 'slp' && this.hasType('Cosmic') && source !== this) {
+				return false;
+			}
 			if (this.status === 'psn' && statusId === 'psn') {
 				return this.setStatus('tox', source, sourceEffect);
 			}

@@ -948,4 +948,48 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return Math.floor(spd * 1 / 2);
 		},
 	},
+
+	slp: {
+		name: 'slp',
+		effectType: 'Status',
+		onStart(target, source, sourceEffect) {
+			if (sourceEffect?.effectType === 'Ability') {
+				this.add('-status', target, 'slp', '[from] ability: ' + sourceEffect.name, `[of] ${source}`);
+			} else {
+				this.add('-status', target, 'slp');
+			}
+			target.statusData.sleepTurns = 0;
+		},
+		onBeforeMove(pokemon, target, move) {
+			// Sleep Talk and Snore can still be used while asleep — don't count those turns
+			if (move.id === 'sleeptalk' || move.id === 'snore') return;
+			if (pokemon.status !== 'slp' || !pokemon.hp) return;
+			pokemon.statusData.sleepTurns++;
+			if (pokemon.statusData.sleepTurns > 2) {
+				// Third turn: Pokémon wakes up and can move this turn
+				pokemon.cureStatus();
+				return;
+			}
+			this.add('cant', pokemon, 'slp');
+			return false;
+		},
+		onResidualOrder: 9,
+		onResidual(pokemon) {
+			if (!pokemon.hp || pokemon.status !== 'slp') return;
+			// Heal-tax: sleeping restores 1/10 max HP per end-of-turn
+			this.heal(Math.floor(pokemon.baseMaxhp / 10), pokemon, pokemon);
+		},
+		// Takes 10% more damage from all attacks while asleep.
+		// onSourceModifyDamage fires on the DEFENDER's conditions; source = attacker, target = sleeping Pokémon.
+		onSourceModifyDamage(damage, source, target, move) {
+			return this.chainModify(1.1);
+		},
+		// Active wake-up: a single hit dealing ≥50% of the sleeper's max HP wakes it immediately.
+		onDamagingHit(damage, target, source, move) {
+			if (target.status !== 'slp') return;
+			if (damage >= target.baseMaxhp / 2) {
+				target.cureStatus();
+			}
+		},
+	},
 };
