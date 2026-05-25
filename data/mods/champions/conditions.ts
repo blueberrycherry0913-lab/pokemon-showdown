@@ -1164,4 +1164,50 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			target.setStatus('frb', source, move);
 		},
 	},
+
+	confusion: {
+		onStart(target, source, sourceEffect) {
+			// Psychic types are immune to Confusion (§1.5 blanket effect)
+			if (target.hasType('Psychic')) {
+				this.add('-immune', target);
+				return false;
+			}
+			if (sourceEffect?.id === 'lockedmove') {
+				this.add('-start', target, 'confusion', '[fatigue]');
+			} else if (sourceEffect?.effectType === 'Ability') {
+				this.add('-start', target, 'confusion', '[from] ability: ' + sourceEffect.name, `[of] ${source}`);
+			} else {
+				this.add('-start', target, 'confusion');
+			}
+			this.effectState.confusionTurns = 0;
+		},
+		onEnd(target) {
+			this.add('-end', target, 'confusion');
+		},
+		onBeforeMovePriority: 3,
+		onBeforeMove(pokemon, target, move) {
+			// Guard: the redirected random move is executing — skip the confusion check
+			if (this.effectState.redirecting) {
+				this.effectState.redirecting = false;
+				return;
+			}
+			this.effectState.confusionTurns++;
+			if (this.effectState.confusionTurns > 2) {
+				// 2 turns served — confusion clears, Pokémon acts freely this turn
+				pokemon.removeVolatile('confusion');
+				return;
+			}
+			this.add('-activate', pokemon, 'confusion');
+			// Collect moves that still have PP (currently-usable moveset)
+			const validMoves = pokemon.moveSlots
+				.filter(ms => ms.id && ms.pp > 0)
+				.map(ms => ms.id);
+			if (!validMoves.length) return false; // no PP on any move — block action
+			const randomMoveId = this.sample(validMoves);
+			// Set the guard flag BEFORE useMove so the recursive onBeforeMove call skips
+			this.effectState.redirecting = true;
+			this.actions.useMove(randomMoveId, pokemon);
+			return false; // suppress the originally-chosen move
+		},
+	},
 };
