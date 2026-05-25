@@ -16103,6 +16103,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			captivate: ["4M"],
 			clearsmog: ["9L12", "8L12", "8V", "7L15", "6L15", "5L15"],
 			confide: ["7M", "6M"],
+			corrosiontest: ["9L1"],
 			corrosivegas: ["8T"],
 			curse: ["9M", "7V"],
 			darkpulse: ["9M", "8M", "8V", "7M", "6M", "5T", "4M"],

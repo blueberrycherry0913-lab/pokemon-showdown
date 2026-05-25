@@ -21611,4 +21611,18 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 			return this.actions.getConfusionDamage(pokemon, 40);
 		},
 	},
+	corrosiontest: {
+		num: -6,
+		accuracy: 100,
+		basePower: 0,
+		category: "Status",
+		name: "Corrosion (TEST)",
+		pp: 10,
+		priority: 0,
+		flags: { protect: 1, reflectable: 1, mirror: 1 },
+		status: 'cor',
+		target: "normal",
+		type: "Poison",
+		isNonstandard: "Custom" as const,
+	},
 };
