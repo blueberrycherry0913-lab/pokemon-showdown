@@ -1177,9 +1177,13 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			target.statusState.lockoutPending = true;
 		},
 		onBeforeMove(pokemon, target, move) {
-			// Phase 1 lockout: Pokémon loses its first action
+			// Phase 1 lockout: Pokémon loses its first action (the "thaw attempt").
+			// Transition to Phase 2 happens here — the attempt to thaw is the trigger,
+			// not end-of-turn, so the Pokémon enters the regular Frozen state immediately
+			// after its first blocked action.
 			if (pokemon.statusState.frozenPhase === 1 && pokemon.statusState.lockoutPending) {
 				pokemon.statusState.lockoutPending = false;
+				pokemon.statusState.frozenPhase = 2;
 				this.add('cant', pokemon, 'frz');
 				return false;
 			}
@@ -1189,11 +1193,6 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			if (!pokemon.hp || pokemon.status !== 'frz') return;
 			// 1/8 chip damage in both phases
 			this.damage(Math.floor(pokemon.baseMaxhp / 8));
-			if (pokemon.statusState.frozenPhase === 1) {
-				// End of Phase 1 turn — transition to Phase 2 (sustained Frozen)
-				pokemon.statusState.frozenPhase = 2;
-				pokemon.statusState.lockoutPending = false; // discard any unserved lockout
-			}
 		},
 		// Phase 1 damage reduction: takes 50% less from non-Ice attacking moves while Frozen Solid.
 		// onSourceModifyDamage fires on the DEFENDER's conditions; source = attacker, target = frozen Pokémon.
