@@ -435,6 +435,44 @@ Full implementation of the reworked status conditions from §4 of the master ref
 - Added to `parseHealth` allowlist (~line 3355)
 - Stat reduction entry in `calculateModifiedStats` in `battle-tooltips.ts`
 
+### Status client-side display polish (latest session)
+
+All custom status display work lives in the **client** repo (`pokemon-showdown-client`). Files changed:
+
+- **`play.pokemonshowdown.com/src/battle-animations.ts`** — stat bar badge rendering  
+  Added `STN` (yellow, `par` CSS class) and `FRB` (blue, `frz` CSS class) badge spans after the `mlt` case.
+
+- **`play.pokemonshowdown.com/src/battle.ts`** — three blocks:
+  1. **`-fail` block** — "Already stunned/frostbitten" messages + `neutral` result anim
+  2. **`-status` application block** — "Stunned" (`par` anim) and "Frostbitten" (`frz` anim) result animations
+  3. **Status description box** — after `this.log(args, kwArgs)` in the `-status` case, a `statusInfoMap` maps every status ID to `[cssColor, displayName, effectSummary]` and calls `this.scene.log.addDiv('battle-history', ...)` to render a colored left-border info chip in the action log
+  4. **`cantUseMove()` block** — added `case 'stun':` that runs the `par` status anim and shows "Stunned" result badge (yellow), mirroring how `case 'par':` works
+
+- **`build-tools/build-indexes`** — after the `Text` object is populated from `Dex.loadTextData()`, two manual entries are injected before `text.js` is written:
+  ```javascript
+  Text['stun'] = {start: "  [POKEMON] became stunned!", alreadyStarted: "  [POKEMON] is already stunned!", end: "  [POKEMON] snapped out of its stun!", cant: "[POKEMON] is stunned! It can't move!"};
+  Text['frb'] = {start: "  [POKEMON] was frostbitten!", alreadyStarted: "  [POKEMON] is already frostbitten!", end: "  [POKEMON]'s frostbite was healed!", damage: "  [POKEMON] was hurt by frostbite!"};
+  ```
+  **Why here?** `play.pokemonshowdown.com/data/text.js` is **gitignored** and **generated** by `build-indexes`. Editing it directly survives `git pull` but is wiped by `node build full`. Adding the entries in `build-indexes` makes them permanent across full rebuilds. The `BattleText` template system requires keys: `start`, `alreadyStarted`, `end`, `cant` (for lockout statuses), `damage` (for chip-damage statuses). Without entries, the parser falls back to the generic `"[POKEMON] is afflicted with EFFECT!"` / `"([POKEMON] was hurt by EFFECT!)"` messages.
+
+**Status description box — full `statusInfoMap`:**
+```typescript
+const statusInfoMap: {[id: string]: [string, string, string]} = {
+    'brn':  ['#EE5533', 'Burned',      '1/16 HP/turn • −33% Atk'],
+    'scr':  ['#EE5533', 'Scorched',    '1/8 HP/turn • −50% Atk'],
+    'psn':  ['#A4009A', 'Poisoned',    '1/16 HP/turn • −33% SpD'],
+    'tox':  ['#A4009A', 'Toxic',       'Escalating HP loss/turn • −50% SpD'],
+    'cor':  ['#A4009A', 'Corroded',    '1/16 HP/turn • −33% Def'],
+    'mlt':  ['#A4009A', 'Melting',     '1/8 HP/turn • −50% Def'],
+    'slp':  ['#AA77AA', 'Asleep',      '2-turn lockout • +1/10 HP healed/turn • +10% dmg taken'],
+    'stun': ['#9AA400', 'Stunned',     'First action skipped • −33% Spe • Pivot moves blocked'],
+    'par':  ['#9AA400', 'Paralyzed',   'First action skipped • −50% Spe • Priority −1'],
+    'frb':  ['#009AA4', 'Frostbitten', '1/16 HP/turn • −33% SpA'],
+    'frz':  ['#009AA4', 'Frozen',      'Phase 1: skip action, −50% dmg in • Phase 2: −50% SpA, 1/8 HP/turn'],
+};
+```
+Rendered as: `<div style="font-size:10px; padding:1px 0 1px 6px; border-left:3px solid {color}; ..."><b style="color:{color}">{name}</b> — {desc}</div>` via `addDiv('battle-history', ...)`. Uses `addDiv` (not `add` or `message`) so it appears only in the action log panel, not the center battle display, and bypasses Caja HTML sanitization (which would strip inline styles).
+
 ---
 
 ## 13. Open questions / likely next steps
@@ -515,6 +553,9 @@ console.log('overrideTier sample:', champ.overrideTier.venusaur);
 | Preact teambuilder UI | `play.pokemonshowdown.com/src/battle-team-editor.tsx` |
 | Format detection (client) | `play.pokemonshowdown.com/src/battle-dex-search.ts` (~line 653) |
 | Battle stat tooltips + move BP display | `play.pokemonshowdown.com/src/battle-tooltips.ts` (ModifiableValue class, showMoveTooltip, listen) |
+| Status stat-bar badges (STN, FRB, etc.) | `play.pokemonshowdown.com/src/battle-animations.ts` (status badge rendering block) |
+| Status cant-move animations / fail msgs / description boxes | `play.pokemonshowdown.com/src/battle.ts` (`cantUseMove()`, `-fail` block, `-status` block) |
+| BattleText entries for custom statuses (stun/frb) | `build-tools/build-indexes` (injected after `Dex.loadTextData()`, before `text.js` write) |
 | Type-order STAB (damage calc) | `config/formats.ts` (onModifySTAB on the format object) |
 | Tier bucketing (client) | `build-tools/build-indexes` |
 | Launch bat | `C:\Users\primo\Desktop\launch-showdown-clean.bat` |
@@ -708,6 +749,10 @@ Listed for posterity so the next Claude doesn't repeat them:
 42. **`cureStatus()` + `setStatus()` is the correct sequence for thermal demotion (frz→frb, scr→brn).** `cureStatus()` clears the current status and its `statusData`; then `setStatus()` applies the new status (which fires `onStart` and sets up fresh `statusData`). Do NOT try to mutate `this.status` directly — always go through these methods. This pattern is used in `onDamagingHit` on both `frz` (Fire hit demotes Phase 1 to frb) and `scr` (Ice hit demotes scr to brn).
 
 43. **`move.selfSwitch` is the correct check for "pivot moves" in the pivot block.** Moves like U-turn, Volt Switch, Flip Turn, Baton Pass, Shed Tail all have `selfSwitch` set (values: `true`, `'copyvolatile'`, `'shedtail'`). Checking `move.selfSwitch` in `onBeforeMove` (to block the move) and checking `move.selfSwitch` in `onDisableMove` (to grey them out in the UI via `pokemon.disableMove(moveSlot.id)`) covers all pivot moves without needing to enumerate them by ID.
+
+44. **`play.pokemonshowdown.com/data/text.js` is gitignored and regenerated by `build-indexes`.** Editing it directly survives `git pull` but is wiped by `node build full` (which re-runs `build-indexes`). To permanently add status text entries for custom statuses (`stun`, `frb`, etc.), inject them into `build-tools/build-indexes` right before `const buf = 'exports.BattleText = ...'`. The `BattleText` template keys are: `start` (status applied), `alreadyStarted` (fail message), `end` (cure message), `cant` (lockout-based cant-move), `damage` (chip damage message). Without an entry the parser falls back to the generic `"[POKEMON] is afflicted with EFFECT!"` text.
+
+45. **Custom statuses need a `cantUseMove()` case in `battle.ts` to show the correct cant-move animation.** `cantUseMove()` in `battle.ts` has a `switch(effect.id)` block handling `par`, `frz`, `slp`, etc. New lockout-based statuses (`stun`) must be added here or the client will show no visual feedback when the status prevents moving. For `stun`, mirror the `par` case: run `this.scene.runStatusAnim('par' as ID, [pokemon])` (yellow static flash) and `this.scene.resultAnim(pokemon, 'Stunned', 'par')`.
 
 ---
 
