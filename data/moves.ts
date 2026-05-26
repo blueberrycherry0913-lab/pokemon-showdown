@@ -21673,7 +21673,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		accuracy: 100,
 		basePower: 0,
 		category: "Status",
-		name: "Interlock (TEST)",
+		name: "Interlocked (TEST)",
 		pp: 10,
 		priority: 0,
 		flags: { protect: 1, reflectable: 1, mirror: 1 },
