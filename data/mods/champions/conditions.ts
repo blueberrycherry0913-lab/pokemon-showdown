@@ -857,6 +857,11 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				return false;
 			}
 		},
+		onModifyAccuracy(accuracy, target, source, move) {
+			if (typeof accuracy !== 'number') return; // skip Cannot Miss
+			if (source !== this.effectState.partner) return; // only partner attacking
+			return this.chainModify(1.5);
+		},
 		onDamagingHit(damage, target, source, move) {
 			// Shared damage (doubles mechanic): an outside attacker hits one Interlocked
 			// Pokémon → the partner takes the same damage.
