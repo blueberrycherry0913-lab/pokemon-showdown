@@ -2804,6 +2804,12 @@ export class Battle {
 			if ((action as AnyObject).speedTied && !this.speedTiePartnerPending) {
 				const next = this.queue.peek();
 				if (next?.choice === 'move' && (next as AnyObject).speedTied) {
+					const partner = (next as AnyObject).pokemon as Pokemon;
+					this.add('html', `<div class="broadcast-blue" style="text-align:center;padding:6px 10px">` +
+						`<strong style="font-size:14pt">⚡ Speed Tie!</strong><br/>` +
+						`<strong>${action.pokemon.name}</strong> and <strong>${partner.name}</strong> ` +
+						`are Speed Tied! They will act at the same time!</div>`);
+					this.add('');
 					this.speedTiePartnerPending = true;
 				}
 			}
