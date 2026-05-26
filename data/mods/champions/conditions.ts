@@ -963,11 +963,13 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onEnd(target) {
 			this.add('-end', target, 'interlocked');
-			// Remove from partner if still present.
-			// The dict entry for THIS Pokémon is already deleted before onEnd fires,
-			// so when the partner's onEnd runs and checks back, it finds nothing → no recursion.
+			// Guard against recursion: Showdown calls onEnd BEFORE deleting volatiles[id],
+			// so without this flag A's onEnd removes B's volatile → B's onEnd fires → sees
+			// A's volatile still present → removes it again → infinite loop.
+			if (this.effectState.ending) return;
 			const partner = this.effectState.partner;
 			if (partner && !partner.fainted && partner.volatiles['interlocked']) {
+				partner.volatiles['interlocked'].ending = true;
 				partner.removeVolatile('interlocked');
 			}
 		},
