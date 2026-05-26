@@ -976,6 +976,24 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onTrapPokemon(pokemon) {
 			pokemon.trapped = true;
 		},
+		onBeforeFaint(target) {
+			// clearVolatile() is called after BeforeFaint without firing onEnd,
+			// so we must explicitly clean up the partner here.
+			const partner = this.effectState.partner;
+			if (partner && !partner.fainted && partner.volatiles['interlocked']) {
+				partner.volatiles['interlocked'].ending = true;
+				partner.removeVolatile('interlocked');
+			}
+		},
+		onSwitchOut(target) {
+			// Phasing moves (Roar, Dragon Tail, etc.) bypass trapping and force a switch.
+			// clearVolatile() runs after SwitchOut without firing onEnd, so clean up partner here.
+			const partner = this.effectState.partner;
+			if (partner && !partner.fainted && partner.volatiles['interlocked']) {
+				partner.volatiles['interlocked'].ending = true;
+				partner.removeVolatile('interlocked');
+			}
+		},
 		onBeforeMove(pokemon, target, move) {
 			const partner = this.effectState.partner;
 			if (!partner || partner.fainted) return;
