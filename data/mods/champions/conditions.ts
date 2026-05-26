@@ -1,7 +1,7 @@
 // Domains — the champions-mod replacement for terrains.
-// One domain is active at a time (backed by the terrain slot).
+// Multiple domains can be active at once (backed by pseudoWeather, not terrain).
 // Each affects all Pokémon on the field with no grounding requirement.
-// Effects: +25% Atk/SpA/Def/SpD for same-type Pokémon; +10% accuracy for same-type moves.
+// Effects: +20% Atk/SpA/Def/SpD/Spe for same-type Pokémon; +10% BP and accuracy for same-type moves.
 export const Conditions: import('../../../sim/dex-conditions').ConditionDataTable = {
 	normaldomain: {
 		name: "Normal Domain",
