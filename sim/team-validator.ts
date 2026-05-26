@@ -1992,7 +1992,7 @@ export class TeamValidator {
 			if (banReason === '') return null;
 		}
 
-		if (move.isNonstandard && move.isNonstandard !== 'Unobtainable') {
+		if (move.isNonstandard && move.isNonstandard !== 'Unobtainable' && move.isNonstandard !== 'Custom') {
 			banReason = ruleTable.check('nonexistent', setHas);
 			if (banReason) {
 				if (['Past', 'Future'].includes(move.isNonstandard)) {

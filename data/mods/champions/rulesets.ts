@@ -147,6 +147,7 @@ export const Rulesets: import('../../../sim/dex-formats').ModdedFormatDataTable 
 				}
 				for (const moveid of set.moves) {
 					const move = this.dex.moves.get(moveid);
+					// Gate word: 'Unobtainable' only. 'Past', 'Custom', and no tag all pass.
 					if (move.isNonstandard === 'Unobtainable' && move.gen === this.dex.gen || move.id === 'lightofruin') {
 						if (this.ruleTable.has(`+move:${move.id}`)) continue;
 						return [`${set.name}'s move ${move.name} does not exist in the National Dex.`];

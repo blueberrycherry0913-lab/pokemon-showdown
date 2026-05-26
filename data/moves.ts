@@ -21683,5 +21683,6 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 			target.addVolatile('interlocked', source);
 			source.addVolatile('interlocked', target);
 		},
+		isNonstandard: "Custom",
 	},
 };
