@@ -811,6 +811,64 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 	},
 
+	// §4 Interlocked volatile — shared two-Pokémon binding status.
+	// Both Pokémon receive this volatile simultaneously (applied by the move's onHit).
+	// Effects:
+	//   • 3-turn deterministic duration
+	//   • Both are trapped (cannot switch); phazing still ends the condition naturally
+	//   • Single-target foe moves must target the Interlocked partner only
+	//   • Shared damage: outside-attacker hits propagate to the partner (doubles mechanic;
+	//     irrelevant in singles since the only attacker IS the partner)
+	//   • Ends on KO (fainted partner triggers onEnd cleanup) or phasing (volatile cleared)
+	interlocked: {
+		name: 'interlocked',
+		duration: 3,
+		noCopy: true,
+		onStart(target, source) {
+			this.effectState.partner = source;
+			this.add('-start', target, 'interlocked', `[of] ${source}`);
+		},
+		onEnd(target) {
+			this.add('-end', target, 'interlocked');
+			// Remove from partner if still present.
+			// The dict entry for THIS Pokémon is already deleted before onEnd fires,
+			// so when the partner's onEnd runs and checks back, it finds nothing → no recursion.
+			const partner = this.effectState.partner;
+			if (partner && !partner.fainted && partner.volatiles['interlocked']) {
+				partner.removeVolatile('interlocked');
+			}
+		},
+		onTrapPokemon(pokemon) {
+			pokemon.trapped = true;
+		},
+		onBeforeMove(pokemon, target, move) {
+			const partner = this.effectState.partner;
+			if (!partner || partner.fainted) return;
+			// Restrict single-target foe moves: must aim at the Interlocked partner only.
+			// Self-targeting and ally-targeting moves are unaffected.
+			// In singles this can never fail (only opponent IS the partner).
+			const singleFoeTargets = ['normal', 'adjacentFoe', 'any', 'randomNormal'];
+			if (
+				singleFoeTargets.includes(move.target as string) &&
+				target && target.side !== pokemon.side &&
+				target !== partner
+			) {
+				this.add('-fail', pokemon);
+				return false;
+			}
+		},
+		onDamagingHit(damage, target, source, move) {
+			// Shared damage (doubles mechanic): an outside attacker hits one Interlocked
+			// Pokémon → the partner takes the same damage.
+			// In singles the only attacker is always the partner, so this never fires.
+			// Battle.prototype.damage is raw damage and does NOT re-trigger onDamagingHit.
+			const partner = this.effectState.partner;
+			if (!partner || partner.fainted) return;
+			if (source === partner) return; // Normal exchange — no shared damage
+			this.damage(damage, partner);
+		},
+	},
+
 	marked: {
 		name: 'marked',
 		noCopy: true,

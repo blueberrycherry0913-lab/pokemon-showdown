@@ -21659,4 +21659,30 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		target: "normal",
 		type: "Electric",
 	},
+	// §4 Interlocked volatile — test move for playtesting.
+	// Applies 'interlocked' to both the user AND the target simultaneously.
+	// Fails if either participant is already Interlocked.
+	interlockedtest: {
+		num: -12,
+		accuracy: 100,
+		basePower: 0,
+		category: "Status",
+		name: "Interlock (TEST)",
+		pp: 10,
+		priority: 0,
+		flags: { protect: 1, reflectable: 1, mirror: 1 },
+		target: "normal",
+		type: "Normal",
+		onTryHit(target, source) {
+			if (target.volatiles['interlocked'] || source.volatiles['interlocked']) {
+				this.add('-fail', target);
+				return null;
+			}
+		},
+		onHit(target, source) {
+			target.addVolatile('interlocked', source);
+			source.addVolatile('interlocked', target);
+		},
+		isNonstandard: "Custom",
+	},
 };
