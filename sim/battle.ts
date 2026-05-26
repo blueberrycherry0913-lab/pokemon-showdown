@@ -157,6 +157,10 @@ export class Battle {
 	speedTiePartnerPending: boolean;
 	/** True only while processing the deferred faint queue from a speed-tie; signals draw on double-KO */
 	speedTieDoubleKO: boolean;
+	/** Log index before the first speed-tied move runs; used to splice and reorder for simultaneous animation */
+	speedTieFirstMoveLogCheckpoint: number | null;
+	/** Captured log entries from the first speed-tied move, held until the second move runs */
+	speedTieFirstMoveLogs: string[] | null;
 
 	effect: Effect;
 	effectState: EffectState;
@@ -248,6 +252,8 @@ export class Battle {
 		this.ended = false;
 		this.speedTiePartnerPending = false;
 		this.speedTieDoubleKO = false;
+		this.speedTieFirstMoveLogCheckpoint = null;
+		this.speedTieFirstMoveLogs = null;
 
 		this.effect = { id: '' } as Effect;
 		this.effectState = this.initEffectState({ id: '' });
@@ -2797,11 +2803,15 @@ export class Battle {
 			break;
 		}
 
-		case 'move':
+		case 'move': {
 			if (!action.pokemon.isActive) return false;
 			if (action.pokemon.fainted) return false;
-			// §7 Speed-tie: set deferred faint flag BEFORE the move runs so mid-move faintMessages() calls are also deferred
-			if ((action as AnyObject).speedTied && !this.speedTiePartnerPending) {
+
+			const speedTied = !!(action as AnyObject).speedTied;
+			const isFirstOfPair = speedTied && !this.speedTiePartnerPending;
+			const isSecondOfPair = speedTied && !!this.speedTiePartnerPending;
+
+			if (isFirstOfPair) {
 				const next = this.queue.peek();
 				if (next?.choice === 'move' && (next as AnyObject).speedTied) {
 					const partner = (next as AnyObject).pokemon as Pokemon;
@@ -2811,14 +2821,67 @@ export class Battle {
 						`are Speed Tied! They will act at the same time!</div>`);
 					this.add('');
 					this.speedTiePartnerPending = true;
+					// Record checkpoint so we can splice out first move's log events after it runs
+					this.speedTieFirstMoveLogCheckpoint = this.log.length;
 				}
 			}
+
+			// Record where second move's log events will begin
+			const secondMoveLogStart = isSecondOfPair ? this.log.length : -1;
+
 			this.actions.runMove(action.move, action.pokemon, action.targetLoc, {
 				sourceEffect: action.sourceEffect, zMove: action.zmove,
 				maxMove: action.maxMove, originalTarget: action.originalTarget,
 				externalMove: action.externalMove,
 			});
+
+			if (isFirstOfPair && this.speedTieFirstMoveLogCheckpoint !== null) {
+				// Lift first move's log out so it can be interleaved after both moves are known
+				this.speedTieFirstMoveLogs = this.log.splice(this.speedTieFirstMoveLogCheckpoint);
+				this.speedTieFirstMoveLogCheckpoint = null;
+			}
+
+			if (isSecondOfPair && this.speedTieFirstMoveLogs && secondMoveLogStart >= 0) {
+				// Both moves have run — reorder log for simultaneous visual presentation
+				const secondLogs = this.log.splice(secondMoveLogStart);
+				const firstLogs = this.speedTieFirstMoveLogs;
+				this.speedTieFirstMoveLogs = null;
+
+				const fIdx = firstLogs.findIndex(l => l.startsWith('|move|'));
+				const sIdx = secondLogs.findIndex(l => l.startsWith('|move|'));
+
+				if (fIdx >= 0 && sIdx >= 0) {
+					// Helper: append |[simult] to a log line, handling |split| groups correctly
+					const withSimult = (lines: string[]): string[] => {
+						const out: string[] = [];
+						for (let i = 0; i < lines.length; i++) {
+							const line = lines[i];
+							if (line.startsWith('|split|')) {
+								out.push(line); // keep split marker unmodified
+								if (++i < lines.length) out.push(lines[i] + '|[simult]'); // secret
+								if (++i < lines.length) out.push(lines[i] ? lines[i] + '|[simult]' : lines[i]); // shared
+							} else {
+								out.push(line.startsWith('|') ? line + '|[simult]' : line);
+							}
+						}
+						return out;
+					};
+
+					// Emit: [first |move| simult] [second |move|] [first effects simult] [second effects]
+					this.log.push(...firstLogs.slice(0, fIdx));
+					this.log.push(firstLogs[fIdx] + '|[simult]');
+					this.log.push(...secondLogs.slice(0, sIdx));
+					this.log.push(secondLogs[sIdx]);
+					this.log.push(...withSimult(firstLogs.slice(fIdx + 1)));
+					this.log.push(...secondLogs.slice(sIdx + 1));
+				} else {
+					// Fallback: sequential order
+					this.log.push(...firstLogs, ...secondLogs);
+				}
+			}
+
 			break;
+		}
 		case 'megaEvo':
 			this.actions.runMegaEvo(action.pokemon);
 			break;
