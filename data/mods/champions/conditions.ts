@@ -21,19 +21,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Normal')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Normal')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Normal')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Normal')) return this.chainModify([6144, 5120]);
 		},
 		onModifyDefPriority: 6,
 		onModifyDef(def, target) {
-			if (target.hasType('Normal')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Normal')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpDPriority: 6,
 		onModifySpD(spd, target) {
-			if (target.hasType('Normal')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Normal')) return this.chainModify([6144, 5120]);
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe, pokemon) {
+			if (pokemon.hasType('Normal')) return this.chainModify([6144, 5120]);
+		},
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.type === 'Normal') return this.chainModify(1.1);
 		},
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
@@ -59,19 +66,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Fire')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Fire')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Fire')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Fire')) return this.chainModify([6144, 5120]);
 		},
 		onModifyDefPriority: 6,
 		onModifyDef(def, target) {
-			if (target.hasType('Fire')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Fire')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpDPriority: 6,
 		onModifySpD(spd, target) {
-			if (target.hasType('Fire')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Fire')) return this.chainModify([6144, 5120]);
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe, pokemon) {
+			if (pokemon.hasType('Fire')) return this.chainModify([6144, 5120]);
+		},
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.type === 'Fire') return this.chainModify(1.1);
 		},
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
@@ -97,19 +111,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Water')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Water')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Water')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Water')) return this.chainModify([6144, 5120]);
 		},
 		onModifyDefPriority: 6,
 		onModifyDef(def, target) {
-			if (target.hasType('Water')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Water')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpDPriority: 6,
 		onModifySpD(spd, target) {
-			if (target.hasType('Water')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Water')) return this.chainModify([6144, 5120]);
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe, pokemon) {
+			if (pokemon.hasType('Water')) return this.chainModify([6144, 5120]);
+		},
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.type === 'Water') return this.chainModify(1.1);
 		},
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
@@ -135,19 +156,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Electric')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Electric')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Electric')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Electric')) return this.chainModify([6144, 5120]);
 		},
 		onModifyDefPriority: 6,
 		onModifyDef(def, target) {
-			if (target.hasType('Electric')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Electric')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpDPriority: 6,
 		onModifySpD(spd, target) {
-			if (target.hasType('Electric')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Electric')) return this.chainModify([6144, 5120]);
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe, pokemon) {
+			if (pokemon.hasType('Electric')) return this.chainModify([6144, 5120]);
+		},
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.type === 'Electric') return this.chainModify(1.1);
 		},
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
@@ -173,19 +201,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Grass')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Grass')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Grass')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Grass')) return this.chainModify([6144, 5120]);
 		},
 		onModifyDefPriority: 6,
 		onModifyDef(def, target) {
-			if (target.hasType('Grass')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Grass')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpDPriority: 6,
 		onModifySpD(spd, target) {
-			if (target.hasType('Grass')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Grass')) return this.chainModify([6144, 5120]);
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe, pokemon) {
+			if (pokemon.hasType('Grass')) return this.chainModify([6144, 5120]);
+		},
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.type === 'Grass') return this.chainModify(1.1);
 		},
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
@@ -211,19 +246,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Ice')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Ice')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Ice')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Ice')) return this.chainModify([6144, 5120]);
 		},
 		onModifyDefPriority: 6,
 		onModifyDef(def, target) {
-			if (target.hasType('Ice')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Ice')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpDPriority: 6,
 		onModifySpD(spd, target) {
-			if (target.hasType('Ice')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Ice')) return this.chainModify([6144, 5120]);
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe, pokemon) {
+			if (pokemon.hasType('Ice')) return this.chainModify([6144, 5120]);
+		},
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.type === 'Ice') return this.chainModify(1.1);
 		},
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
@@ -249,19 +291,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Fighting')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Fighting')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Fighting')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Fighting')) return this.chainModify([6144, 5120]);
 		},
 		onModifyDefPriority: 6,
 		onModifyDef(def, target) {
-			if (target.hasType('Fighting')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Fighting')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpDPriority: 6,
 		onModifySpD(spd, target) {
-			if (target.hasType('Fighting')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Fighting')) return this.chainModify([6144, 5120]);
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe, pokemon) {
+			if (pokemon.hasType('Fighting')) return this.chainModify([6144, 5120]);
+		},
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.type === 'Fighting') return this.chainModify(1.1);
 		},
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
@@ -287,19 +336,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Poison')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Poison')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Poison')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Poison')) return this.chainModify([6144, 5120]);
 		},
 		onModifyDefPriority: 6,
 		onModifyDef(def, target) {
-			if (target.hasType('Poison')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Poison')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpDPriority: 6,
 		onModifySpD(spd, target) {
-			if (target.hasType('Poison')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Poison')) return this.chainModify([6144, 5120]);
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe, pokemon) {
+			if (pokemon.hasType('Poison')) return this.chainModify([6144, 5120]);
+		},
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.type === 'Poison') return this.chainModify(1.1);
 		},
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
@@ -325,19 +381,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Ground')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Ground')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Ground')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Ground')) return this.chainModify([6144, 5120]);
 		},
 		onModifyDefPriority: 6,
 		onModifyDef(def, target) {
-			if (target.hasType('Ground')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Ground')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpDPriority: 6,
 		onModifySpD(spd, target) {
-			if (target.hasType('Ground')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Ground')) return this.chainModify([6144, 5120]);
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe, pokemon) {
+			if (pokemon.hasType('Ground')) return this.chainModify([6144, 5120]);
+		},
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.type === 'Ground') return this.chainModify(1.1);
 		},
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
@@ -363,19 +426,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Flying')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Flying')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Flying')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Flying')) return this.chainModify([6144, 5120]);
 		},
 		onModifyDefPriority: 6,
 		onModifyDef(def, target) {
-			if (target.hasType('Flying')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Flying')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpDPriority: 6,
 		onModifySpD(spd, target) {
-			if (target.hasType('Flying')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Flying')) return this.chainModify([6144, 5120]);
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe, pokemon) {
+			if (pokemon.hasType('Flying')) return this.chainModify([6144, 5120]);
+		},
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.type === 'Flying') return this.chainModify(1.1);
 		},
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
@@ -401,19 +471,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Psychic')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Psychic')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Psychic')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Psychic')) return this.chainModify([6144, 5120]);
 		},
 		onModifyDefPriority: 6,
 		onModifyDef(def, target) {
-			if (target.hasType('Psychic')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Psychic')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpDPriority: 6,
 		onModifySpD(spd, target) {
-			if (target.hasType('Psychic')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Psychic')) return this.chainModify([6144, 5120]);
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe, pokemon) {
+			if (pokemon.hasType('Psychic')) return this.chainModify([6144, 5120]);
+		},
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.type === 'Psychic') return this.chainModify(1.1);
 		},
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
@@ -439,19 +516,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Bug')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Bug')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Bug')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Bug')) return this.chainModify([6144, 5120]);
 		},
 		onModifyDefPriority: 6,
 		onModifyDef(def, target) {
-			if (target.hasType('Bug')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Bug')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpDPriority: 6,
 		onModifySpD(spd, target) {
-			if (target.hasType('Bug')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Bug')) return this.chainModify([6144, 5120]);
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe, pokemon) {
+			if (pokemon.hasType('Bug')) return this.chainModify([6144, 5120]);
+		},
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.type === 'Bug') return this.chainModify(1.1);
 		},
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
@@ -477,19 +561,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Rock')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Rock')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Rock')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Rock')) return this.chainModify([6144, 5120]);
 		},
 		onModifyDefPriority: 6,
 		onModifyDef(def, target) {
-			if (target.hasType('Rock')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Rock')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpDPriority: 6,
 		onModifySpD(spd, target) {
-			if (target.hasType('Rock')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Rock')) return this.chainModify([6144, 5120]);
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe, pokemon) {
+			if (pokemon.hasType('Rock')) return this.chainModify([6144, 5120]);
+		},
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.type === 'Rock') return this.chainModify(1.1);
 		},
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
@@ -515,19 +606,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Ghost')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Ghost')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Ghost')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Ghost')) return this.chainModify([6144, 5120]);
 		},
 		onModifyDefPriority: 6,
 		onModifyDef(def, target) {
-			if (target.hasType('Ghost')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Ghost')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpDPriority: 6,
 		onModifySpD(spd, target) {
-			if (target.hasType('Ghost')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Ghost')) return this.chainModify([6144, 5120]);
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe, pokemon) {
+			if (pokemon.hasType('Ghost')) return this.chainModify([6144, 5120]);
+		},
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.type === 'Ghost') return this.chainModify(1.1);
 		},
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
@@ -553,19 +651,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Dragon')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Dragon')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Dragon')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Dragon')) return this.chainModify([6144, 5120]);
 		},
 		onModifyDefPriority: 6,
 		onModifyDef(def, target) {
-			if (target.hasType('Dragon')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Dragon')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpDPriority: 6,
 		onModifySpD(spd, target) {
-			if (target.hasType('Dragon')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Dragon')) return this.chainModify([6144, 5120]);
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe, pokemon) {
+			if (pokemon.hasType('Dragon')) return this.chainModify([6144, 5120]);
+		},
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.type === 'Dragon') return this.chainModify(1.1);
 		},
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
@@ -591,19 +696,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Dark')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Dark')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Dark')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Dark')) return this.chainModify([6144, 5120]);
 		},
 		onModifyDefPriority: 6,
 		onModifyDef(def, target) {
-			if (target.hasType('Dark')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Dark')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpDPriority: 6,
 		onModifySpD(spd, target) {
-			if (target.hasType('Dark')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Dark')) return this.chainModify([6144, 5120]);
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe, pokemon) {
+			if (pokemon.hasType('Dark')) return this.chainModify([6144, 5120]);
+		},
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.type === 'Dark') return this.chainModify(1.1);
 		},
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
@@ -629,19 +741,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Steel')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Steel')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Steel')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Steel')) return this.chainModify([6144, 5120]);
 		},
 		onModifyDefPriority: 6,
 		onModifyDef(def, target) {
-			if (target.hasType('Steel')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Steel')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpDPriority: 6,
 		onModifySpD(spd, target) {
-			if (target.hasType('Steel')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Steel')) return this.chainModify([6144, 5120]);
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe, pokemon) {
+			if (pokemon.hasType('Steel')) return this.chainModify([6144, 5120]);
+		},
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.type === 'Steel') return this.chainModify(1.1);
 		},
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
@@ -667,19 +786,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Fairy')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Fairy')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Fairy')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Fairy')) return this.chainModify([6144, 5120]);
 		},
 		onModifyDefPriority: 6,
 		onModifyDef(def, target) {
-			if (target.hasType('Fairy')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Fairy')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpDPriority: 6,
 		onModifySpD(spd, target) {
-			if (target.hasType('Fairy')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Fairy')) return this.chainModify([6144, 5120]);
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe, pokemon) {
+			if (pokemon.hasType('Fairy')) return this.chainModify([6144, 5120]);
+		},
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.type === 'Fairy') return this.chainModify(1.1);
 		},
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
@@ -705,19 +831,26 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Cosmic')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Cosmic')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Cosmic')) return this.chainModify([5120, 4096]);
+			if (attacker.hasType('Cosmic')) return this.chainModify([6144, 5120]);
 		},
 		onModifyDefPriority: 6,
 		onModifyDef(def, target) {
-			if (target.hasType('Cosmic')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Cosmic')) return this.chainModify([6144, 5120]);
 		},
 		onModifySpDPriority: 6,
 		onModifySpD(spd, target) {
-			if (target.hasType('Cosmic')) return this.chainModify([5120, 4096]);
+			if (target.hasType('Cosmic')) return this.chainModify([6144, 5120]);
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe, pokemon) {
+			if (pokemon.hasType('Cosmic')) return this.chainModify([6144, 5120]);
+		},
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.type === 'Cosmic') return this.chainModify(1.1);
 		},
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;

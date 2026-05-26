@@ -453,7 +453,7 @@ export const TypeChart: import('../sim/dex-data').TypeDataTable = {
 			tox: 3,
 			sandstorm: 3,
 			Bug: 2,
-			Cosmic: 0,
+			Cosmic: 1,
 			Dark: 0,
 			Dragon: 2,
 			Electric: 1,
