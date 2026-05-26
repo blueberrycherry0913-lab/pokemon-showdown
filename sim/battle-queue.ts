@@ -18,7 +18,8 @@ import type { Battle } from './battle';
 /** Actions are sorted based on order (lower first)
  * followed by priority (higher first)
  * followed by speed (higher first)
- * Ties are broken with Fischer-Yates.
+ * Ties between opposing move pairs resolve simultaneously (§7 custom mechanic).
+ * All other ties are broken with Fischer-Yates.
  */
 
 /** A move action */
@@ -52,6 +53,8 @@ export interface MoveAction {
 	sourceEffect?: Effect | null;
 	/** if true, skip PP deduction and LockMove (used for Mind Control self-hit) */
 	externalMove?: boolean;
+	/** if true, this move is speed-tied with an opposing move; both execute before faints are processed */
+	speedTied?: boolean;
 }
 
 /** A switch action */

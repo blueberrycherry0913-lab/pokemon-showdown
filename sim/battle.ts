@@ -153,6 +153,10 @@ export class Battle {
 	started: boolean;
 	ended: boolean;
 	winner?: string;
+	/** True while the first of a speed-tied move pair is running; defers all faintMessages() calls */
+	speedTiePartnerPending: boolean;
+	/** True only while processing the deferred faint queue from a speed-tie; signals draw on double-KO */
+	speedTieDoubleKO: boolean;
 
 	effect: Effect;
 	effectState: EffectState;
@@ -242,6 +246,8 @@ export class Battle {
 		this.midTurn = false;
 		this.started = false;
 		this.ended = false;
+		this.speedTiePartnerPending = false;
+		this.speedTieDoubleKO = false;
 
 		this.effect = { id: '' } as Effect;
 		this.effectState = this.initEffectState({ id: '' });
@@ -453,7 +459,25 @@ export class Battle {
 				}
 			}
 			if (nextIndexes.length > 1) {
-				this.prng.shuffle(list, sorted, sorted + nextIndexes.length);
+				// Speed-tie mechanic (§7): opposing move pairs resolve simultaneously — no random coinflip.
+				// A pair of exactly 2 move actions from opposing Pokémon is tagged speedTied and kept in a
+				// deterministic order (side 0 first). All other tied groups still use Fischer-Yates.
+				const a = list[sorted] as AnyObject;
+				const b = list[sorted + 1] as AnyObject;
+				if (
+					nextIndexes.length === 2 &&
+					a.choice === 'move' && b.choice === 'move' &&
+					a.pokemon?.side !== b.pokemon?.side
+				) {
+					a.speedTied = true;
+					b.speedTied = true;
+					// Ensure side 0 always goes first (deterministic, no coinflip)
+					if (a.pokemon?.side?.n !== 0) {
+						[list[sorted], list[sorted + 1]] = [list[sorted + 1], list[sorted]];
+					}
+				} else {
+					this.prng.shuffle(list, sorted, sorted + nextIndexes.length);
+				}
 			}
 			sorted += nextIndexes.length;
 		}
@@ -2591,6 +2615,7 @@ export class Battle {
 
 	faintMessages(lastFirst = false, forceCheck = false, checkWin = true) {
 		if (this.ended) return;
+		if (this.speedTiePartnerPending) return; // §7: defer until speed-tie partner has moved
 		const length = this.faintQueue.length;
 		if (!length) {
 			if (forceCheck && this.checkWin()) return true;
@@ -2670,7 +2695,12 @@ export class Battle {
 
 	checkWin(faintData?: Battle['faintQueue'][0]) {
 		if (this.sides.every(side => !side.pokemonLeft)) {
-			this.win(faintData && this.gen > 4 ? faintData.target.side : null);
+			if (this.speedTieDoubleKO) {
+				// Both sides' last Pokémon KO'd each other in a speed tie — it's a Draw (§7)
+				this.tie();
+			} else {
+				this.win(faintData && this.gen > 4 ? faintData.target.side : null);
+			}
 			return true;
 		}
 		for (const side of this.sides) {
@@ -2770,6 +2800,13 @@ export class Battle {
 		case 'move':
 			if (!action.pokemon.isActive) return false;
 			if (action.pokemon.fainted) return false;
+			// §7 Speed-tie: set deferred faint flag BEFORE the move runs so mid-move faintMessages() calls are also deferred
+			if ((action as AnyObject).speedTied && !this.speedTiePartnerPending) {
+				const next = this.queue.peek();
+				if (next?.choice === 'move' && (next as AnyObject).speedTied) {
+					this.speedTiePartnerPending = true;
+				}
+			}
 			this.actions.runMove(action.move, action.pokemon, action.targetLoc, {
 				sourceEffect: action.sourceEffect, zMove: action.zmove,
 				maxMove: action.maxMove, originalTarget: action.originalTarget,
@@ -2898,7 +2935,20 @@ export class Battle {
 
 		// fainting
 
+		// §7 Speed-tie: if the first move set speedTiePartnerPending, skip post-move processing until partner acts
+		if (this.speedTiePartnerPending) {
+			const next = this.queue.peek();
+			if (next?.choice === 'move' && (next as AnyObject).speedTied) {
+				return; // partner still pending — defer all faint processing
+			}
+			// Partner just moved: detect double-KO and process all deferred faints
+			this.speedTiePartnerPending = false;
+			const faintedSides = new Set(this.faintQueue.map(f => f.target.side));
+			if (faintedSides.size >= 2) this.speedTieDoubleKO = true;
+		}
+
 		this.faintMessages();
+		this.speedTieDoubleKO = false;
 		if (this.ended) return true;
 
 		// switching (fainted pokemon, U-turn, Baton Pass, etc)
