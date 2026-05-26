@@ -100882,6 +100882,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			infestation: ["9L1"],
 			ingrain: ["9L1"],
 			instruct: ["9L1"],
+			interlockedtest: ["9L1"],
 			iondeluge: ["9L1"],
 			irondefense: ["9L1"],
 			ironhead: ["9L1"],
