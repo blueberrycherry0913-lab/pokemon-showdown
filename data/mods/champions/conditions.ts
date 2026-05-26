@@ -1231,7 +1231,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			} else {
 				this.add('-start', target, 'confusion');
 			}
-			this.effectState.confusionTurns = 0;
+			this.effectState.confusionInstances = 0;
 		},
 		onEnd(target) {
 			this.add('-end', target, 'confusion');
@@ -1243,9 +1243,8 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				this.effectState.redirecting = false;
 				return;
 			}
-			this.effectState.confusionTurns++;
-			if (this.effectState.confusionTurns > 2) {
-				// 2 turns served — confusion clears, Pokémon acts freely this turn
+			// 2 confused actions served — confusion clears, Pokémon acts freely this turn
+			if (this.effectState.confusionInstances >= 2) {
 				pokemon.removeVolatile('confusion');
 				return;
 			}
@@ -1256,7 +1255,8 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				.map(ms => ms.id);
 			if (!validMoves.length) return false; // no PP on any move — block action
 			const randomMoveId = this.sample(validMoves);
-			// Set the guard flag BEFORE useMove so the recursive onBeforeMove call skips
+			// Increment BEFORE useMove; guard flag prevents recursive onBeforeMove from counting
+			this.effectState.confusionInstances++;
 			this.effectState.redirecting = true;
 			this.actions.useMove(randomMoveId, pokemon);
 			return false; // suppress the originally-chosen move
