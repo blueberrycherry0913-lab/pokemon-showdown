@@ -21582,6 +21582,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		status: 'cor',
 		target: "normal",
 		type: "Poison",
+		isNonstandard: "Custom",
 	},
 	// §4 Marked relational status — test move for playtesting.
 	// Applies the 'marked' volatile to the target; fails if already Marked.
@@ -21605,6 +21606,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		},
 		target: "normal",
 		type: "Normal",
+		isNonstandard: "Custom",
 	},
 	// §4 test moves — apply each reworked status for playtesting.
 	frostbitetest: {
@@ -21619,6 +21621,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		status: 'frb',
 		target: "normal",
 		type: "Ice",
+		isNonstandard: "Custom",
 	},
 	freezetest: {
 		num: -9,
@@ -21632,6 +21635,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		status: 'frz',
 		target: "normal",
 		type: "Ice",
+		isNonstandard: "Custom",
 	},
 	charmedtest: {
 		num: -10,
@@ -21645,6 +21649,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		volatileStatus: 'charmed',
 		target: "normal",
 		type: "Normal",
+		isNonstandard: "Custom",
 	},
 	stunnedtest: {
 		num: -11,
@@ -21658,6 +21663,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		status: 'stun',
 		target: "normal",
 		type: "Electric",
+		isNonstandard: "Custom",
 	},
 	// §4 Interlocked volatile — test move for playtesting.
 	// Applies 'interlocked' to both the user AND the target simultaneously.
