@@ -2016,7 +2016,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		shortDesc: "Boosts Attack by x1.5 if afflicted with a status and ignores the Attack-reducing effect of the status.",
-		origin: 'Buffed',
+		origin: 'Unchanged',
 		flags: {},
 		name: "Guts",
 		rating: 3.5,
@@ -3622,7 +3622,11 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			if (move.category === 'Physical') mod /= 2;
 			return this.chainModify(mod);
 		},
-		shortDesc: "Halves damage from Physical moves, but doubles damage from Fire-type moves.",
+		onDamagePriority: 1,
+		onDamage(damage, target, source, effect) {
+			if (effect && (effect.id === 'brn' || effect.id === 'scr')) return damage * 2;
+		},
+		shortDesc: "Halves damage from Physical moves, but doubles damage from Fire-type moves and burn/scorch.",
 		origin: 'Custom',
 		flags: { breakable: 1 },
 		name: "Plushy",
