@@ -109,7 +109,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			this.eachEvent('WeatherChange', this.effect);
 		},
 		suppressWeather: true,
-		shortDesc: "Eliminates the effects of weather.",
+		shortDesc: "Eliminates the effects of weather while Pokémon is on the field, but does not remove it.",
 		origin: 'Unchanged',
 		flags: {},
 		name: "Air Lock",
@@ -138,7 +138,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.boost({ atk: 12 }, target, target);
 			}
 		},
-		shortDesc: "Maxes Attack after taking a critical hit.",
+		shortDesc: "Maxes Attack (set to +6 stages) after taking a critical hit.",
 		origin: 'Unchanged',
 		flags: {},
 		name: "Anger Point",
@@ -218,13 +218,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				(this.dex.getImmunity(moveType, target) && this.dex.getEffectiveness(moveType, target) > 0) ||
 				move.ohko || move.selfdestruct
 			) {
-				return this.chainModify(0.67);
+				return this.chainModify(0.5);
 			}
 		},
 		onFoeAfterMove(source, target, move) {
 			(this.effectState.target.abilityState.anticipatedFoes as Set<Pokemon> | undefined)?.delete(source);
 		},
-		shortDesc: "Senses a foe's dangerous moves; if immediately attacked with one of those moves, the Pokémon takes 33% less damage.",
+		shortDesc: "Senses a foe's dangerous moves; if immediately attacked with one of those moves, the Pokémon takes 50% less damage.",
 		origin: 'Buffed',
 		flags: {},
 		name: "Anticipation",
@@ -276,7 +276,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return false;
 			}
 		},
-		shortDesc: "Prevents opponents from using priority moves.",
+		shortDesc: "Prevents opponent using priority moves.",
 		origin: 'Unchanged',
 		flags: { breakable: 1 },
 		name: "Armor Tail",
@@ -293,7 +293,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return null;
 			}
 		},
-		shortDesc: "Protects allies from attacks that limit their move choices. (Taunt, Encore, Cursed Body, etc.)",
+		shortDesc: "Protects allies from moves or abilities that limit their move choices. (Taunt, Encore, Cursed Body, etc)",
 		origin: 'Unchanged',
 		flags: { breakable: 1 },
 		name: "Aroma Veil",
