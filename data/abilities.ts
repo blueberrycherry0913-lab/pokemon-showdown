@@ -378,7 +378,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				}
 			}
 		},
-		shortDesc: "Prevents any positive effect of Sleep or Sleep-inducing moves for the foe, also does 1/8th max HP damage to sleeping foes.",
+		onFoeTryHeal(damage, target, source, effect) {
+			if (effect?.id === 'rest') {
+				this.hint("Bad Dreams prevents Rest's healing effect.");
+				return false;
+			}
+		},
+		shortDesc: "Prevents Rest's healing for sleeping foes; deals 1/8th MaxHP damage to sleeping foes per turn.",
 		origin: 'Buffed',
 		flags: {},
 		name: "Bad Dreams",
@@ -387,7 +393,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	ballfetch: {
 		onTryHit(target, source, move) {
-			if (!move.flags['bullet'] || !source) return;
+			if ((!move.flags['ball'] && !move.flags['bursting']) || !source) return;
 			this.add('-ability', target, 'Ball Fetch');
 			if (move.basePower && move.category !== 'Status') {
 				const atkStat = move.category === 'Special' ? 'spa' : 'atk';
@@ -402,7 +408,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			return null;
 		},
 		onAllyTryHit(target, source, move) {
-			if (!move.flags['bullet'] || !source) return;
+			if ((!move.flags['ball'] && !move.flags['bursting']) || !source) return;
 			const holder = this.effectState.target;
 			this.add('-ability', holder, 'Ball Fetch');
 			if (move.basePower && move.category !== 'Status') {
@@ -417,7 +423,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 			return null;
 		},
-		shortDesc: "Catches and returns foe's Ball/Bomb-based moves at full power, using the attacker's own stats.",
+		shortDesc: "Pokémon will fetch foe's Ball or Bursting attacks and return them at full power.",
 		origin: 'Buffed',
 		flags: {},
 		name: "Ball Fetch",
@@ -427,13 +433,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	battery: {
 		onAllyBasePowerPriority: 22,
 		onAllyBasePower(basePower, attacker, defender, move) {
-			if (attacker !== this.effectState.target && move.category === 'Special') {
+			if (attacker !== this.effectState.target && move.type === 'Electric') {
 				this.debug('Battery boost');
-				return this.chainModify([6144, 4096]);
+				return this.chainModify([8192, 4096]);
 			}
 		},
-		shortDesc: "Raises power of teammates' Special moves by x1.5.",
-		origin: 'Buffed',
+		shortDesc: "Doubles the power of teammates' Electric-type moves.",
+		origin: 'Altered',
 		flags: {},
 		name: "Battery",
 		rating: 0,
@@ -483,7 +489,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			this.debug('Beads of Ruin SpD drop');
 			return this.chainModify(0.75);
 		},
-		shortDesc: "Lowers Special Defense of all Pokémon except itself.",
+		shortDesc: "Lowers Special Defense of all Pokémon except itself by 25%.",
 		origin: 'Unchanged',
 		flags: {},
 		name: "Beads of Ruin",
@@ -497,7 +503,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.boost({ [bestStat]: length }, source);
 			}
 		},
-		shortDesc: "The Pokémon boosts its most proficient stat each time it knocks out a Pokémon.",
+		shortDesc: "The Pokémon boosts its most proficient stat by 1 stage each time it knocks out a Pokémon.",
 		origin: 'Unchanged',
 		flags: {},
 		name: "Beast Boost",
@@ -530,7 +536,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.boost({ spa: 1, atk: 1 }, target, target);
 			}
 		},
-		shortDesc: "Raises Attack and Special Attack when HP drops below half.",
+		shortDesc: "Raises Attack and Special Attack by 1 stage when HP drops below half.",
 		origin: 'Buffed',
 		flags: {},
 		name: "Berserk",
@@ -567,7 +573,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify(1.5);
 			}
 		},
-		shortDesc: "Powers up Fire-type moves in a pinch.",
+		shortDesc: "Powers up Fire-type moves by x1.5 when below 1/3 MaxHP.",
 		origin: 'Unchanged',
 		flags: {},
 		name: "Blaze",
@@ -575,12 +581,14 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 66,
 	},
 	bulletproof: {
-		onTryHit(pokemon, target, move) {
-			if (move.flags['bullet']) {
-				this.add('-immune', pokemon, '[from] ability: Bulletproof');
-				return null;
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.flags['bullet'] || move.flags['ball'] || move.flags['heavyprojectile']) {
+				this.debug('Bulletproof damage reduction');
+				return this.chainModify(0.25);
 			}
 		},
+		shortDesc: "Pokémon takes 75% less damage from Bullet, Ball, and Heavy Projectile attacks.",
+		origin: 'Altered',
 		flags: { breakable: 1 },
 		name: "Bulletproof",
 		rating: 3,
@@ -616,6 +624,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onEatItem(item, pokemon) {
 			this.heal(pokemon.baseMaxhp / 3);
 		},
+		shortDesc: "Restores additional 1/3 MaxHP when a Berry is consumed.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Cheek Pouch",
 		rating: 2,
@@ -2308,6 +2318,14 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		name: "Intrepid Sword",
 		rating: 4,
 		num: 234,
+	},
+	invisiblewall: {
+		shortDesc: "Screen moves used by this Pokémon last 3 additional turns.",
+		origin: 'Custom',
+		flags: {},
+		name: "Invisible Wall",
+		rating: 2,
+		num: 10004,
 	},
 	ironbarbs: {
 		onDamagingHitOrder: 1,

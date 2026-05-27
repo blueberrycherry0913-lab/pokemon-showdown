@@ -802,10 +802,10 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		condition: {
 			duration: 5,
 			durationCallback(target, source, effect) {
-				if (source?.hasItem('lightclay')) {
-					return 8;
-				}
-				return 5;
+				let duration = 5;
+				if (source?.hasItem('lightclay')) duration += 3;
+				if (source?.hasAbility('invisiblewall')) duration += 3;
+				return duration;
 			},
 			onAnyModifyDamage(damage, source, target, move) {
 				if (target !== source && this.effectState.target.hasAlly(target)) {
@@ -10285,10 +10285,10 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		condition: {
 			duration: 5,
 			durationCallback(target, source, effect) {
-				if (source?.hasItem('lightclay')) {
-					return 8;
-				}
-				return 5;
+				let duration = 5;
+				if (source?.hasItem('lightclay')) duration += 3;
+				if (source?.hasAbility('invisiblewall')) duration += 3;
+				return duration;
 			},
 			onAnyModifyDamage(damage, source, target, move) {
 				if (target !== source && this.effectState.target.hasAlly(target) && this.getCategory(move) === 'Special') {
@@ -14817,10 +14817,10 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		condition: {
 			duration: 5,
 			durationCallback(target, source, effect) {
-				if (source?.hasItem('lightclay')) {
-					return 8;
-				}
-				return 5;
+				let duration = 5;
+				if (source?.hasItem('lightclay')) duration += 3;
+				if (source?.hasAbility('invisiblewall')) duration += 3;
+				return duration;
 			},
 			onAnyModifyDamage(damage, source, target, move) {
 				if (target !== source && this.effectState.target.hasAlly(target) && this.getCategory(move) === 'Physical') {
