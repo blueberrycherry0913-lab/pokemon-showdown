@@ -1412,6 +1412,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onDamagingHit(damage, target, source, move) {
 			target.addVolatile('charge');
 		},
+		shortDesc: "Doubles power of the next Electric-type move when hit by an attack.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Electromorphosis",
 		rating: 3,
@@ -1480,6 +1482,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			target.switchFlag = true;
 			this.add('-activate', target, 'ability: Emergency Exit');
 		},
+		shortDesc: "Switches out to a random ally when HP falls below 50%.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Emergency Exit",
 		rating: 1,
@@ -1509,6 +1513,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify(0.75);
 			}
 		},
+		shortDesc: "Reduces damage from super-effective attacks by 25%.",
+		origin: 'Unchanged',
 		flags: { breakable: 1 },
 		name: "Filter",
 		rating: 3,
@@ -1517,11 +1523,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	flamebody: {
 		onDamagingHit(damage, target, source, move) {
 			if (this.checkMoveMakesContact(move, source, target)) {
-				if (this.randomChance(3, 10)) {
+				if (this.randomChance(1, 2)) {
 					source.trySetStatus('brn', target);
 				}
 			}
 		},
+		shortDesc: "Contact with the Pokémon has a 50% chance to burn the attacker.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Flame Body",
 		rating: 2,
@@ -1704,31 +1712,24 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	forewarn: {
 		onStart(pokemon) {
-			let warnMoves: (Move | Pokemon)[][] = [];
-			let warnBp = 1;
 			for (const target of pokemon.foes()) {
-				for (const moveSlot of target.moveSlots) {
-					const move = this.dex.moves.get(moveSlot.move);
-					let bp = move.basePower;
-					if (move.ohko) bp = 150;
-					if (move.id === 'counter' || move.id === 'metalburst' || move.id === 'mirrorcoat') bp = 120;
-					if (bp === 1) bp = 80;
-					if (!bp && move.category !== 'Status') bp = 80;
-					if (bp > warnBp) {
-						warnMoves = [[move, target]];
-						warnBp = bp;
-					} else if (bp === warnBp) {
-						warnMoves.push([move, target]);
-					}
+				const targetTypes = target.types;
+				const allMoves = target.moveSlots.map(ms => this.dex.moves.get(ms.move));
+				// Prioritize moves that do not share a type with the foe
+				const nonTypeMoves = allMoves.filter(m => !targetTypes.includes(m.type));
+				const typeMoves = allMoves.filter(m => targetTypes.includes(m.type));
+				const prioritized = [...nonTypeMoves, ...typeMoves];
+				// Reveal up to 2 moves by name
+				for (let i = 0; i < Math.min(2, prioritized.length); i++) {
+					this.add('-activate', pokemon, 'ability: Forewarn', prioritized[i], `[of] ${target}`);
 				}
 			}
-			if (!warnMoves.length) return;
-			const [warnMoveName, warnTarget] = this.sample(warnMoves);
-			this.add('-activate', pokemon, 'ability: Forewarn', warnMoveName, `[of] ${warnTarget}`);
 		},
+		shortDesc: "Detects and reveals 2 of the foe's moves by name, prioritizing those that don't share the foe's type.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Forewarn",
-		rating: 0.5,
+		rating: 1,
 		num: 108,
 	},
 	friendguard: {
@@ -1738,6 +1739,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify(0.75);
 			}
 		},
+		shortDesc: "Reduces damage done to allies by 25%.",
+		origin: 'Unchanged',
 		flags: { breakable: 1 },
 		name: "Friend Guard",
 		rating: 0,
@@ -1748,12 +1751,22 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			for (const target of pokemon.foes()) {
 				if (target.item) {
 					this.add('-item', target, target.getItem().name, '[from] ability: Frisk', `[of] ${pokemon}`);
+					target.addVolatile('frisk');
 				}
 			}
 		},
+		condition: {
+			duration: 1,
+			noCopy: true,
+			onModifyItem(item, target) {
+				return null; // item disabled for 1 turn
+			},
+		},
+		shortDesc: "The Pokémon can check a foe's held item and disables it for 1 turn.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Frisk",
-		rating: 1.5,
+		rating: 2,
 		num: 119,
 	},
 	fullmetalbody: {
@@ -1777,19 +1790,24 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 230,
 	},
 	furcoat: {
-		onModifyDefPriority: 6,
-		onModifyDef(def) {
-			return this.chainModify(2);
+		onSourceModifyDamage(damage, source, target, move) {
+			if (this.checkMoveMakesContact(move, source, target, true)) {
+				return this.chainModify(0.5);
+			}
 		},
+		shortDesc: "Halves damage from contact moves used on the Pokémon.",
+		origin: 'Nerfed',
 		flags: { breakable: 1 },
 		name: "Fur Coat",
-		rating: 4,
+		rating: 2.5,
 		num: 169,
 	},
 	galewings: {
 		onModifyPriority(priority, pokemon, target, move) {
 			if (move?.type === 'Flying' && pokemon.hp === pokemon.maxhp) return priority + 1;
 		},
+		shortDesc: "Gives priority to Flying-type moves when the Pokémon is at full health.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Gale Wings",
 		rating: 1.5,
@@ -1811,6 +1829,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onBasePower(basePower, pokemon, target, move) {
 			if (move.typeChangerBoosted === this.effect) return this.chainModify([4915, 4096]);
 		},
+		shortDesc: "Turns Normal-type moves into Electric-type moves and increases their power by x1.2.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Galvanize",
 		rating: 4,
@@ -1835,6 +1855,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return null;
 			}
 		},
+		shortDesc: "Gives immunity to status moves.",
+		origin: 'Unchanged',
 		flags: { breakable: 1 },
 		name: "Good as Gold",
 		rating: 5,
@@ -1845,11 +1867,17 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			if (this.checkMoveMakesContact(move, source, target, true)) {
 				this.add('-ability', target, 'Gooey');
 				this.boost({ spe: -1 }, source, target, null, true);
+				if (!source.volatiles['interlocked'] && !target.volatiles['interlocked']) {
+					source.addVolatile('interlocked', target);
+					target.addVolatile('interlocked', source);
+				}
 			}
 		},
+		shortDesc: "When a foe makes contact with the Pokémon, they will become interlocked and slowed.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Gooey",
-		rating: 2,
+		rating: 3,
 		num: 183,
 	},
 	gorillatactics: {
@@ -1890,6 +1918,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onEnd(pokemon) {
 			pokemon.abilityState.choiceLock = "";
 		},
+		shortDesc: "Boosts the Pokémon's Attack stat but only allows the use of the first selected move.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Gorilla Tactics",
 		rating: 4.5,
@@ -1938,9 +1968,19 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.boost({ atk: 1 }, target, target, null, false, true);
 			}
 		},
+		onAllyTryBoostPriority: 2,
+		onAllyTryBoost(boost, target, source, effect) {
+			if (effect.name === 'Intimidate' && boost.atk) {
+				delete boost.atk;
+				const effectHolder = this.effectState.target;
+				this.add('-block', target, 'ability: Guard Dog', `[of] ${effectHolder}`);
+			}
+		},
+		shortDesc: "Protects itself and allies from Intimidate; receives +1 Attack when Intimidated; cannot be forced out.",
+		origin: 'Buffed',
 		flags: { breakable: 1 },
 		name: "Guard Dog",
-		rating: 2,
+		rating: 3,
 		num: 275,
 	},
 	gulpmissile: {
@@ -1975,6 +2015,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify(1.5);
 			}
 		},
+		shortDesc: "Boosts Attack by x1.5 if afflicted with a status and ignores the Attack-reducing effect of the status.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Guts",
 		rating: 3.5,
@@ -3572,6 +3614,20 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		name: "Plus",
 		rating: 0,
 		num: 57,
+	},
+	plushy: {
+		onSourceModifyDamage(damage, source, target, move) {
+			let mod = 1;
+			if (move.type === 'Fire') mod *= 2;
+			if (move.category === 'Physical') mod /= 2;
+			return this.chainModify(mod);
+		},
+		shortDesc: "Halves damage from Physical moves, but doubles damage from Fire-type moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Plushy",
+		rating: 3.5,
+		num: 10008,
 	},
 	poisonheal: {
 		onDamagePriority: 1,
