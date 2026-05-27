@@ -1841,7 +1841,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			pokemon.abilityState.gluttony = true;
 			const statBoostBerries = [
 				'liechiberry', 'ganlonberry', 'salacberry', 'petayaberry',
-				'apicotberry', 'lansatberry', 'micleberry', 'custapberry', 'starfberry',
+				'apicotberry', 'lansatberry', 'micleberry', 'starfberry',
 			];
 			if (statBoostBerries.includes(pokemon.item)) {
 				pokemon.eatItem(true);

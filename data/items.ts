@@ -1244,8 +1244,8 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
 		onFractionalPriority(priority, pokemon) {
 			if (
 				priority <= 0 &&
-				(pokemon.hp <= pokemon.maxhp / 4 || (pokemon.hp <= pokemon.maxhp / 2 &&
-					pokemon.hasAbility('gluttony') && pokemon.abilityState.gluttony))
+				(pokemon.hp <= pokemon.maxhp / 4 ||
+					(pokemon.hasAbility('gluttony') && pokemon.abilityState.gluttony))
 			) {
 				if (pokemon.eatItem()) {
 					this.add('-activate', pokemon, 'item: Custap Berry', '[consumed]');
