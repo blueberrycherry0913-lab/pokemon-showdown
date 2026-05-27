@@ -1839,13 +1839,28 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	gluttony: {
 		onStart(pokemon) {
 			pokemon.abilityState.gluttony = true;
+			const statBoostBerries = [
+				'liechiberry', 'ganlonberry', 'salacberry', 'petayaberry',
+				'apicotberry', 'lansatberry', 'micleberry', 'custapberry', 'starfberry',
+			];
+			if (statBoostBerries.includes(pokemon.item)) {
+				pokemon.eatItem(true);
+			}
 		},
-		onDamage(item, pokemon) {
-			pokemon.abilityState.gluttony = true;
+		onDamagingHit(damage, target, source, move) {
+			const healBerries = [
+				'oranberry', 'sitrusberry', 'figyberry', 'wikiberry',
+				'magoberry', 'aguavberry', 'iapapaberry',
+			];
+			if (healBerries.includes(target.item)) {
+				target.eatItem(true);
+			}
 		},
+		shortDesc: "Pokémon eats stat berries on entry and heal berries upon taking any damage.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Gluttony",
-		rating: 1.5,
+		rating: 3,
 		num: 82,
 	},
 	goodasgold: {
