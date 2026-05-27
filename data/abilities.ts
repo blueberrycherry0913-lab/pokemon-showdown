@@ -455,7 +455,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		shortDesc: "Doubles the power of teammates' Electric-type moves.",
-		origin: 'Altered',
+		origin: 'Reworked',
 		flags: {},
 		name: "Battery",
 		rating: 0,
@@ -604,7 +604,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		shortDesc: "Pokémon takes 75% less damage from Bullet, Ball, and Heavy Projectile attacks.",
-		origin: 'Altered',
+		origin: 'Reworked',
 		flags: { breakable: 1 },
 		name: "Bulletproof",
 		rating: 3,
@@ -714,7 +714,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			this.effectState.boostLog = log.filter((entry: AnyObject) => this.turn - entry.turn < 2);
 		},
 		shortDesc: "The Pokémon's stat changes, both self and foe inflicted, return to normal 2 turns after infliction.",
-		origin: 'Altered',
+		origin: 'Reworked',
 		flags: {},
 		name: "Clear Body",
 		rating: 2,
