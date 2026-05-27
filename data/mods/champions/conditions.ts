@@ -1312,6 +1312,124 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 	},
 
+	antidomain: {
+		name: "Anti-Domain",
+		onFieldStart(field, source, effect) {
+			this.add('-fieldstart', 'move: Anti-Domain', '[from] ability: Anti-Domain', `[of] ${source}`);
+		},
+		onFieldEnd() {
+			this.add('-fieldend', 'move: Anti-Domain');
+		},
+		// Priority 4 fires after domain's priority 5 (Atk/SpA/Spe), undoing the ×1.2 boost.
+		onModifyAtkPriority: 4,
+		onModifyAtk(atk, attacker) {
+			const d = this.field.pseudoWeather;
+			for (const [id, type] of [
+				['normaldomain', 'Normal'], ['firedomain', 'Fire'], ['waterdomain', 'Water'],
+				['electricdomain', 'Electric'], ['grassdomain', 'Grass'], ['icedomain', 'Ice'],
+				['fightingdomain', 'Fighting'], ['poisondomain', 'Poison'], ['grounddomain', 'Ground'],
+				['flyingdomain', 'Flying'], ['psychicdomain', 'Psychic'], ['bugdomain', 'Bug'],
+				['rockdomain', 'Rock'], ['ghostdomain', 'Ghost'], ['dragondomain', 'Dragon'],
+				['darkdomain', 'Dark'], ['steeldomain', 'Steel'], ['fairydomain', 'Fairy'],
+				['cosmicdomain', 'Cosmic'],
+			] as [string, string][]) {
+				if (d[id] && attacker.hasType(type as any)) this.chainModify([5120, 6144]);
+			}
+		},
+		onModifySpAPriority: 4,
+		onModifySpA(spa, attacker) {
+			const d = this.field.pseudoWeather;
+			for (const [id, type] of [
+				['normaldomain', 'Normal'], ['firedomain', 'Fire'], ['waterdomain', 'Water'],
+				['electricdomain', 'Electric'], ['grassdomain', 'Grass'], ['icedomain', 'Ice'],
+				['fightingdomain', 'Fighting'], ['poisondomain', 'Poison'], ['grounddomain', 'Ground'],
+				['flyingdomain', 'Flying'], ['psychicdomain', 'Psychic'], ['bugdomain', 'Bug'],
+				['rockdomain', 'Rock'], ['ghostdomain', 'Ghost'], ['dragondomain', 'Dragon'],
+				['darkdomain', 'Dark'], ['steeldomain', 'Steel'], ['fairydomain', 'Fairy'],
+				['cosmicdomain', 'Cosmic'],
+			] as [string, string][]) {
+				if (d[id] && attacker.hasType(type as any)) this.chainModify([5120, 6144]);
+			}
+		},
+		// Priority 5 fires after domain's priority 6 (Def/SpD), undoing the ×1.2 boost.
+		onModifyDefPriority: 5,
+		onModifyDef(def, target) {
+			const d = this.field.pseudoWeather;
+			for (const [id, type] of [
+				['normaldomain', 'Normal'], ['firedomain', 'Fire'], ['waterdomain', 'Water'],
+				['electricdomain', 'Electric'], ['grassdomain', 'Grass'], ['icedomain', 'Ice'],
+				['fightingdomain', 'Fighting'], ['poisondomain', 'Poison'], ['grounddomain', 'Ground'],
+				['flyingdomain', 'Flying'], ['psychicdomain', 'Psychic'], ['bugdomain', 'Bug'],
+				['rockdomain', 'Rock'], ['ghostdomain', 'Ghost'], ['dragondomain', 'Dragon'],
+				['darkdomain', 'Dark'], ['steeldomain', 'Steel'], ['fairydomain', 'Fairy'],
+				['cosmicdomain', 'Cosmic'],
+			] as [string, string][]) {
+				if (d[id] && target.hasType(type as any)) this.chainModify([5120, 6144]);
+			}
+		},
+		onModifySpDPriority: 5,
+		onModifySpD(spd, target) {
+			const d = this.field.pseudoWeather;
+			for (const [id, type] of [
+				['normaldomain', 'Normal'], ['firedomain', 'Fire'], ['waterdomain', 'Water'],
+				['electricdomain', 'Electric'], ['grassdomain', 'Grass'], ['icedomain', 'Ice'],
+				['fightingdomain', 'Fighting'], ['poisondomain', 'Poison'], ['grounddomain', 'Ground'],
+				['flyingdomain', 'Flying'], ['psychicdomain', 'Psychic'], ['bugdomain', 'Bug'],
+				['rockdomain', 'Rock'], ['ghostdomain', 'Ghost'], ['dragondomain', 'Dragon'],
+				['darkdomain', 'Dark'], ['steeldomain', 'Steel'], ['fairydomain', 'Fairy'],
+				['cosmicdomain', 'Cosmic'],
+			] as [string, string][]) {
+				if (d[id] && target.hasType(type as any)) this.chainModify([5120, 6144]);
+			}
+		},
+		onModifySpePriority: 4,
+		onModifySpe(spe, pokemon) {
+			const d = this.field.pseudoWeather;
+			for (const [id, type] of [
+				['normaldomain', 'Normal'], ['firedomain', 'Fire'], ['waterdomain', 'Water'],
+				['electricdomain', 'Electric'], ['grassdomain', 'Grass'], ['icedomain', 'Ice'],
+				['fightingdomain', 'Fighting'], ['poisondomain', 'Poison'], ['grounddomain', 'Ground'],
+				['flyingdomain', 'Flying'], ['psychicdomain', 'Psychic'], ['bugdomain', 'Bug'],
+				['rockdomain', 'Rock'], ['ghostdomain', 'Ghost'], ['dragondomain', 'Dragon'],
+				['darkdomain', 'Dark'], ['steeldomain', 'Steel'], ['fairydomain', 'Fairy'],
+				['cosmicdomain', 'Cosmic'],
+			] as [string, string][]) {
+				if (d[id] && pokemon.hasType(type as any)) this.chainModify([5120, 6144]);
+			}
+		},
+		onModifyBasePowerPriority: -1,
+		onModifyBasePower(basePower, attacker, defender, move) {
+			const d = this.field.pseudoWeather;
+			for (const [id, type] of [
+				['normaldomain', 'Normal'], ['firedomain', 'Fire'], ['waterdomain', 'Water'],
+				['electricdomain', 'Electric'], ['grassdomain', 'Grass'], ['icedomain', 'Ice'],
+				['fightingdomain', 'Fighting'], ['poisondomain', 'Poison'], ['grounddomain', 'Ground'],
+				['flyingdomain', 'Flying'], ['psychicdomain', 'Psychic'], ['bugdomain', 'Bug'],
+				['rockdomain', 'Rock'], ['ghostdomain', 'Ghost'], ['dragondomain', 'Dragon'],
+				['darkdomain', 'Dark'], ['steeldomain', 'Steel'], ['fairydomain', 'Fairy'],
+				['cosmicdomain', 'Cosmic'],
+			] as [string, string][]) {
+				if (d[id] && move.type === type) this.chainModify([10, 11]);
+			}
+		},
+		onModifyAccuracyPriority: -1,
+		onModifyAccuracy(accuracy, target, source, move) {
+			if (typeof accuracy !== 'number') return;
+			const d = this.field.pseudoWeather;
+			for (const [id, type] of [
+				['normaldomain', 'Normal'], ['firedomain', 'Fire'], ['waterdomain', 'Water'],
+				['electricdomain', 'Electric'], ['grassdomain', 'Grass'], ['icedomain', 'Ice'],
+				['fightingdomain', 'Fighting'], ['poisondomain', 'Poison'], ['grounddomain', 'Ground'],
+				['flyingdomain', 'Flying'], ['psychicdomain', 'Psychic'], ['bugdomain', 'Bug'],
+				['rockdomain', 'Rock'], ['ghostdomain', 'Ghost'], ['dragondomain', 'Dragon'],
+				['darkdomain', 'Dark'], ['steeldomain', 'Steel'], ['fairydomain', 'Fairy'],
+				['cosmicdomain', 'Cosmic'],
+			] as [string, string][]) {
+				if (d[id] && move.type === type) this.chainModify([10, 11]);
+			}
+		},
+	},
+
 	slp: {
 		name: 'slp',
 		effectType: 'Status',
@@ -1324,6 +1442,8 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			target.statusState.sleepTurns = 0;
 		},
 		onBeforeMove(pokemon, target, move) {
+			// Comatose Pokémon use Comatose's perpetual-sleep logic, not this condition's lockout
+			if (pokemon.hasAbility('comatose')) return;
 			// Sleep Talk and Snore can still be used while asleep — don't count those turns
 			if (move.id === 'sleeptalk' || move.id === 'snore') return;
 			if (pokemon.status !== 'slp' || !pokemon.hp) return;
@@ -1338,6 +1458,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onResidualOrder: 9,
 		onResidual(pokemon) {
+			if (pokemon.hasAbility('comatose')) return;
 			if (!pokemon.hp || pokemon.status !== 'slp') return;
 			// Heal-tax: sleeping restores 1/10 max HP per end-of-turn
 			this.heal(Math.floor(pokemon.baseMaxhp / 10), pokemon, pokemon);
@@ -1345,10 +1466,12 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		// Takes 10% more damage from all attacks while asleep.
 		// onSourceModifyDamage fires on the DEFENDER's conditions; source = attacker, target = sleeping Pokémon.
 		onSourceModifyDamage(damage, source, target, move) {
+			if (target.hasAbility('comatose')) return;
 			return this.chainModify(1.1);
 		},
 		// Active wake-up: a single hit dealing ≥50% of the sleeper's max HP wakes it immediately.
 		onDamagingHit(damage, target, source, move) {
+			if (target.hasAbility('comatose')) return;
 			if (target.status !== 'slp') return;
 			if (damage >= target.baseMaxhp / 2) {
 				target.cureStatus();

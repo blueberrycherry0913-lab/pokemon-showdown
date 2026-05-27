@@ -231,6 +231,22 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		rating: 2,
 		num: 107,
 	},
+	antidomain: {
+		onStart(pokemon) {
+			this.field.addPseudoWeather('antidomain', pokemon, this.effect);
+		},
+		onEnd(pokemon) {
+			if (this.field.pseudoWeather['antidomain']?.source === pokemon) {
+				this.field.removePseudoWeather('antidomain');
+			}
+		},
+		shortDesc: "Eliminates the effects of a Domain while on the field.",
+		origin: 'Custom',
+		flags: {},
+		name: "Anti-Domain",
+		rating: 3,
+		num: 10005,
+	},
 	arenatrap: {
 		onFoeTrapPokemon(pokemon) {
 			if (!pokemon.isAdjacent(this.effectState.target)) return;
@@ -647,28 +663,59 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			if (['sunnyday', 'desolateland'].includes(pokemon.effectiveWeather())) {
 				return this.chainModify(2);
 			}
+			if (this.field.pseudoWeather['grassdomain']) {
+				return this.chainModify(2);
+			}
 		},
+		shortDesc: "Doubles the Pokémon's Speed in Grass Domain or Harsh Sun.",
+		origin: 'Altered',
 		flags: {},
 		name: "Chlorophyll",
 		rating: 3,
 		num: 34,
 	},
 	clearbody: {
-		onTryBoost(boost, target, source, effect) {
-			if (source && target === source) return;
-			let showMsg = false;
+		onAfterEachBoost(boost, target, source, effect) {
+			if (this.effectState.reverting) return;
+			// Record each stat change (positive or negative, self or foe) with the turn it was applied
+			const log: AnyObject[] = this.effectState.boostLog || (this.effectState.boostLog = []);
+			const entry: AnyObject = { turn: this.turn };
+			let hasChange = false;
 			let i: BoostID;
 			for (i in boost) {
-				if (boost[i]! < 0) {
-					delete boost[i];
-					showMsg = true;
+				if (boost[i] !== 0) {
+					entry[i] = boost[i];
+					hasChange = true;
 				}
 			}
-			if (showMsg && !(effect as ActiveMove).secondaries && effect.id !== 'octolock') {
-				this.add("-fail", target, "unboost", "[from] ability: Clear Body", `[of] ${target}`);
-			}
+			if (hasChange) log.push(entry);
 		},
-		flags: { breakable: 1 },
+		onResidualOrder: 28,
+		onResidual(pokemon) {
+			const log: AnyObject[] = this.effectState.boostLog;
+			if (!log || !log.length) return;
+			// Find entries that were applied 2 or more turns ago
+			const expired = log.filter((entry: AnyObject) => this.turn - entry.turn >= 2);
+			if (!expired.length) return;
+			// Accumulate revert deltas
+			const rev: Partial<Record<BoostID, number>> = {};
+			for (const entry of expired) {
+				let i: BoostID;
+				for (i in entry) {
+					if (i === 'turn') continue;
+					rev[i] = (rev[i] || 0) - (entry[i] as number);
+				}
+			}
+			// Apply revert with guard to prevent re-logging
+			this.effectState.reverting = true;
+			this.boost(rev as Record<BoostID, number>, pokemon, pokemon, null);
+			this.effectState.reverting = false;
+			// Remove expired entries from the log
+			this.effectState.boostLog = log.filter((entry: AnyObject) => this.turn - entry.turn < 2);
+		},
+		shortDesc: "The Pokémon's stat changes, both self and foe inflicted, return to normal 2 turns after infliction.",
+		origin: 'Altered',
+		flags: {},
 		name: "Clear Body",
 		rating: 2,
 		num: 29,
@@ -694,7 +741,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 13,
 	},
 	colorchange: {
-		onAfterMoveSecondary(target, source, move) {
+		onTryHit(target, source, move) {
 			if (!target.hp) return;
 			const type = move.type;
 			if (
@@ -713,6 +760,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				}
 			}
 		},
+		shortDesc: "Changes the Pokémon's type to the foe's move's type before it lands.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Color Change",
 		rating: 0,
@@ -729,6 +778,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			return false;
 		},
 		// Permanent sleep "status" implemented in the relevant sleep-checking effects
+		shortDesc: "The Pokémon is always treated as if it is asleep, but can still act normally. Does not feel the negative effects of being asleep.",
+		origin: 'Unchanged',
 		flags: { failroleplay: 1, noreceiver: 1, noentrain: 1, notrace: 1, failskillswap: 1, cantsuppress: 1 },
 		name: "Comatose",
 		rating: 4,
@@ -791,6 +842,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.boost({ spa: 2 }, target, target, null, false, true);
 			}
 		},
+		shortDesc: "Raises Special Attack by 2 stages when the Pokémon's stats are lowered.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Competitive",
 		rating: 2.5,
@@ -803,6 +856,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			this.debug('compoundeyes - enhancing accuracy');
 			return this.chainModify([5325, 4096]);
 		},
+		shortDesc: "The Pokémon's accuracy is boosted by a x1.3 multiplier.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Compound Eyes",
 		rating: 3,
@@ -816,6 +871,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				boost[i]! *= -1;
 			}
 		},
+		shortDesc: "Makes stat changes have an opposite effect.",
+		origin: 'Unchanged',
 		flags: { breakable: 1 },
 		name: "Contrary",
 		rating: 4.5,
