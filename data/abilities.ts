@@ -1354,9 +1354,11 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 87,
 	},
 	earlybird: {
+		// Mechanics in slp condition (champions mod): wakeThreshold 1 instead of 2, +2 Spe on wake
+		shortDesc: "Wakes from sleep in half the turns and gains +2 Speed on waking.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Early Bird",
-		// Implemented in statuses.js
 		rating: 1.5,
 		num: 48,
 	},
@@ -1377,16 +1379,20 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	effectspore: {
 		onDamagingHit(damage, target, source, move) {
 			if (this.checkMoveMakesContact(move, source, target) && source.runStatusImmunity('powder')) {
-				const r = this.random(100);
-				if (r < 11) {
-					source.trySetStatus('slp', target);
-				} else if (r < 21) {
-					source.trySetStatus('par', target);
-				} else if (r < 30) {
-					source.trySetStatus('psn', target);
+				if (this.randomChance(1, 2)) {
+					const r = this.random(100);
+					if (r < 20) {
+						source.trySetStatus('slp', target);
+					} else if (r < 60) {
+						source.trySetStatus('stun', target);
+					} else {
+						source.trySetStatus('psn', target);
+					}
 				}
 			}
 		},
+		shortDesc: "50% chance on contact to inflict sleep (20%), stun (40%), or poison (40%).",
+		origin: 'Altered',
 		flags: {},
 		name: "Effect Spore",
 		rating: 2,

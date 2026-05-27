@@ -1448,9 +1448,11 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			if (move.id === 'sleeptalk' || move.id === 'snore') return;
 			if (pokemon.status !== 'slp' || !pokemon.hp) return;
 			pokemon.statusState.sleepTurns++;
-			if (pokemon.statusState.sleepTurns > 2) {
-				// Third turn: Pokémon wakes up and can move this turn
+			// Early Bird halves the lockout from 2 turns to 1
+			const wakeThreshold = pokemon.hasAbility('earlybird') ? 1 : 2;
+			if (pokemon.statusState.sleepTurns > wakeThreshold) {
 				pokemon.cureStatus();
+				if (pokemon.hasAbility('earlybird')) this.boost({ spe: 2 }, pokemon, pokemon, null);
 				return;
 			}
 			this.add('cant', pokemon, 'slp');
@@ -1475,6 +1477,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			if (target.status !== 'slp') return;
 			if (damage >= target.baseMaxhp / 2) {
 				target.cureStatus();
+				if (target.hasAbility('earlybird')) this.boost({ spe: 2 }, target, target, null);
 			}
 		},
 	},
