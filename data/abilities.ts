@@ -842,7 +842,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.boost({ spa: 2 }, target, target, null, false, true);
 			}
 		},
-		shortDesc: "Raises Special Attack by 2 stages when the Pokémon's stats are lowered.",
+		shortDesc: "Raises Special Attack by 2 stages when the Pokémon's stats are lowered by a foe.",
 		origin: 'Unchanged',
 		flags: {},
 		name: "Competitive",
@@ -921,6 +921,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 			this.add('-copyboost', pokemon, ally, '[from] ability: Costar');
 		},
+		shortDesc: "Copies the ally's current stat changes upon entering battle.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Costar",
 		rating: 0,
@@ -935,9 +937,11 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 					this.add('-ability', target, 'Cotton Down');
 					activated = true;
 				}
-				this.boost({ spe: -1 }, pokemon, target, null, true);
+				this.boost({ spe: -2 }, pokemon, target, null, true);
 			}
 		},
+		shortDesc: "When hit by a damaging move, lowers the Speed of all other Pokémon by 2 stages.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Cotton Down",
 		rating: 2,
@@ -968,6 +972,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				delete this.effectState.counter;
 			}
 		},
+		shortDesc: "Can eat the same Berry that was already consumed on the next turn.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Cud Chew",
 		rating: 2,
@@ -980,6 +986,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.add('-clearboost', ally, '[from] ability: Curious Medicine', `[of] ${pokemon}`);
 			}
 		},
+		shortDesc: "Resets all stat changes of adjacent allies upon entering the battlefield.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Curious Medicine",
 		rating: 0,
@@ -989,11 +997,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onDamagingHit(damage, target, source, move) {
 			if (source.volatiles['disable']) return;
 			if (!move.isMax && !move.flags['futuremove'] && move.id !== 'struggle') {
-				if (this.randomChance(3, 10)) {
+				if (this.randomChance(1, 2)) {
 					source.addVolatile('disable', this.effectState.target);
 				}
 			}
 		},
+		shortDesc: "50% chance to Disable the foe's move when hit by a damaging move.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Cursed Body",
 		rating: 2,
@@ -1002,11 +1012,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	cutecharm: {
 		onDamagingHit(damage, target, source, move) {
 			if (this.checkMoveMakesContact(move, source, target)) {
-				if (this.randomChance(3, 10)) {
-					source.addVolatile('attract', this.effectState.target);
+				if (this.randomChance(1, 2)) {
+					source.addVolatile('charmed', this.effectState.target);
 				}
 			}
 		},
+		shortDesc: "50% chance to inflict Charmed on the foe when hit by a contact move.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Cute Charm",
 		rating: 0.5,
@@ -1031,6 +1043,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 6,
 	},
 	dancer: {
+		shortDesc: "Copies the foe's Dance moves immediately when used.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Dancer",
 		// implemented in runMove in scripts.js
@@ -1079,6 +1093,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return false;
 			}
 		},
+		shortDesc: "Protects the Pokémon and its allies from high-priority moves.",
+		origin: 'Unchanged',
 		flags: { breakable: 1 },
 		name: "Dazzling",
 		rating: 2.5,
@@ -1097,6 +1113,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify(0.5);
 			}
 		},
+		shortDesc: "Halves Attack and Special Attack when HP is at or below half.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Defeatist",
 		rating: -1,
@@ -1118,6 +1136,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.boost({ atk: 2 }, target, target, null, false, true);
 			}
 		},
+		shortDesc: "Raises Attack by 2 stages when the Pokémon's stats are lowered by a foe.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Defiant",
 		rating: 3,
@@ -1210,6 +1230,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.damage(pokemon.baseMaxhp / 8, pokemon, pokemon, this.dex.species.get(speciesid));
 			}
 		},
+		shortDesc: "Once per battle, negates the first hit of a damaging move.",
+		origin: 'Unchanged',
 		flags: {
 			failroleplay: 1, noreceiver: 1, noentrain: 1, notrace: 1, failskillswap: 1, cantsuppress: 1,
 			breakable: 1, notransform: 1,
@@ -1232,6 +1254,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.boost({ atk: 1 });
 			}
 		},
+		shortDesc: "Raises Atk or SpA based on the foe's lower defensive stat upon entering battle.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Download",
 		rating: 3.5,
@@ -1254,6 +1278,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onBasePower(basePower, pokemon, target, move) {
 			if (move.typeChangerBoosted === this.effect) return this.chainModify([4915, 4096]);
 		},
+		shortDesc: "Turns Normal-type moves into Dragon-type moves and boosts their power by ×1.2.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Dragonize",
 		rating: 4,
@@ -2296,6 +2322,26 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		name: "Imposter",
 		rating: 5,
 		num: 150,
+	},
+	inert: {
+		onAnyTryMove(target, source, effect) {
+			if (['explosion', 'mindblown', 'mistyexplosion', 'selfdestruct'].includes(effect.id)) {
+				this.attrLastMove('[still]');
+				this.add('cant', this.effectState.target, 'ability: Inert', effect, `[of] ${target}`);
+				return false;
+			}
+		},
+		onAnyDamage(damage, target, source, effect) {
+			if (effect && effect.name === 'Aftermath') {
+				return false;
+			}
+		},
+		shortDesc: "Prevents self-destructing moves and on-death ability effects while on the field.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Inert",
+		rating: 0.5,
+		num: 10007,
 	},
 	infiltrator: {
 		onModifyMove(move) {
