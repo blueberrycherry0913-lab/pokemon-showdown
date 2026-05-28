@@ -2059,7 +2059,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onResidualOrder: 28,
 		onResidualSubOrder: 2,
 		onResidual(pokemon) {
-			if (this.field.isWeather(['sunnyday', 'desolateland']) || this.randomChance(1, 2)) {
+			if (this.field.isWeather(['sunnyday', 'desolateland']) || this.field.pseudoWeather['grassdomain'] || this.randomChance(1, 2)) {
 				if (pokemon.hp && !pokemon.item && this.dex.items.get(pokemon.lastItem).isBerry) {
 					pokemon.setItem(pokemon.lastItem);
 					pokemon.lastItem = '';
@@ -2067,25 +2067,31 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				}
 			}
 		},
+		shortDesc: "50% chance to restore a consumed Berry each turn. 100% in Harsh Sun or Grass Domain.",
+		origin: 'Altered',
 		flags: {},
 		name: "Harvest",
 		rating: 2.5,
 		num: 139,
 	},
 	healer: {
-		onResidualOrder: 5,
-		onResidualSubOrder: 3,
-		onResidual(pokemon) {
-			for (const allyActive of pokemon.adjacentAllies()) {
-				if (allyActive.status && this.randomChance(3, 10)) {
+		onSwitchIn(pokemon) {
+			// Cure and restore the ally Healer replaced (most recently active benched ally)
+			for (const ally of pokemon.side.pokemon) {
+				if (ally === pokemon || ally.fainted || ally.isActive) continue;
+				if (ally.activeTurns > 0) {
 					this.add('-activate', pokemon, 'ability: Healer');
-					allyActive.cureStatus();
+					ally.cureStatus();
+					this.heal(Math.floor(ally.baseMaxhp * 0.1), ally);
+					break;
 				}
 			}
 		},
+		shortDesc: "On switch-in, the ally Healer replaced has their status cured and recovers 10% MaxHP.",
+		origin: 'Reworked',
 		flags: {},
 		name: "Healer",
-		rating: 0,
+		rating: 2,
 		num: 131,
 	},
 	heatproof: {
@@ -2136,9 +2142,11 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.heal(ally.baseMaxhp / 4, ally, pokemon);
 			}
 		},
+		shortDesc: "Restores 1/4 MaxHP to an ally on switch-in (doubles).",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Hospitality",
-		rating: 0,
+		rating: 2,
 		num: 299,
 	},
 	hugepower: {
@@ -2146,6 +2154,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onModifyAtk(atk) {
 			return this.chainModify(2);
 		},
+		shortDesc: "Doubles the Pokémon's Attack stat.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Huge Power",
 		rating: 5,
@@ -2175,6 +2185,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify([3277, 4096]);
 			}
 		},
+		shortDesc: "Boosts Attack by ×1.5, but physical moves have ×0.8 accuracy.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Hustle",
 		rating: 3.5,
@@ -2205,9 +2217,14 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				}
 			}
 		},
+		onModifyCritRatio(critRatio, user, target, move) {
+			if (this.checkMoveMakesContact(move, user, target, true)) return critRatio + 1;
+		},
+		shortDesc: "Prevents Attack from being lowered. Contact moves have a 1/8 chance to crit.",
+		origin: 'Buffed',
 		flags: { breakable: 1 },
 		name: "Hyper Cutter",
-		rating: 1.5,
+		rating: 2,
 		num: 52,
 	},
 	icebody: {
@@ -2216,9 +2233,17 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.heal(target.baseMaxhp / 16);
 			}
 		},
+		onResidualOrder: 28,
+		onResidual(target) {
+			if (this.field.pseudoWeather['icedomain'] && !this.field.isWeather(['hail', 'snowscape'])) {
+				this.heal(target.baseMaxhp / 16);
+			}
+		},
 		onImmunity(type, pokemon) {
 			if (type === 'hail') return false;
 		},
+		shortDesc: "Restores 1/16 MaxHP per turn in Hailstorm, Snowscape, or Ice Domain.",
+		origin: 'Altered',
 		flags: {},
 		name: "Ice Body",
 		rating: 1,
@@ -2287,30 +2312,35 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify(0.5);
 			}
 		},
+		shortDesc: "Halves damage from Special moves.",
+		origin: 'Unchanged',
 		flags: { breakable: 1 },
 		name: "Ice Scales",
 		rating: 4,
 		num: 246,
 	},
 	illuminate: {
-		onTryBoost(boost, target, source, effect) {
-			if (source && target === source) return;
-			if (boost.accuracy && boost.accuracy < 0) {
-				delete boost.accuracy;
-				if (!(effect as ActiveMove).secondaries) {
-					this.add("-fail", target, "unboost", "accuracy", "[from] ability: Illuminate", `[of] ${target}`);
+		onStart(pokemon) {
+			let activated = false;
+			for (const target of pokemon.foes()) {
+				if (!activated) {
+					this.add('-ability', pokemon, 'Illuminate', 'boost');
+					activated = true;
 				}
+				this.boost({ evasion: -1 }, target, pokemon, null, true);
 			}
 		},
-		onModifyMove(move) {
-			move.ignoreEvasion = true;
-		},
-		flags: { breakable: 1 },
+		shortDesc: "Lowers the foe's evasion by 1 stage on switch-in.",
+		origin: 'Reworked',
+		flags: {},
 		name: "Illuminate",
-		rating: 0.5,
+		rating: 1.5,
 		num: 35,
 	},
 	illusion: {
+		onSourceModifyDamage(damage, source, target, move) {
+			if (target.illusion) return this.chainModify(0.9);
+		},
 		onBeforeSwitchIn(pokemon) {
 			pokemon.illusion = null;
 			// yes, you can Illusion an active pokemon but only if it's to your right
@@ -2346,6 +2376,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onFaint(pokemon) {
 			pokemon.illusion = null;
 		},
+		shortDesc: "Disguised as last party member. The hit that breaks the disguise deals 10% less damage.",
+		origin: 'Buffed',
 		flags: { failroleplay: 1, noreceiver: 1, noentrain: 1, notrace: 1, failskillswap: 1 },
 		name: "Illusion",
 		rating: 4.5,
@@ -2381,6 +2413,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				pokemon.transformInto(target, this.dex.abilities.get('imposter'));
 			}
 		},
+		shortDesc: "Transforms into the opposing Pokémon, barring their MaxHP, on switch-in.",
+		origin: 'Unchanged',
 		flags: { failroleplay: 1, noreceiver: 1, noentrain: 1, notrace: 1 },
 		name: "Imposter",
 		rating: 5,
@@ -2410,6 +2444,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onModifyMove(move) {
 			move.infiltrates = true;
 		},
+		shortDesc: "Bypasses Substitute, screens, Safeguard, and Mist.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Infiltrator",
 		rating: 2.5,
@@ -2423,6 +2459,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.damage(target.getUndynamaxedHP(damage), source, target);
 			}
 		},
+		shortDesc: "Damages attacker equal to remaining HP when KO'd.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Innards Out",
 		rating: 4,
@@ -2438,6 +2476,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.add('-fail', target, 'unboost', 'Attack', '[from] ability: Inner Focus', `[of] ${target}`);
 			}
 		},
+		shortDesc: "Immune to flinching and Intimidate.",
+		origin: 'Unchanged',
 		flags: { breakable: 1 },
 		name: "Inner Focus",
 		rating: 1,
@@ -2463,6 +2503,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return null;
 			}
 		},
+		shortDesc: "Prevents the Pokémon from falling asleep.",
+		origin: 'Unchanged',
 		flags: { breakable: 1 },
 		name: "Insomnia",
 		rating: 1.5,
@@ -2483,6 +2525,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				}
 			}
 		},
+		shortDesc: "Lowers the foe's Attack stat by 1 stage on switch-in.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Intimidate",
 		rating: 3.5,
@@ -2514,6 +2558,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.damage(source.baseMaxhp / 8, source, target);
 			}
 		},
+		shortDesc: "Inflicts 1/8 MaxHP damage to attackers on contact.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Iron Barbs",
 		rating: 2.5,
@@ -2524,12 +2570,14 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onBasePower(basePower, attacker, defender, move) {
 			if (move.flags['punch']) {
 				this.debug('Iron Fist boost');
-				return this.chainModify([4915, 4096]);
+				return this.chainModify(1.5);
 			}
 		},
+		shortDesc: "Boosts the power of punching moves by ×1.5.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Iron Fist",
-		rating: 3,
+		rating: 3.5,
 		num: 89,
 	},
 	justified: {
