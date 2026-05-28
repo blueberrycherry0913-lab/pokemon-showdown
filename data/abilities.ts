@@ -2581,14 +2581,21 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 89,
 	},
 	justified: {
-		onDamagingHit(damage, target, source, move) {
+		onSourceModifyDamage(damage, source, target, move) {
 			if (move.type === 'Dark') {
-				this.boost({ atk: 1 });
+				return this.chainModify(0.75);
 			}
 		},
+		onDamagingHit(damage, target, source, move) {
+			if (move.type === 'Dark') {
+				this.boost({ atk: 1, spa: 1 }, target);
+			}
+		},
+		shortDesc: "Take 25% less damage from Dark-type moves, and raises Attack and Special Attack by +1 stage when hit by one.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Justified",
-		rating: 2.5,
+		rating: 3,
 		num: 154,
 	},
 	keeneye: {
@@ -2604,9 +2611,16 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onModifyMove(move) {
 			move.ignoreEvasion = true;
 		},
+		onModifyAccuracyPriority: 5,
+		onModifyAccuracy(accuracy) {
+			if (typeof accuracy !== 'number') return;
+			return this.chainModify(1.1);
+		},
+		shortDesc: "Slightly increases accuracy by 10%, ignores evasion, and prevents accuracy from being lowered.",
+		origin: 'Buffed',
 		flags: { breakable: 1 },
 		name: "Keen Eye",
-		rating: 0.5,
+		rating: 1,
 		num: 51,
 	},
 	klutz: {
@@ -2644,8 +2658,10 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	levitate: {
 		// airborneness implemented in sim/pokemon.js:Pokemon#isGrounded
+		shortDesc: "Gives immunity to Ground type moves.",
+		origin: 'Altered',
 		flags: { breakable: 1 },
-		name: "Levitate",
+		name: "Reactive Levitation",
 		rating: 3.5,
 		num: 26,
 	},
@@ -2675,12 +2691,14 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 135,
 	},
 	lightningrod: {
-		onTryHit(target, source, move) {
-			if (target !== source && move.type === 'Electric') {
-				if (!this.boost({ spa: 1 })) {
-					this.add('-immune', target, '[from] ability: Lightning Rod');
-				}
-				return null;
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Electric') {
+				return this.chainModify(0.5);
+			}
+		},
+		onDamagingHit(damage, target, source, move) {
+			if (move.type === 'Electric') {
+				this.boost({ atk: 1, spa: 1 }, target);
 			}
 		},
 		onAnyRedirectTarget(target, source, source2, move) {
@@ -2694,7 +2712,9 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.effectState.target;
 			}
 		},
-		flags: { breakable: 1 },
+		shortDesc: "Reduces the damage of Electric-type moves by 50% and raises Attack and Special Attack by +1 stage when hit by one.",
+		origin: 'Altered',
+		flags: {},
 		name: "Lightning Rod",
 		rating: 3,
 		num: 31,
@@ -2713,6 +2733,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 			return false;
 		},
+		shortDesc: "The Pokémon is protected from paralysis.",
+		origin: 'Unchanged',
 		flags: { breakable: 1 },
 		name: "Limber",
 		rating: 2,
@@ -2728,6 +2750,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				source.setAbility('lingeringaroma', target);
 			}
 		},
+		shortDesc: "Contact changes the attacker's Ability to Lingering Aroma.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Lingering Aroma",
 		rating: 2,
@@ -2742,6 +2766,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return 0;
 			}
 		},
+		shortDesc: "Damages attackers using any draining move, hurting them for the amount they would have healed.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Liquid Ooze",
 		rating: 2.5,
@@ -2754,6 +2780,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				move.type = 'Water';
 			}
 		},
+		shortDesc: "All sound-based moves become Water-type moves.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Liquid Voice",
 		rating: 1.5,
@@ -2763,6 +2791,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onModifyMove(move) {
 			delete move.flags['contact'];
 		},
+		shortDesc: "The Pokémon uses its moves without making contact with the target.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Long Reach",
 		rating: 1,
@@ -2791,6 +2821,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			move.hasBounced = true; // only bounce once in free-for-all battles
 			return null;
 		},
+		shortDesc: "Reflects status moves back to the attacker.",
+		origin: 'Unchanged',
 		flags: { breakable: 1 },
 		name: "Magic Bounce",
 		rating: 4,
@@ -2803,6 +2835,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return false;
 			}
 		},
+		shortDesc: "Protects the Pokémon from indirect damage.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Magic Guard",
 		rating: 4,
@@ -2860,6 +2894,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				pokemon.maybeTrapped = true;
 			}
 		},
+		shortDesc: "Prevents Steel-type Pokémon from escaping.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Magnet Pull",
 		rating: 4,
@@ -2872,6 +2908,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify(1.5);
 			}
 		},
+		shortDesc: "Increases Defense by x1.5 if inflicted with a non-volatile status.",
+		origin: 'Unchanged',
 		flags: { breakable: 1 },
 		name: "Marvel Scale",
 		rating: 2.5,
@@ -2897,19 +2935,23 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				.call(this, damage, attacker, defender, move);
 			return damage; // fast exit from event
 		},
+		shortDesc: "Moves act as if there is harsh sunlight.",
+		origin: 'Altered',
 		flags: {},
-		name: "Mega Sol",
+		name: "Solar Battery",
 		rating: 3,
 		num: 315,
 		// Partially implemented in Pokemon.effectiveWeather() in sim/pokemon.ts
 	},
 	merciless: {
 		onModifyCritRatio(critRatio, source, target) {
-			if (target && ['psn', 'tox'].includes(target.status)) return 5;
+			if (target && ['psn', 'tox', 'cor', 'mlt'].includes(target.status as string)) return 5;
 		},
+		shortDesc: "The Pokémon's attacks become critical hits if the target is poisoned or corroded.",
+		origin: 'Altered',
 		flags: {},
 		name: "Merciless",
-		rating: 1.5,
+		rating: 2,
 		num: 196,
 	},
 	mimicry: {
@@ -3006,6 +3048,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				}
 			}
 		},
+		shortDesc: "Reflects any stat-lowering effects back to the attacker.",
+		origin: 'Unchanged',
 		flags: { breakable: 1 },
 		name: "Mirror Armor",
 		rating: 2,
@@ -3027,6 +3071,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onModifyMove(move) {
 			move.ignoreAbility = true;
 		},
+		shortDesc: "Moves can be used regardless of Abilities.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Mold Breaker",
 		rating: 3,
@@ -3061,23 +3107,29 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 
 			this.boost(boost, pokemon, pokemon);
 		},
+		shortDesc: "Raises one stat by +2 stages and lowers another by -1 stage each turn.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Moody",
 		rating: 5,
 		num: 141,
 	},
 	motordrive: {
-		onTryHit(target, source, move) {
-			if (target !== source && move.type === 'Electric') {
-				if (!this.boost({ spe: 1 })) {
-					this.add('-immune', target, '[from] ability: Motor Drive');
-				}
-				return null;
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Electric') {
+				return this.chainModify(0.5);
 			}
 		},
-		flags: { breakable: 1 },
+		onDamagingHit(damage, target, source, move) {
+			if (move.type === 'Electric') {
+				this.boost({ spe: 1 }, target);
+			}
+		},
+		shortDesc: "Reduces the damage of Electric-type moves by 50% and increases Speed by +1 stage when hit by one.",
+		origin: 'Nerfed',
+		flags: {},
 		name: "Motor Drive",
-		rating: 3,
+		rating: 2.5,
 		num: 78,
 	},
 	moxie: {
@@ -3086,6 +3138,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.boost({ atk: length }, source);
 			}
 		},
+		shortDesc: "Boosts Attack by +1 stage after knocking out any Pokémon.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Moxie",
 		rating: 3,
@@ -3098,6 +3152,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify(0.5);
 			}
 		},
+		shortDesc: "Halves damage taken when HP is full.",
+		origin: 'Unchanged',
 		flags: { breakable: 1 },
 		name: "Multiscale",
 		rating: 3.5,
@@ -3120,6 +3176,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				source.setAbility('mummy', target);
 			}
 		},
+		shortDesc: "Contact with this Pokémon spreads this Ability.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Mummy",
 		rating: 2,
@@ -3220,6 +3278,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			// (once you know a Pokemon has Natural Cure, its cures are always known)
 			if (!pokemon.showCure) pokemon.showCure = undefined;
 		},
+		shortDesc: "All status problems heal when it switches out.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Natural Cure",
 		rating: 2.5,
@@ -3296,6 +3356,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				}
 			}
 		},
+		shortDesc: "Neutralizes the abilities of all Pokémon in battle while on the field.",
+		origin: 'Unchanged',
 		flags: { failroleplay: 1, noreceiver: 1, noentrain: 1, notrace: 1, failskillswap: 1, notransform: 1 },
 		name: "Neutralizing Gas",
 		rating: 3.5,
@@ -3312,6 +3374,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 			return accuracy;
 		},
+		shortDesc: "Ensures attacks by or against the Pokémon land.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "No Guard",
 		rating: 4,
@@ -3334,6 +3398,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onBasePower(basePower, pokemon, target, move) {
 			if (move.typeChangerBoosted === this.effect) return this.chainModify([4915, 4096]);
 		},
+		shortDesc: "All the Pokémon's moves become Normal type and are boosted by x1.2.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Normalize",
 		rating: 0,
@@ -3341,10 +3407,9 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	oblivious: {
 		onUpdate(pokemon) {
-			if (pokemon.volatiles['attract']) {
+			if (pokemon.volatiles['charmed']) {
 				this.add('-activate', pokemon, 'ability: Oblivious');
-				pokemon.removeVolatile('attract');
-				this.add('-end', pokemon, 'move: Attract', '[from] ability: Oblivious');
+				pokemon.removeVolatile('charmed');
 			}
 			if (pokemon.volatiles['taunt']) {
 				this.add('-activate', pokemon, 'ability: Oblivious');
@@ -3353,23 +3418,32 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		onImmunity(type, pokemon) {
-			if (type === 'attract') return false;
+			if (type === 'charmed') return false;
 		},
 		onTryHit(pokemon, target, move) {
-			if (move.id === 'attract' || move.id === 'captivate' || move.id === 'taunt') {
+			if (move.volatileStatus === 'charmed' || move.id === 'taunt') {
 				this.add('-immune', pokemon, '[from] ability: Oblivious');
 				return null;
 			}
 		},
 		onTryBoost(boost, target, source, effect) {
-			if (effect.name === 'Intimidate' && boost.atk) {
-				delete boost.atk;
-				this.add('-fail', target, 'unboost', 'Attack', '[from] ability: Oblivious', `[of] ${target}`);
+			if (source && target !== source) {
+				let b: BoostID;
+				for (b in boost) {
+					if (boost[b]! < 0) {
+						delete boost[b];
+						if (!(effect as ActiveMove).secondaries) {
+							this.add('-fail', target, 'unboost', b, '[from] ability: Oblivious', `[of] ${target}`);
+						}
+					}
+				}
 			}
 		},
+		shortDesc: "Immune to being Charmed, Taunt, and foe-inflicted stat changes.",
+		origin: 'Altered',
 		flags: { breakable: 1 },
 		name: "Oblivious",
-		rating: 1.5,
+		rating: 2,
 		num: 12,
 	},
 	opportunist: {
@@ -3414,6 +3488,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onEnd() {
 			delete this.effectState.boosts;
 		},
+		shortDesc: "Copies stat boosts by the opponent.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Opportunist",
 		rating: 3,
@@ -3441,7 +3517,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	overcoat: {
 		onImmunity(type, pokemon) {
-			if (type === 'sandstorm' || type === 'hail' || type === 'powder') return false;
+			const immuneTypes = ['sandstorm', 'hail', 'snowscape', 'sunnyday', 'raindance', 'desolateland', 'primordialsea', 'deltastream', 'powder'];
+			if (immuneTypes.includes(type)) return false;
 		},
 		onTryHitPriority: 1,
 		onTryHit(target, source, move) {
@@ -3450,9 +3527,11 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return null;
 			}
 		},
+		shortDesc: "Protects the Pokémon from powder moves and all weather effects.",
+		origin: 'Altered',
 		flags: { breakable: 1 },
 		name: "Overcoat",
-		rating: 2,
+		rating: 2.5,
 		num: 142,
 	},
 	overgrow: {
