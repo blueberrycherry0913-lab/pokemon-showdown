@@ -3549,6 +3549,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify(1.5);
 			}
 		},
+		shortDesc: "Powers up Grass-type moves by x1.5 when below 1/3 MaxHP.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Overgrow",
 		rating: 2,
@@ -3576,13 +3578,20 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.add('-activate', pokemon, 'ability: Own Tempo');
 				pokemon.removeVolatile('confusion');
 			}
+			if (pokemon.volatiles['mindcontrolled']) {
+				this.add('-activate', pokemon, 'ability: Own Tempo');
+				pokemon.removeVolatile('mindcontrolled');
+			}
 		},
 		onTryAddVolatile(status, pokemon) {
-			if (status.id === 'confusion') return null;
+			if (status.id === 'confusion' || status.id === 'mindcontrolled') return null;
 		},
 		onHit(target, source, move) {
 			if (move?.volatileStatus === 'confusion') {
 				this.add('-immune', target, 'confusion', '[from] ability: Own Tempo');
+			}
+			if (move?.volatileStatus === 'mindcontrolled') {
+				this.add('-immune', target, 'mindcontrolled', '[from] ability: Own Tempo');
 			}
 		},
 		onTryBoost(boost, target, source, effect) {
@@ -3591,9 +3600,11 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.add('-fail', target, 'unboost', 'Attack', '[from] ability: Own Tempo', `[of] ${target}`);
 			}
 		},
+		shortDesc: "Prevents the Pokémon from becoming Confused or Mind Controlled.",
+		origin: 'Buffed',
 		flags: { breakable: 1 },
 		name: "Own Tempo",
-		rating: 1.5,
+		rating: 2,
 		num: 20,
 	},
 	parentalbond: {
@@ -3610,6 +3621,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return secondaries.filter(effect => effect.volatileStatus === 'flinch');
 			}
 		},
+		shortDesc: "Allows the Pokémon to attack twice, first at 100% power, then again at 25% power.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Parental Bond",
 		rating: 4.5,
@@ -3738,6 +3751,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onBasePower(basePower, pokemon, target, move) {
 			if (move.typeChangerBoosted === this.effect) return this.chainModify([4915, 4096]);
 		},
+		shortDesc: "Turns Normal-type moves into Fairy-type moves and increases their power by x1.2.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Pixilate",
 		rating: 4,
@@ -3783,6 +3798,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return false;
 			}
 		},
+		shortDesc: "Restores 1/8 MaxHP per turn instead of taking poison damage.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Poison Heal",
 		rating: 4,
@@ -3791,14 +3808,16 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	poisonpoint: {
 		onDamagingHit(damage, target, source, move) {
 			if (this.checkMoveMakesContact(move, source, target)) {
-				if (this.randomChance(3, 10)) {
+				if (this.randomChance(1, 2)) {
 					source.trySetStatus('psn', target);
 				}
 			}
 		},
+		shortDesc: "Contact with the Pokémon has a 50% chance to poison the attacker.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Poison Point",
-		rating: 1.5,
+		rating: 2,
 		num: 38,
 	},
 	poisonpuppeteer: {
@@ -3809,6 +3828,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				target.addVolatile('confusion');
 			}
 		},
+		shortDesc: "Pokémon poisoned by Pecharunt also become confused.",
+		origin: 'Unchanged',
 		flags: { failroleplay: 1, noreceiver: 1, noentrain: 1, notrace: 1, failskillswap: 1 },
 		name: "Poison Puppeteer",
 		rating: 3,
@@ -3819,14 +3840,16 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			// Despite not being a secondary, Shield Dust / Covert Cloak block Poison Touch's effect
 			if (target.hasAbility('shielddust') || target.hasItem('covertcloak')) return;
 			if (this.checkMoveMakesContact(move, target, source)) {
-				if (this.randomChance(3, 10)) {
+				if (this.randomChance(1, 2)) {
 					target.trySetStatus('psn', source);
 				}
 			}
 		},
+		shortDesc: "May poison the target when making contact (50% chance).",
+		origin: 'Buffed',
 		flags: {},
 		name: "Poison Touch",
-		rating: 2,
+		rating: 2.5,
 		num: 143,
 	},
 	powerconstruct: {
@@ -3864,6 +3887,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify([5325, 4096]);
 			}
 		},
+		shortDesc: "Boosts power of an ally's moves by x1.3.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Power Spot",
 		rating: 0,
@@ -3876,6 +3901,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return priority + 1;
 			}
 		},
+		shortDesc: "Gives +1 priority to status moves.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Prankster",
 		rating: 4,
@@ -3889,6 +3916,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			if (target.isAlly(source)) return;
 			return 1;
 		},
+		shortDesc: "The Pokémon raises the foe's PP usage by +2.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Pressure",
 		rating: 2.5,
