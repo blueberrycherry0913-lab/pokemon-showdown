@@ -178,6 +178,25 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		rating: 3,
 		num: 271,
 	},
+	angrysleeper: {
+		// Detect sleep status at end of previous turn; double power on wake-up turn.
+		onResidualOrder: 30,
+		onResidual(pokemon) {
+			this.effectState.wasSleeping = (pokemon.status === 'slp');
+		},
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (this.effectState.wasSleeping && !attacker.status && move.category !== 'Status') {
+				this.effectState.wasSleeping = false;
+				return this.chainModify(2);
+			}
+		},
+		shortDesc: "Attacks on the turn this Pokémon wakes from sleep are doubled in power.",
+		origin: 'Custom',
+		flags: {},
+		name: "Angry Sleeper",
+		rating: 2,
+		num: 10020,
+	},
 	anticipation: {
 		onStart(pokemon) {
 			// Initialize state and mark all current foes as already-seen so
@@ -636,6 +655,29 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		rating: 2,
 		num: 10001,
 	},
+	cagefighter: {
+		// Double Attack and Defense while the Pokémon cannot switch out.
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, pokemon) {
+			if (pokemon.volatiles['trapped'] || pokemon.volatiles['ingrain'] ||
+				pokemon.volatiles['partiallytrapped'] || pokemon.maybeTrapped) {
+				return this.chainModify(2);
+			}
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, pokemon) {
+			if (pokemon.volatiles['trapped'] || pokemon.volatiles['ingrain'] ||
+				pokemon.volatiles['partiallytrapped'] || pokemon.maybeTrapped) {
+				return this.chainModify(2);
+			}
+		},
+		shortDesc: "Doubles Attack and Defense when the Pokémon cannot switch out.",
+		origin: 'Custom',
+		flags: {},
+		name: "Cage Fighter",
+		rating: 2.5,
+		num: 10014,
+	},
 	cheekpouch: {
 		onEatItem(item, pokemon) {
 			this.heal(pokemon.baseMaxhp / 3);
@@ -784,6 +826,23 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		name: "Comatose",
 		rating: 4,
 		num: 213,
+	},
+	combobreaker: {
+		// +1 priority on the turn after using an attack.
+		onModifyPriority(priority, pokemon, target, move) {
+			if (move.category === 'Status') return;
+			if (this.effectState.movedLastTurn) return priority + 1;
+		},
+		onResidualOrder: 5,
+		onResidual(pokemon) {
+			this.effectState.movedLastTurn = !!pokemon.moveThisTurn;
+		},
+		shortDesc: "Gains +1 priority on the turn after using an attack.",
+		origin: 'Custom',
+		flags: {},
+		name: "Combo Breaker",
+		rating: 2.5,
+		num: 10013,
 	},
 	commander: {
 		onAnySwitchInPriority: -2,
@@ -1191,6 +1250,15 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		rating: 4.5,
 		num: 190,
 	},
+	dirtyfighter: {
+		// Standby: halves Fighting-type damage; next Dark-type move is doubled.
+		shortDesc: "Halves damage from Fighting-type moves; the Pokémon's next Dark-type move is doubled in power.",
+		origin: 'Custom',
+		flags: {},
+		name: "Dirty Fighter",
+		rating: 0,
+		num: 10016,
+	},
 	disguise: {
 		onDamagePriority: 1,
 		onDamage(damage, target, source, effect) {
@@ -1260,6 +1328,28 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		name: "Download",
 		rating: 3.5,
 		num: 88,
+	},
+	downloaddefense: {
+		// Raises Defense or Sp. Def based on the foe's higher offensive stat.
+		onStart(pokemon) {
+			let totalAtk = 0;
+			let totalSpA = 0;
+			for (const target of pokemon.foes()) {
+				totalAtk += target.getStat('atk', false, true);
+				totalSpA += target.getStat('spa', false, true);
+			}
+			if (totalAtk >= totalSpA) {
+				this.boost({ def: 1 });
+			} else {
+				this.boost({ spd: 1 });
+			}
+		},
+		shortDesc: "On switch-in, boosts Defense or Sp. Def based on the foe's higher offensive stat.",
+		origin: 'Custom',
+		flags: {},
+		name: "Download: Defense",
+		rating: 2.5,
+		num: 10021,
 	},
 	dragonize: {
 		isNonstandard: "Future",
@@ -1375,6 +1465,35 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		name: "Earth Eater",
 		rating: 3.5,
 		num: 297,
+	},
+	echolocation: {
+		// Ignores evasion; prevents accuracy drops; +20% accuracy; 1.5× from sound moves.
+		onModifyMovePriority: -2,
+		onModifyMove(move, pokemon) {
+			move.ignoreEvasion = true;
+		},
+		onModifyAccuracyPriority: 5,
+		onModifyAccuracy(accuracy) {
+			if (typeof accuracy !== 'number') return;
+			return this.chainModify(1.2);
+		},
+		onTryBoost(boost, target, source, effect) {
+			if (source && target !== source && boost.accuracy && boost.accuracy < 0) {
+				delete boost.accuracy;
+				if (!(effect as ActiveMove).secondaries) {
+					this.add('-fail', target, 'unboost', 'accuracy', '[from] ability: Echolocation', `[of] ${target}`);
+				}
+			}
+		},
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.flags['sound']) return this.chainModify(1.5);
+		},
+		shortDesc: "Accuracy can't be lowered, ignores evasion, +20% accuracy; takes 1.5× from sound moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Echolocation",
+		rating: 2,
+		num: 10019,
 	},
 	effectspore: {
 		onDamagingHit(damage, target, source, move) {
@@ -3810,6 +3929,25 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		rating: 3.5,
 		num: 10008,
 	},
+	poisonedscales: {
+		// When hit by a direct attack, poison all active Pokémon (blocked by powder immunity).
+		onDamagingHit(damage, target, source, move) {
+			for (const pokemon of this.getAllActive()) {
+				if (!pokemon.hp) continue;
+				// Blocked by powder immunity: Grass types, Safety Goggles, Overcoat
+				if (pokemon.hasType('Grass')) continue;
+				if (pokemon.hasItem('safetygoggles')) continue;
+				if (pokemon.hasAbility('overcoat')) continue;
+				pokemon.trySetStatus('psn', target);
+			}
+		},
+		shortDesc: "When hit by a direct attack, poisons all active Pokémon (blocked by powder immunity).",
+		origin: 'Custom',
+		flags: {},
+		name: "Poisoned Scales",
+		rating: 2.5,
+		num: 10017,
+	},
 	poisonheal: {
 		onDamagePriority: 1,
 		onDamage(damage, target, source, effect) {
@@ -3871,6 +4009,25 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		name: "Poison Touch",
 		rating: 2.5,
 		num: 143,
+	},
+	polluted: {
+		// Attacks sharing the Pokémon's type have a 30% chance to poison the target.
+		onModifyMove(move, source, target) {
+			if (move.category === 'Status') return;
+			if (source.hasType(move.type)) {
+				if (!move.secondaries) move.secondaries = [];
+				move.secondaries.push({
+					chance: 30,
+					status: 'psn',
+				});
+			}
+		},
+		shortDesc: "Attacks sharing the Pokémon's type have a 30% chance to poison the target.",
+		origin: 'Custom',
+		flags: {},
+		name: "Polluted",
+		rating: 2,
+		num: 10010,
 	},
 	powerconstruct: {
 		onResidualOrder: 29,
@@ -4005,6 +4162,22 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		name: "Protean",
 		rating: 4,
 		num: 168,
+	},
+	protectivesoul: {
+		// When KO'd, leaves a free substitute for the next ally that switches in.
+		onDamagingHit(damage, target, source, move) {
+			if (!target.hp) {
+				target.side.addSideCondition('protectivesoulbarrier', target);
+				const sc = target.side.sideConditions['protectivesoulbarrier'];
+				if (sc) (sc as any).barrierHP = Math.floor(target.baseMaxhp / 4);
+			}
+		},
+		shortDesc: "When KO'd, the next ally that switches in receives a free substitute.",
+		origin: 'Custom',
+		flags: {},
+		name: "Protective Soul",
+		rating: 2,
+		num: 10012,
 	},
 	protosynthesis: {
 		onSwitchInPriority: -2,
@@ -5131,6 +5304,18 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		rating: 1.5,
 		num: 60,
 	},
+	stilledtime: {
+		// All moves on the field have their priority set to 0.
+		onAnyModifyPriority(priority, pokemon, target, move) {
+			return 0;
+		},
+		shortDesc: "All moves used while this Pokémon is on the field have their priority changed to 0.",
+		origin: 'Custom',
+		flags: {},
+		name: "Stilled Time",
+		rating: 3,
+		num: 10015,
+	},
 	stormdrain: {
 		onTryHit(target, source, move) {
 			if (target !== source && move.type === 'Water') {
@@ -5647,6 +5832,15 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		rating: 2.5,
 		num: 36,
 	},
+	trainedassassin: {
+		// Standby: once when first sent out, marks a random opponent.
+		shortDesc: "Once when first sent out, marks a random opponent.",
+		origin: 'Custom',
+		flags: {},
+		name: "Trained Assassin",
+		rating: 0,
+		num: 10018,
+	},
 	transistor: {
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker, defender, move) {
@@ -5797,6 +5991,22 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		name: "Vessel of Ruin",
 		rating: 4.5,
 		num: 284,
+	},
+	vengefulspirit: {
+		// Inflicts a random status condition on the attacker when KO'd.
+		onDamagingHit(damage, target, source, move) {
+			if (!target.hp) {
+				const statuses = ['brn', 'psn', 'stun', 'frb', 'slp'];
+				const status = this.sample(statuses);
+				source.trySetStatus(status as any, target);
+			}
+		},
+		shortDesc: "Inflicts a random status condition on the attacker when KO'd.",
+		origin: 'Custom',
+		flags: {},
+		name: "Vengeful Spirit",
+		rating: 2,
+		num: 10011,
 	},
 	victorystar: {
 		onAnyModifyAccuracyPriority: -1,

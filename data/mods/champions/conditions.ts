@@ -1604,4 +1604,22 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return false; // suppress the originally-chosen move
 		},
 	},
+
+	// Side condition created by Protective Soul ability when holder is KO'd.
+	// Grants the next ally that switches in a free substitute (no HP cost).
+	protectivesoulbarrier: {
+		name: 'Protective Soul Barrier',
+		onSwitchIn(pokemon) {
+			if (pokemon.volatiles['substitute']) {
+				// Already has a substitute; discard the barrier.
+				pokemon.side.removeSideCondition('protectivesoulbarrier');
+				return;
+			}
+			const hp = (this.effectState as any).barrierHP || Math.floor(pokemon.baseMaxhp / 4);
+			// Install the substitute volatile directly (no HP deducted from the incoming Pokémon).
+			(pokemon.volatiles as any)['substitute'] = {hp, id: 'substitute', target: pokemon, source: pokemon};
+			this.add('-start', pokemon, 'Substitute');
+			pokemon.side.removeSideCondition('protectivesoulbarrier');
+		},
+	},
 };
