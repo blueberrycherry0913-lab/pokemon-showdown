@@ -3628,6 +3628,26 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		rating: 4.5,
 		num: 185,
 	},
+	parasiticspores: {
+		onDamagingHit(damage, target, source, move) {
+			if (!target.hp) {
+				const typeMod = target.getMoveHitData(move).typeMod;
+				if (typeMod <= 0) {
+					for (const pokemon of this.getAllActive()) {
+						if (!pokemon.hp || pokemon.volatiles['mindcontrolled']) continue;
+						if (pokemon.hasType('Psychic')) continue;
+						pokemon.addVolatile('mindcontrolled', target);
+					}
+				}
+			}
+		},
+		shortDesc: "If KO'd by a non-super effective move, all Pokémon on the field become Mind Controlled.",
+		origin: 'Custom',
+		flags: {},
+		name: "Parasitic Spores",
+		rating: 2,
+		num: 10009,
+	},
 	pastelveil: {
 		onStart(pokemon) {
 			for (const ally of pokemon.alliesAndSelf()) {
