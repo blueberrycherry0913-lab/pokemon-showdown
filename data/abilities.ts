@@ -1391,8 +1391,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				}
 			}
 		},
-		shortDesc: "50% chance on contact to inflict sleep (20%), stun (40%), or poison (40%).",
-		origin: 'Altered',
+		shortDesc: "Contact has a 50% chance to inflict poison (20%), stun (20%), or sleep (10%).",
+		origin: 'Buffed',
 		flags: {},
 		name: "Effect Spore",
 		rating: 2,
