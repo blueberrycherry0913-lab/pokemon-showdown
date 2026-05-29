@@ -632,24 +632,14 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	burningsoul: {
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, pokemon) {
-			const h = pokemon.hp / pokemon.maxhp;
-			let mult;
-			if (h >= 0.50) mult = 0.5 + h;
-			else if (h >= 0.25) mult = 2 * h;
-			else if (h >= 0.01) mult = 0.25 + (0.25 / 0.24) * (h - 0.01);
-			else mult = 0.25;
-			return this.chainModify(mult);
+			return this.chainModify(pokemon.hp / pokemon.maxhp + 0.5);
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(spa, pokemon) {
-			const h = pokemon.hp / pokemon.maxhp;
-			let mult;
-			if (h >= 0.50) mult = 0.5 + h;
-			else if (h >= 0.25) mult = 2 * h;
-			else if (h >= 0.01) mult = 0.25 + (0.25 / 0.24) * (h - 0.01);
-			else mult = 0.25;
-			return this.chainModify(mult);
+			return this.chainModify(pokemon.hp / pokemon.maxhp + 0.5);
 		},
+		shortDesc: "Offensive stats scale with HP%: ×1.5 at full HP, ×1.0 at 50%, ×0.5 near 0%.",
+		origin: 'Custom',
 		flags: {},
 		name: "Burning Soul",
 		rating: 2,
