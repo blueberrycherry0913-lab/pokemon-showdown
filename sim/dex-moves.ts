@@ -71,6 +71,7 @@ interface MoveFlags {
 	// Exist as hooks for abilities, items, and other systems to reference.
 	ball?: 1; // Category tag: ball-type projectile moves. (Examples: Energy Ball, Shadow Ball)
 	beam?: 1; // Category tag: beam attacks. (Examples: Hyper Beam, Ice Beam, Solar Beam)
+	drill?: 1; // Category tag: drill-type attacks. (Examples: Drill Peck, Drill Run)
 	exploding?: 1; // Category tag: explosion/self-destruction moves. (Examples: Self-Destruct, Explosion)
 	heavyprojectile?: 1; // Category tag: heavy thrown projectile moves.
 	kicking?: 1; // Category tag: kicks.

@@ -3851,18 +3851,16 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 53,
 	},
 	piercingdrill: {
-		isNonstandard: "Future",
-		onHitProtect(source, target, move) {
-			if (move.flags['contact']) {
-				target.getMoveHitData(move).bypassProtect = this.effect;
-				return false;
-			}
+		onBasePowerPriority: 22,
+		onBasePower(basePower, attacker, defender, move) {
+			if (move.flags['drill']) return this.chainModify(1.5);
 		},
-		// breaking protect handled in Battle#checkMoveBypassesProtect()
+		shortDesc: "Boosts the power of drill moves by x1.5.",
+		origin: 'Custom',
 		flags: {},
 		name: "Piercing Drill",
-		rating: 1,
-		num: 311,
+		rating: 3,
+		num: 10078,
 	},
 	pixilate: {
 		onModifyTypePriority: -1,
@@ -7501,5 +7499,395 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		name: "Caclulated",
 		rating: 3,
 		num: 10074,
+	},
+
+	// --- Row 378: Heavy Cannon ---
+	heavycannon: {
+		onBasePowerPriority: 22,
+		onBasePower(basePower, attacker, defender, move) {
+			if (move.flags['beam'] || move.flags['heavyprojectile']) return this.chainModify(1.3);
+		},
+		shortDesc: "Boosts the power of beam and heavy projectile moves by x1.3.",
+		origin: 'Custom',
+		flags: {},
+		name: "Heavy Cannon",
+		rating: 3,
+		num: 10075,
+	},
+
+	// --- Row 380: Pulse Generator ---
+	pulsegenerator: {
+		onBasePowerPriority: 22,
+		onBasePower(basePower, attacker, defender, move) {
+			if (move.flags['pulse']) return this.chainModify(1.5);
+		},
+		shortDesc: "Boosts the power of pulse moves by x1.5.",
+		origin: 'Custom',
+		flags: {},
+		name: "Pulse Generator",
+		rating: 4,
+		num: 10076,
+	},
+
+	// --- Row 381: Air Supiriority ---
+	airsupiriority: {
+		onModifyMove(move) {
+			if (move.type === 'Flying') move.accuracy = true;
+		},
+		shortDesc: "Flying-type attacks cannot miss.",
+		origin: 'Custom',
+		flags: {},
+		name: "Air Supiriority",
+		rating: 3,
+		num: 10077,
+	},
+
+	// --- Row 383: Dream Guide (mechanic lives in slp condition in conditions.ts) ---
+	dreamguide: {
+		shortDesc: "Holder and active allies can use moves normally even while asleep.",
+		origin: 'Custom',
+		flags: {},
+		name: "Dream Guide",
+		rating: 2,
+		num: 10079,
+	},
+
+	// --- Row 384: Hypnotic ---
+	hypnotic: {
+		onModifyMove(move) {
+			if (
+				move.status === 'slp' ||
+				move.secondary?.status === 'slp' ||
+				move.secondaries?.some(s => s.status === 'slp')
+			) {
+				move.accuracy = true;
+			}
+		},
+		shortDesc: "Moves that can inflict sleep cannot miss.",
+		origin: 'Custom',
+		flags: {},
+		name: "Hypnotic",
+		rating: 3,
+		num: 10080,
+	},
+
+	// --- Row 385: Weak Point ---
+	weakpoint: {
+		onSourceModifyDamage(damage, source, target, move) {
+			const typeMod = target.runEffectiveness(move);
+			if (typeMod === 0) return this.chainModify(0.5);  // neutral → ×0.5
+			if (typeMod > 0) return this.chainModify(2);       // SE → ×2 additional
+		},
+		shortDesc: "Takes 0.5× from neutral moves; takes 2× extra from super-effective moves.",
+		origin: 'Custom',
+		flags: {},
+		name: "Weak Point",
+		rating: 2,
+		num: 10081,
+	},
+
+	// --- Row 386: Judo Master ---
+	judomaster: {
+		onAfterMoveSecondarySelf(source, target, move) {
+			if (!move.flags['contact'] || !target || target.fainted) return;
+			if (!this.randomChance(1, 4)) return;
+			if (!this.battle.canSwitch(target.side)) return;
+			(target as any).draggedOut = true;
+		},
+		shortDesc: "Contact moves have a 25% chance to force the target to switch out.",
+		origin: 'Custom',
+		flags: {},
+		name: "Judo Master",
+		rating: 3,
+		num: 10082,
+	},
+
+	// --- Row 387: Adaptive ---
+	adaptive: {
+		onStart(pokemon) {
+			this.effectState.resistedTypes = Object.create(null);
+		},
+		onDamagingHit(damage, target, source, move) {
+			if (!this.effectState.resistedTypes) this.effectState.resistedTypes = Object.create(null);
+			this.effectState.resistedTypes[move.type] = true;
+		},
+		onSourceModifyDamage(damage, source, target, move) {
+			if (this.effectState.resistedTypes?.[move.type]) return this.chainModify(0.5);
+		},
+		shortDesc: "Gains ×0.5 resistance to each type that has hit it.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Adaptive",
+		rating: 3,
+		num: 10083,
+	},
+
+	// --- Row 388: Harder They Fall ---
+	hardertheyfall: {
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker) {
+			const foe = this.battle.randomFoe();
+			if (!foe) return;
+			const userBST = (Object.values(attacker.baseStats) as number[]).reduce((a, b) => a + b, 0);
+			const foeBST = (Object.values(foe.baseStats) as number[]).reduce((a, b) => a + b, 0);
+			const boost = Math.min(Math.floor(Math.max(0, foeBST - userBST) * 0.4), 50);
+			if (boost > 0) return atk + boost;
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, target) {
+			const foe = this.battle.randomFoe();
+			if (!foe) return;
+			const userBST = (Object.values(target.baseStats) as number[]).reduce((a, b) => a + b, 0);
+			const foeBST = (Object.values(foe.baseStats) as number[]).reduce((a, b) => a + b, 0);
+			const boost = Math.min(Math.floor(Math.max(0, foeBST - userBST) * 0.4), 50);
+			if (boost > 0) return def + boost;
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, attacker) {
+			const foe = this.battle.randomFoe();
+			if (!foe) return;
+			const userBST = (Object.values(attacker.baseStats) as number[]).reduce((a, b) => a + b, 0);
+			const foeBST = (Object.values(foe.baseStats) as number[]).reduce((a, b) => a + b, 0);
+			const boost = Math.min(Math.floor(Math.max(0, foeBST - userBST) * 0.4), 50);
+			if (boost > 0) return spa + boost;
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd, target) {
+			const foe = this.battle.randomFoe();
+			if (!foe) return;
+			const userBST = (Object.values(target.baseStats) as number[]).reduce((a, b) => a + b, 0);
+			const foeBST = (Object.values(foe.baseStats) as number[]).reduce((a, b) => a + b, 0);
+			const boost = Math.min(Math.floor(Math.max(0, foeBST - userBST) * 0.4), 50);
+			if (boost > 0) return spd + boost;
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe, pokemon) {
+			const foe = this.battle.randomFoe();
+			if (!foe) return;
+			const userBST = (Object.values(pokemon.baseStats) as number[]).reduce((a, b) => a + b, 0);
+			const foeBST = (Object.values(foe.baseStats) as number[]).reduce((a, b) => a + b, 0);
+			const boost = Math.min(Math.floor(Math.max(0, foeBST - userBST) * 0.4), 50);
+			if (boost > 0) return spe + boost;
+		},
+		shortDesc: "Boosts all stats by up to +50 flat pts based on how much lower this BST is vs. the foe's.",
+		origin: 'Custom',
+		flags: {},
+		name: "Harder They Fall",
+		rating: 3,
+		num: 10084,
+	},
+
+	// --- Row 389: Mind Set ---
+	mindset: {
+		onStart(pokemon) {
+			pokemon.abilityState.choiceLock = '';
+		},
+		onBeforeMove(pokemon, target, move) {
+			if (pokemon.abilityState.choiceLock === move.id) return;
+			if (pokemon.abilityState.choiceLock) {
+				const lockedMove = this.dex.getActiveMove(pokemon.abilityState.choiceLock);
+				this.add('-activate', pokemon, 'ability: Mind Set');
+				this.add('-block', pokemon, 'move: ' + lockedMove.name);
+				return false;
+			}
+			pokemon.abilityState.choiceLock = move.id;
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, pokemon) {
+			if (pokemon.volatiles['dynamax']) return;
+			return this.chainModify(1.5);
+		},
+		shortDesc: "Boosts Sp. Atk by x1.5 but locks the user into the first move used.",
+		origin: 'Custom',
+		flags: {},
+		name: "Mind Set",
+		rating: 3,
+		num: 10085,
+	},
+
+	// --- Row 390: Soul Accumulation ---
+	soulaccumulation: {
+		onAnyFaint() {
+			const target = this.effectState.target;
+			if (!target || target.fainted) return;
+			this.heal(Math.floor(target.baseMaxhp * 2 / 3), target);
+		},
+		shortDesc: "Heals 2/3 max HP whenever any Pokémon on the field faints.",
+		origin: 'Custom',
+		flags: {},
+		name: "Soul Accumulation",
+		rating: 4,
+		num: 10086,
+	},
+
+	// --- Row 391: Alphabet ---
+	alphabet: {
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, pokemon) {
+			const count = pokemon.side.pokemon.filter(p => p.species.baseSpecies === 'Unown').length;
+			if (count > 0) return this.chainModify(Math.pow(1.2, count));
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, pokemon) {
+			const count = pokemon.side.pokemon.filter(p => p.species.baseSpecies === 'Unown').length;
+			if (count > 0) return this.chainModify(Math.pow(1.2, count));
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, pokemon) {
+			const count = pokemon.side.pokemon.filter(p => p.species.baseSpecies === 'Unown').length;
+			if (count > 0) return this.chainModify(Math.pow(1.2, count));
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd, pokemon) {
+			const count = pokemon.side.pokemon.filter(p => p.species.baseSpecies === 'Unown').length;
+			if (count > 0) return this.chainModify(Math.pow(1.2, count));
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe, pokemon) {
+			const count = pokemon.side.pokemon.filter(p => p.species.baseSpecies === 'Unown').length;
+			if (count > 0) return this.chainModify(Math.pow(1.2, count));
+		},
+		shortDesc: "Boosts all stats by x1.2 per Unown in the party.",
+		origin: 'Custom',
+		flags: {},
+		name: "Alphabet",
+		rating: 3,
+		num: 10087,
+	},
+
+	// --- Row 392: Flower Trick ---
+	flowertrick: {
+		onModifyCritRatioPriority: 3,
+		onModifyCritRatio(critRatio, source, target, move) {
+			if (move.type === 'Grass') return 3;
+		},
+		shortDesc: "Grass-type moves always land a critical hit.",
+		origin: 'Custom',
+		flags: {},
+		name: "Flower Trick",
+		rating: 4,
+		num: 10088,
+	},
+
+	// --- Row 393: Celestial Body ---
+	celestialbody: {
+		onStart(pokemon) {
+			this.field.addPseudoWeather('gravity', pokemon, this.effect);
+		},
+		onTryHit(target, source, move) {
+			if (target !== source && move.type === 'Ground') {
+				this.add('-immune', target, '[from] ability: Celestial Body');
+				return null;
+			}
+		},
+		shortDesc: "Sets Gravity on entry; holder is immune to Ground-type moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Celestial Body",
+		rating: 3,
+		num: 10089,
+	},
+
+	// --- Row 394: Psychic Vision ---
+	psychicvision: {
+		onStart(pokemon) {
+			this.effectState.firstTurn = true;
+		},
+		onModifyAccuracyPriority: -1,
+		onModifyAccuracy(accuracy, source, target) {
+			if (!this.effectState.firstTurn || typeof accuracy !== 'number') return;
+			if ((source as any)?.hasType?.('Psychic')) return; // Psychic-type attackers bypass
+			return 0;
+		},
+		onResidual(pokemon) {
+			this.effectState.firstTurn = false;
+		},
+		shortDesc: "On switch-in, all non-Psychic attacks miss for one turn.",
+		origin: 'Custom',
+		flags: {},
+		name: "Psychic Vision",
+		rating: 3,
+		num: 10090,
+	},
+
+	// --- Row 395: Mind Probe ---
+	mindprobe: {
+		onAfterMoveSecondarySelf(source, target, move) {
+			if (move.type !== 'Psychic' || !target || target.fainted) return;
+			if (!this.randomChance(1, 5)) return;
+			if (target.hasType('Psychic')) return;
+			if (target.volatiles['mindcontrolled']) return;
+			target.addVolatile('mindcontrolled', source);
+		},
+		shortDesc: "Psychic-type moves have a 20% chance to inflict Mind Controlled.",
+		origin: 'Custom',
+		flags: {},
+		name: "Mind Probe",
+		rating: 3,
+		num: 10091,
+	},
+
+	// --- Row 396: Pitiful ---
+	pitiful: {
+		onStart(pokemon) {
+			this.effectState.triggered = false;
+		},
+		onDamagingHit(damage, target, source, move) {
+			if (this.effectState.triggered) return;
+			if (target.hp <= target.baseMaxhp / 3) {
+				this.effectState.triggered = true;
+				this.add('-ability', target, 'Pitiful');
+				for (const side of this.battle.sides) {
+					for (const pokemon of side.active) {
+						if (pokemon && !pokemon.fainted) {
+							this.boost({ atk: -2, spa: -2 }, pokemon, target);
+						}
+					}
+				}
+			}
+		},
+		shortDesc: "When HP drops to 1/3, lowers all active Pokémon's Atk and SpA by 2 stages.",
+		origin: 'Custom',
+		flags: {},
+		name: "Pitiful",
+		rating: 2,
+		num: 10092,
+	},
+
+	// --- Row 397: Golddigger ---
+	golddigger: {
+		onBasePowerPriority: 10,
+		onBasePower(basePower, attacker, defender, move) {
+			if (defender.item) return this.chainModify(1.1);
+		},
+		onBeforeMove(source, target, move) {
+			this.effectState.preTargetItem = target?.item ?? '';
+		},
+		onAfterMoveSecondarySelf(source, target, move) {
+			const pre = this.effectState.preTargetItem as string;
+			this.effectState.preTargetItem = '';
+			if (!target || !pre) return;
+			if (!target.item && source.item === pre) {
+				this.boost({ atk: 1, spa: 1 }, source);
+			}
+		},
+		shortDesc: "x1.1 power vs item holders; gains +1 Atk/SpA when stealing a foe's item.",
+		origin: 'Custom',
+		flags: {},
+		name: "Golddigger",
+		rating: 3,
+		num: 10093,
+	},
+
+	// --- Row 398: Death Roll (stub — Death Grip status pending user definition) ---
+	deathroll: {
+		// TODO: Biting moves deal ×1.1 power and inflict "Death Grip" status.
+		// Death Grip is not yet defined. Stub reserved; implement once status is specified.
+		shortDesc: "Biting moves deal ×1.1 power and inflict Death Grip (pending definition).",
+		origin: 'Custom',
+		flags: {},
+		name: "Death Roll",
+		rating: 1,
+		num: 10094,
 	},
 };

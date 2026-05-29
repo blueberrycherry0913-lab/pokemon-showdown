@@ -1517,6 +1517,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onBeforeMove(pokemon, target, move) {
 			// Comatose Pokémon use Comatose's perpetual-sleep logic, not this condition's lockout
 			if (pokemon.hasAbility('comatose')) return;
+			// Dream Guide: holder and active allies can act normally while asleep (sleep turns don't accumulate)
+			if (pokemon.hasAbility('dreamguide') ||
+				pokemon.alliesActive().some(p => !p.fainted && p.hasAbility('dreamguide'))) return;
 			// Sleep Talk and Snore can still be used while asleep — don't count those turns
 			if (move.id === 'sleeptalk' || move.id === 'snore') return;
 			if (pokemon.status !== 'slp' || !pokemon.hp) return;
