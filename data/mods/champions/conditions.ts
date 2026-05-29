@@ -1027,6 +1027,79 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 	},
 
+	// §4 Death Grip volatile — relational variant of Interlocked.
+	// The aggressor applies this to the victim. Both receive the volatile simultaneously.
+	// Shares all Interlocked mechanics (3-turn trap, move redirect, +1.5× accuracy on partner)
+	// EXCEPT: the victim takes 1/8 max HP chip damage each residual turn; the aggressor does not.
+	// effectState.partner = the other Pokémon in the grip.
+	// effectState.isVictim = true on the victim's copy, false/absent on the aggressor's copy.
+	deathgrip: {
+		name: 'deathgrip',
+		duration: 3,
+		noCopy: true,
+		onStart(target, source) {
+			this.effectState.partner = source;
+			// isVictim is NOT set here — it must be set by the call site on the victim's copy only.
+			// (Both copies' onStart receive the same args so we can't distinguish victim from aggressor here.)
+			this.add('-start', target, 'deathgrip', `[of] ${source}`);
+		},
+		onEnd(target) {
+			this.add('-end', target, 'deathgrip');
+			if (this.effectState.ending) return;
+			const partner = this.effectState.partner;
+			if (partner && !partner.fainted && partner.volatiles['deathgrip']) {
+				partner.volatiles['deathgrip'].ending = true;
+				partner.removeVolatile('deathgrip');
+			}
+		},
+		onTrapPokemon(pokemon) {
+			pokemon.trapped = true;
+		},
+		onBeforeFaint(target) {
+			const partner = this.effectState.partner;
+			if (partner && !partner.fainted && partner.volatiles['deathgrip']) {
+				partner.volatiles['deathgrip'].ending = true;
+				partner.removeVolatile('deathgrip');
+			}
+		},
+		onSwitchOut(target) {
+			const partner = this.effectState.partner;
+			if (partner && !partner.fainted && partner.volatiles['deathgrip']) {
+				partner.volatiles['deathgrip'].ending = true;
+				partner.removeVolatile('deathgrip');
+			}
+		},
+		onBeforeMove(pokemon, target, move) {
+			const partner = this.effectState.partner;
+			if (!partner || partner.fainted) return;
+			const singleFoeTargets = ['normal', 'adjacentFoe', 'any', 'randomNormal'];
+			if (
+				singleFoeTargets.includes(move.target as string) &&
+				target && target.side !== pokemon.side &&
+				target !== partner
+			) {
+				this.add('-fail', pokemon);
+				return false;
+			}
+		},
+		onModifyAccuracy(accuracy, target, source, move) {
+			if (typeof accuracy !== 'number') return;
+			if (source !== this.effectState.partner) return;
+			return this.chainModify(1.5);
+		},
+		onResidual(pokemon) {
+			// Only the victim takes chip damage; aggressor does not.
+			if (!this.effectState.isVictim) return;
+			this.damage(Math.floor(pokemon.baseMaxhp / 8));
+		},
+		onDamagingHit(damage, target, source, move) {
+			const partner = this.effectState.partner;
+			if (!partner || partner.fainted) return;
+			if (source === partner) return;
+			this.damage(damage, partner);
+		},
+	},
+
 	marked: {
 		name: 'marked',
 		noCopy: true,

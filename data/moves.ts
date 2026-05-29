@@ -21691,4 +21691,37 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		},
 		isNonstandard: "Custom",
 	},
+	// §4 Death Grip volatile — test move for playtesting.
+	// Applies 'deathgrip' to both the user (aggressor) AND the target (victim).
+	// Victim takes 1/8 HP chip each turn; aggressor does not.
+	// Fails if either participant is already Interlocked or Death-Gripped.
+	deathgriptest: {
+		num: -13,
+		accuracy: 100,
+		basePower: 0,
+		category: "Status",
+		name: "Death Grip (TEST)",
+		pp: 10,
+		priority: 0,
+		flags: { protect: 1, reflectable: 1, mirror: 1 },
+		target: "normal",
+		type: "Normal",
+		onTryHit(target, source) {
+			if (
+				target.volatiles['deathgrip'] || source.volatiles['deathgrip'] ||
+				target.volatiles['interlocked'] || source.volatiles['interlocked']
+			) {
+				this.add('-fail', target);
+				return null;
+			}
+		},
+		onHit(target, source) {
+			// target = victim, source = aggressor
+			target.addVolatile('deathgrip', source);
+			(target.volatiles['deathgrip'] as any).isVictim = true;
+			source.addVolatile('deathgrip', target);
+			// source's copy: isVictim stays falsy — no chip damage
+		},
+		isNonstandard: "Custom",
+	},
 };
