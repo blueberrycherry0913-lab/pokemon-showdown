@@ -638,7 +638,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onModifySpA(spa, pokemon) {
 			return this.chainModify(pokemon.hp / pokemon.maxhp + 0.5);
 		},
-		shortDesc: "Offensive stats scale with HP%: ×1.5 at full HP, ×1.0 at 50%, ×0.5 near 0%.",
+		shortDesc: "Attack and Sp. Atk scale with remaining HP: ×1.5 at 100% HP, ×1.0 at 50% HP, ~×0.51 at 1% HP.",
 		origin: 'Custom',
 		flags: {},
 		name: "Burning Soul",
