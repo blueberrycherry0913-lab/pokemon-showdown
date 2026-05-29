@@ -6537,4 +6537,979 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		rating: 3,
 		num: -3,
 	},
+
+	// --- Rows 324–338: LowHP type abilities ---
+	laststand: {
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker, defender, move) {
+			if (move.type === 'Normal' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(atk, attacker, defender, move) {
+			if (move.type === 'Normal' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		shortDesc: "Powers up Normal-type moves by x1.5 when below 1/3 MaxHP.",
+		origin: 'Custom',
+		flags: {},
+		name: "Last Stand",
+		rating: 2,
+		num: 10022,
+	},
+	shortingout: {
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker, defender, move) {
+			if (move.type === 'Electric' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(atk, attacker, defender, move) {
+			if (move.type === 'Electric' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		shortDesc: "Powers up Electric-type moves by x1.5 when below 1/3 MaxHP.",
+		origin: 'Custom',
+		flags: {},
+		name: "Shorting Out",
+		rating: 2,
+		num: 10023,
+	},
+	nearzero: {
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker, defender, move) {
+			if (move.type === 'Ice' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(atk, attacker, defender, move) {
+			if (move.type === 'Ice' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		shortDesc: "Powers up Ice-type moves by x1.5 when below 1/3 MaxHP.",
+		origin: 'Custom',
+		flags: {},
+		name: "Near-Zero",
+		rating: 2,
+		num: 10024,
+	},
+	adrenaline: {
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker, defender, move) {
+			if (move.type === 'Fighting' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(atk, attacker, defender, move) {
+			if (move.type === 'Fighting' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		shortDesc: "Powers up Fighting-type moves by x1.5 when below 1/3 MaxHP.",
+		origin: 'Custom',
+		flags: {},
+		name: "Adrenaline",
+		rating: 2,
+		num: 10025,
+	},
+	finalinjection: {
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker, defender, move) {
+			if (move.type === 'Poison' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(atk, attacker, defender, move) {
+			if (move.type === 'Poison' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		shortDesc: "Powers up Poison-type moves by x1.5 when below 1/3 MaxHP.",
+		origin: 'Custom',
+		flags: {},
+		name: "Final Injection",
+		rating: 2,
+		num: 10026,
+	},
+	standingground: {
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker, defender, move) {
+			if (move.type === 'Ground' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(atk, attacker, defender, move) {
+			if (move.type === 'Ground' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		shortDesc: "Powers up Ground-type moves by x1.5 when below 1/3 MaxHP.",
+		origin: 'Custom',
+		flags: {},
+		name: "Standing Ground",
+		rating: 2,
+		num: 10027,
+	},
+	headwind: {
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker, defender, move) {
+			if (move.type === 'Flying' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(atk, attacker, defender, move) {
+			if (move.type === 'Flying' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		shortDesc: "Powers up Flying-type moves by x1.5 when below 1/3 MaxHP.",
+		origin: 'Custom',
+		flags: {},
+		name: "Headwind",
+		rating: 2,
+		num: 10028,
+	},
+	mindsedge: {
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker, defender, move) {
+			if (move.type === 'Psychic' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(atk, attacker, defender, move) {
+			if (move.type === 'Psychic' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		shortDesc: "Powers up Psychic-type moves by x1.5 when below 1/3 MaxHP.",
+		origin: 'Custom',
+		flags: {},
+		name: "Mind's Edge",
+		rating: 2,
+		num: 10029,
+	},
+	breakingpoint: {
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker, defender, move) {
+			if (move.type === 'Rock' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(atk, attacker, defender, move) {
+			if (move.type === 'Rock' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		shortDesc: "Powers up Rock-type moves by x1.5 when below 1/3 MaxHP.",
+		origin: 'Custom',
+		flags: {},
+		name: "Breaking Point",
+		rating: 2,
+		num: 10030,
+	},
+	unfinishedbusiness: {
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker, defender, move) {
+			if (move.type === 'Ghost' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(atk, attacker, defender, move) {
+			if (move.type === 'Ghost' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		shortDesc: "Powers up Ghost-type moves by x1.5 when below 1/3 MaxHP.",
+		origin: 'Custom',
+		flags: {},
+		name: "Unfinished Business",
+		rating: 2,
+		num: 10031,
+	},
+	draconic: {
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker, defender, move) {
+			if (move.type === 'Dragon' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(atk, attacker, defender, move) {
+			if (move.type === 'Dragon' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		shortDesc: "Powers up Dragon-type moves by x1.5 when below 1/3 MaxHP.",
+		origin: 'Custom',
+		flags: {},
+		name: "Draconic",
+		rating: 2,
+		num: 10032,
+	},
+	oldesttrick: {
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker, defender, move) {
+			if (move.type === 'Dark' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(atk, attacker, defender, move) {
+			if (move.type === 'Dark' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		shortDesc: "Powers up Dark-type moves by x1.5 when below 1/3 MaxHP.",
+		origin: 'Custom',
+		flags: {},
+		name: "Oldest Trick",
+		rating: 2,
+		num: 10033,
+	},
+	tempered: {
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker, defender, move) {
+			if (move.type === 'Steel' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(atk, attacker, defender, move) {
+			if (move.type === 'Steel' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		shortDesc: "Powers up Steel-type moves by x1.5 when below 1/3 MaxHP.",
+		origin: 'Custom',
+		flags: {},
+		name: "Tempered",
+		rating: 2,
+		num: 10034,
+	},
+	happyending: {
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker, defender, move) {
+			if (move.type === 'Fairy' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(atk, attacker, defender, move) {
+			if (move.type === 'Fairy' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		shortDesc: "Powers up Fairy-type moves by x1.5 when below 1/3 MaxHP.",
+		origin: 'Custom',
+		flags: {},
+		name: "Happy Ending",
+		rating: 2,
+		num: 10035,
+	},
+	eventhorizon: {
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker, defender, move) {
+			if ((move.type as string) === 'Cosmic' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(atk, attacker, defender, move) {
+			if ((move.type as string) === 'Cosmic' && attacker.hp <= attacker.maxhp / 3) {
+				return this.chainModify(1.5);
+			}
+		},
+		shortDesc: "Powers up Cosmic-type moves by x1.5 when below 1/3 MaxHP.",
+		origin: 'Custom',
+		flags: {},
+		name: "Event Horizon",
+		rating: 2,
+		num: 10036,
+	},
+
+	// --- Rows 339–351: Type-change abilities (Normal → X, ×1.2 boost) ---
+	pyrolize: {
+		onModifyTypePriority: -1,
+		onModifyType(move, pokemon) {
+			const noModifyType = [
+				'judgment', 'multiattack', 'naturalgift', 'revelationdance', 'technoblast', 'terrainpulse', 'weatherball',
+			];
+			if (move.type === 'Normal' && (!noModifyType.includes(move.id) || this.activeMove?.isMax) &&
+				!(move.isZ && move.category !== 'Status') && !(move.name === 'Tera Blast' && pokemon.terastallized)) {
+				move.type = 'Fire';
+				move.typeChangerBoosted = this.effect;
+			}
+		},
+		onBasePowerPriority: 23,
+		onBasePower(basePower, pokemon, target, move) {
+			if (move.typeChangerBoosted === this.effect) return this.chainModify([4915, 4096]);
+		},
+		shortDesc: "Turns Normal-type moves into Fire-type moves and increases their power by x1.2.",
+		origin: 'Custom',
+		flags: {},
+		name: "Pyrolize",
+		rating: 4,
+		num: 10037,
+	},
+	hydrate: {
+		onModifyTypePriority: -1,
+		onModifyType(move, pokemon) {
+			const noModifyType = [
+				'judgment', 'multiattack', 'naturalgift', 'revelationdance', 'technoblast', 'terrainpulse', 'weatherball',
+			];
+			if (move.type === 'Normal' && (!noModifyType.includes(move.id) || this.activeMove?.isMax) &&
+				!(move.isZ && move.category !== 'Status') && !(move.name === 'Tera Blast' && pokemon.terastallized)) {
+				move.type = 'Water';
+				move.typeChangerBoosted = this.effect;
+			}
+		},
+		onBasePowerPriority: 23,
+		onBasePower(basePower, pokemon, target, move) {
+			if (move.typeChangerBoosted === this.effect) return this.chainModify([4915, 4096]);
+		},
+		shortDesc: "Turns Normal-type moves into Water-type moves and increases their power by x1.2.",
+		origin: 'Custom',
+		flags: {},
+		name: "Hydrate",
+		rating: 4,
+		num: 10038,
+	},
+	verdant: {
+		onModifyTypePriority: -1,
+		onModifyType(move, pokemon) {
+			const noModifyType = [
+				'judgment', 'multiattack', 'naturalgift', 'revelationdance', 'technoblast', 'terrainpulse', 'weatherball',
+			];
+			if (move.type === 'Normal' && (!noModifyType.includes(move.id) || this.activeMove?.isMax) &&
+				!(move.isZ && move.category !== 'Status') && !(move.name === 'Tera Blast' && pokemon.terastallized)) {
+				move.type = 'Grass';
+				move.typeChangerBoosted = this.effect;
+			}
+		},
+		onBasePowerPriority: 23,
+		onBasePower(basePower, pokemon, target, move) {
+			if (move.typeChangerBoosted === this.effect) return this.chainModify([4915, 4096]);
+		},
+		shortDesc: "Turns Normal-type moves into Grass-type moves and increases their power by x1.2.",
+		origin: 'Custom',
+		flags: {},
+		name: "Verdant",
+		rating: 4,
+		num: 10039,
+	},
+	brawler: {
+		onModifyTypePriority: -1,
+		onModifyType(move, pokemon) {
+			const noModifyType = [
+				'judgment', 'multiattack', 'naturalgift', 'revelationdance', 'technoblast', 'terrainpulse', 'weatherball',
+			];
+			if (move.type === 'Normal' && (!noModifyType.includes(move.id) || this.activeMove?.isMax) &&
+				!(move.isZ && move.category !== 'Status') && !(move.name === 'Tera Blast' && pokemon.terastallized)) {
+				move.type = 'Fighting';
+				move.typeChangerBoosted = this.effect;
+			}
+		},
+		onBasePowerPriority: 23,
+		onBasePower(basePower, pokemon, target, move) {
+			if (move.typeChangerBoosted === this.effect) return this.chainModify([4915, 4096]);
+		},
+		shortDesc: "Turns Normal-type moves into Fighting-type moves and increases their power by x1.2.",
+		origin: 'Custom',
+		flags: {},
+		name: "Brawler",
+		rating: 4,
+		num: 10040,
+	},
+	toxify: {
+		onModifyTypePriority: -1,
+		onModifyType(move, pokemon) {
+			const noModifyType = [
+				'judgment', 'multiattack', 'naturalgift', 'revelationdance', 'technoblast', 'terrainpulse', 'weatherball',
+			];
+			if (move.type === 'Normal' && (!noModifyType.includes(move.id) || this.activeMove?.isMax) &&
+				!(move.isZ && move.category !== 'Status') && !(move.name === 'Tera Blast' && pokemon.terastallized)) {
+				move.type = 'Poison';
+				move.typeChangerBoosted = this.effect;
+			}
+		},
+		onBasePowerPriority: 23,
+		onBasePower(basePower, pokemon, target, move) {
+			if (move.typeChangerBoosted === this.effect) return this.chainModify([4915, 4096]);
+		},
+		shortDesc: "Turns Normal-type moves into Poison-type moves and increases their power by x1.2.",
+		origin: 'Custom',
+		flags: {},
+		name: "Toxify",
+		rating: 4,
+		num: 10041,
+	},
+	terraform: {
+		onModifyTypePriority: -1,
+		onModifyType(move, pokemon) {
+			const noModifyType = [
+				'judgment', 'multiattack', 'naturalgift', 'revelationdance', 'technoblast', 'terrainpulse', 'weatherball',
+			];
+			if (move.type === 'Normal' && (!noModifyType.includes(move.id) || this.activeMove?.isMax) &&
+				!(move.isZ && move.category !== 'Status') && !(move.name === 'Tera Blast' && pokemon.terastallized)) {
+				move.type = 'Ground';
+				move.typeChangerBoosted = this.effect;
+			}
+		},
+		onBasePowerPriority: 23,
+		onBasePower(basePower, pokemon, target, move) {
+			if (move.typeChangerBoosted === this.effect) return this.chainModify([4915, 4096]);
+		},
+		shortDesc: "Turns Normal-type moves into Ground-type moves and increases their power by x1.2.",
+		origin: 'Custom',
+		flags: {},
+		name: "Terraform",
+		rating: 4,
+		num: 10042,
+	},
+	cerebrate: {
+		onModifyTypePriority: -1,
+		onModifyType(move, pokemon) {
+			const noModifyType = [
+				'judgment', 'multiattack', 'naturalgift', 'revelationdance', 'technoblast', 'terrainpulse', 'weatherball',
+			];
+			if (move.type === 'Normal' && (!noModifyType.includes(move.id) || this.activeMove?.isMax) &&
+				!(move.isZ && move.category !== 'Status') && !(move.name === 'Tera Blast' && pokemon.terastallized)) {
+				move.type = 'Psychic';
+				move.typeChangerBoosted = this.effect;
+			}
+		},
+		onBasePowerPriority: 23,
+		onBasePower(basePower, pokemon, target, move) {
+			if (move.typeChangerBoosted === this.effect) return this.chainModify([4915, 4096]);
+		},
+		shortDesc: "Turns Normal-type moves into Psychic-type moves and increases their power by x1.2.",
+		origin: 'Custom',
+		flags: {},
+		name: "Cerebrate",
+		rating: 4,
+		num: 10043,
+	},
+	infestate: {
+		onModifyTypePriority: -1,
+		onModifyType(move, pokemon) {
+			const noModifyType = [
+				'judgment', 'multiattack', 'naturalgift', 'revelationdance', 'technoblast', 'terrainpulse', 'weatherball',
+			];
+			if (move.type === 'Normal' && (!noModifyType.includes(move.id) || this.activeMove?.isMax) &&
+				!(move.isZ && move.category !== 'Status') && !(move.name === 'Tera Blast' && pokemon.terastallized)) {
+				move.type = 'Bug';
+				move.typeChangerBoosted = this.effect;
+			}
+		},
+		onBasePowerPriority: 23,
+		onBasePower(basePower, pokemon, target, move) {
+			if (move.typeChangerBoosted === this.effect) return this.chainModify([4915, 4096]);
+		},
+		shortDesc: "Turns Normal-type moves into Bug-type moves and increases their power by x1.2.",
+		origin: 'Custom',
+		flags: {},
+		name: "Infestate",
+		rating: 4,
+		num: 10044,
+	},
+	petrify: {
+		onModifyTypePriority: -1,
+		onModifyType(move, pokemon) {
+			const noModifyType = [
+				'judgment', 'multiattack', 'naturalgift', 'revelationdance', 'technoblast', 'terrainpulse', 'weatherball',
+			];
+			if (move.type === 'Normal' && (!noModifyType.includes(move.id) || this.activeMove?.isMax) &&
+				!(move.isZ && move.category !== 'Status') && !(move.name === 'Tera Blast' && pokemon.terastallized)) {
+				move.type = 'Rock';
+				move.typeChangerBoosted = this.effect;
+			}
+		},
+		onBasePowerPriority: 23,
+		onBasePower(basePower, pokemon, target, move) {
+			if (move.typeChangerBoosted === this.effect) return this.chainModify([4915, 4096]);
+		},
+		shortDesc: "Turns Normal-type moves into Rock-type moves and increases their power by x1.2.",
+		origin: 'Custom',
+		flags: {},
+		name: "Petrify",
+		rating: 4,
+		num: 10045,
+	},
+	spectralize: {
+		onModifyTypePriority: -1,
+		onModifyType(move, pokemon) {
+			const noModifyType = [
+				'judgment', 'multiattack', 'naturalgift', 'revelationdance', 'technoblast', 'terrainpulse', 'weatherball',
+			];
+			if (move.type === 'Normal' && (!noModifyType.includes(move.id) || this.activeMove?.isMax) &&
+				!(move.isZ && move.category !== 'Status') && !(move.name === 'Tera Blast' && pokemon.terastallized)) {
+				move.type = 'Ghost';
+				move.typeChangerBoosted = this.effect;
+			}
+		},
+		onBasePowerPriority: 23,
+		onBasePower(basePower, pokemon, target, move) {
+			if (move.typeChangerBoosted === this.effect) return this.chainModify([4915, 4096]);
+		},
+		shortDesc: "Turns Normal-type moves into Ghost-type moves and increases their power by x1.2.",
+		origin: 'Custom',
+		flags: {},
+		name: "Spectralize",
+		rating: 4,
+		num: 10046,
+	},
+	blacken: {
+		onModifyTypePriority: -1,
+		onModifyType(move, pokemon) {
+			const noModifyType = [
+				'judgment', 'multiattack', 'naturalgift', 'revelationdance', 'technoblast', 'terrainpulse', 'weatherball',
+			];
+			if (move.type === 'Normal' && (!noModifyType.includes(move.id) || this.activeMove?.isMax) &&
+				!(move.isZ && move.category !== 'Status') && !(move.name === 'Tera Blast' && pokemon.terastallized)) {
+				move.type = 'Dark';
+				move.typeChangerBoosted = this.effect;
+			}
+		},
+		onBasePowerPriority: 23,
+		onBasePower(basePower, pokemon, target, move) {
+			if (move.typeChangerBoosted === this.effect) return this.chainModify([4915, 4096]);
+		},
+		shortDesc: "Turns Normal-type moves into Dark-type moves and increases their power by x1.2.",
+		origin: 'Custom',
+		flags: {},
+		name: "Blacken",
+		rating: 4,
+		num: 10047,
+	},
+	reinforce: {
+		onModifyTypePriority: -1,
+		onModifyType(move, pokemon) {
+			const noModifyType = [
+				'judgment', 'multiattack', 'naturalgift', 'revelationdance', 'technoblast', 'terrainpulse', 'weatherball',
+			];
+			if (move.type === 'Normal' && (!noModifyType.includes(move.id) || this.activeMove?.isMax) &&
+				!(move.isZ && move.category !== 'Status') && !(move.name === 'Tera Blast' && pokemon.terastallized)) {
+				move.type = 'Steel';
+				move.typeChangerBoosted = this.effect;
+			}
+		},
+		onBasePowerPriority: 23,
+		onBasePower(basePower, pokemon, target, move) {
+			if (move.typeChangerBoosted === this.effect) return this.chainModify([4915, 4096]);
+		},
+		shortDesc: "Turns Normal-type moves into Steel-type moves and increases their power by x1.2.",
+		origin: 'Custom',
+		flags: {},
+		name: "Reinforce",
+		rating: 4,
+		num: 10048,
+	},
+	astralize: {
+		onModifyTypePriority: -1,
+		onModifyType(move, pokemon) {
+			const noModifyType = [
+				'judgment', 'multiattack', 'naturalgift', 'revelationdance', 'technoblast', 'terrainpulse', 'weatherball',
+			];
+			if (move.type === 'Normal' && (!noModifyType.includes(move.id) || this.activeMove?.isMax) &&
+				!(move.isZ && move.category !== 'Status') && !(move.name === 'Tera Blast' && pokemon.terastallized)) {
+				move.type = 'Cosmic' as any;
+				move.typeChangerBoosted = this.effect;
+			}
+		},
+		onBasePowerPriority: 23,
+		onBasePower(basePower, pokemon, target, move) {
+			if (move.typeChangerBoosted === this.effect) return this.chainModify([4915, 4096]);
+		},
+		shortDesc: "Turns Normal-type moves into Cosmic-type moves and increases their power by x1.2.",
+		origin: 'Custom',
+		flags: {},
+		name: "Astralize",
+		rating: 4,
+		num: 10049,
+	},
+
+	// --- Row 352: Generalist ---
+	generalist: {
+		onModifySTAB(stab, attacker, defender, move) {
+			if (stab > 1) return 1;
+		},
+		onBasePowerPriority: 21,
+		onBasePower(basePower, pokemon, target, move) {
+			if (move.category !== 'Status') return this.chainModify(1.25);
+		},
+		shortDesc: "Suppresses STAB; all attacking moves have a x1.25 power boost.",
+		origin: 'Custom',
+		flags: {},
+		name: "Generalist",
+		rating: 3,
+		num: 10050,
+	},
+
+	// --- Rows 353–370: Type immunity abilities ---
+	otherworldly: {
+		onTryHit(target, source, move) {
+			if (target !== source && move.type === 'Normal') {
+				this.add('-immune', target, '[from] ability: Otherworldly');
+				return null;
+			}
+		},
+		shortDesc: "Gives immunity to Normal-type moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Otherworldly",
+		rating: 1,
+		num: 10051,
+	},
+	fireproof: {
+		onTryHit(target, source, move) {
+			if (target !== source && move.type === 'Fire') {
+				this.add('-immune', target, '[from] ability: Fireproof');
+				return null;
+			}
+		},
+		shortDesc: "Gives immunity to Fire-type moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Fireproof",
+		rating: 1,
+		num: 10052,
+	},
+	waterproof: {
+		onTryHit(target, source, move) {
+			if (target !== source && move.type === 'Water') {
+				this.add('-immune', target, '[from] ability: Waterproof');
+				return null;
+			}
+		},
+		shortDesc: "Gives immunity to Water-type moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Waterproof",
+		rating: 1,
+		num: 10053,
+	},
+	insulated: {
+		onTryHit(target, source, move) {
+			if (target !== source && move.type === 'Electric') {
+				this.add('-immune', target, '[from] ability: Insulated');
+				return null;
+			}
+		},
+		shortDesc: "Gives immunity to Electric-type moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Insulated",
+		rating: 1,
+		num: 10054,
+	},
+	herbicide: {
+		onTryHit(target, source, move) {
+			if (target !== source && move.type === 'Grass') {
+				this.add('-immune', target, '[from] ability: Herbicide');
+				return null;
+			}
+		},
+		shortDesc: "Gives immunity to Grass-type moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Herbicide",
+		rating: 1,
+		num: 10055,
+	},
+	frostproof: {
+		onTryHit(target, source, move) {
+			if (target !== source && move.type === 'Ice') {
+				this.add('-immune', target, '[from] ability: Frostproof');
+				return null;
+			}
+		},
+		shortDesc: "Gives immunity to Ice-type moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Frostproof",
+		rating: 1,
+		num: 10056,
+	},
+	pacifist: {
+		onTryHit(target, source, move) {
+			if (target !== source && move.type === 'Fighting') {
+				this.add('-immune', target, '[from] ability: Pacifist');
+				return null;
+			}
+		},
+		shortDesc: "Gives immunity to Fighting-type moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Pacifist",
+		rating: 1,
+		num: 10057,
+	},
+	immunized: {
+		onTryHit(target, source, move) {
+			if (target !== source && move.type === 'Poison') {
+				this.add('-immune', target, '[from] ability: Immunized');
+				return null;
+			}
+		},
+		shortDesc: "Gives immunity to Poison-type moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Immunized",
+		rating: 1,
+		num: 10058,
+	},
+	antiair: {
+		onTryHit(target, source, move) {
+			if (target !== source && move.type === 'Flying') {
+				this.add('-immune', target, '[from] ability: Anti-Air');
+				return null;
+			}
+		},
+		shortDesc: "Gives immunity to Flying-type moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Anti-Air",
+		rating: 1,
+		num: 10059,
+	},
+	mindblock: {
+		onTryHit(target, source, move) {
+			if (target !== source && move.type === 'Psychic') {
+				this.add('-immune', target, '[from] ability: Mind Block');
+				return null;
+			}
+		},
+		shortDesc: "Gives immunity to Psychic-type moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Mind Block",
+		rating: 1,
+		num: 10060,
+	},
+	pesticide: {
+		onTryHit(target, source, move) {
+			if (target !== source && move.type === 'Bug') {
+				this.add('-immune', target, '[from] ability: Pesticide');
+				return null;
+			}
+		},
+		shortDesc: "Gives immunity to Bug-type moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Pesticide",
+		rating: 1,
+		num: 10061,
+	},
+	unyielding: {
+		onTryHit(target, source, move) {
+			if (target !== source && move.type === 'Rock') {
+				this.add('-immune', target, '[from] ability: Unyielding');
+				return null;
+			}
+		},
+		shortDesc: "Gives immunity to Rock-type moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Unyielding",
+		rating: 1,
+		num: 10062,
+	},
+	hallowed: {
+		onTryHit(target, source, move) {
+			if (target !== source && move.type === 'Ghost') {
+				this.add('-immune', target, '[from] ability: Hallowed');
+				return null;
+			}
+		},
+		shortDesc: "Gives immunity to Ghost-type moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Hallowed",
+		rating: 1,
+		num: 10063,
+	},
+	scaleward: {
+		onTryHit(target, source, move) {
+			if (target !== source && move.type === 'Dragon') {
+				this.add('-immune', target, '[from] ability: Scaleward');
+				return null;
+			}
+		},
+		shortDesc: "Gives immunity to Dragon-type moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Scaleward",
+		rating: 1,
+		num: 10064,
+	},
+	pureheart: {
+		onTryHit(target, source, move) {
+			if (target !== source && move.type === 'Dark') {
+				this.add('-immune', target, '[from] ability: Pure Heart');
+				return null;
+			}
+		},
+		shortDesc: "Gives immunity to Dark-type moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Pure Heart",
+		rating: 1,
+		num: 10065,
+	},
+	antimagnet: {
+		onTryHit(target, source, move) {
+			if (target !== source && move.type === 'Steel') {
+				this.add('-immune', target, '[from] ability: Antimagnet');
+				return null;
+			}
+		},
+		shortDesc: "Gives immunity to Steel-type moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Antimagnet",
+		rating: 1,
+		num: 10066,
+	},
+	disenchanted: {
+		onTryHit(target, source, move) {
+			if (target !== source && move.type === 'Fairy') {
+				this.add('-immune', target, '[from] ability: Disenchanted');
+				return null;
+			}
+		},
+		shortDesc: "Gives immunity to Fairy-type moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Disenchanted",
+		rating: 1,
+		num: 10067,
+	},
+	anomaly: {
+		onTryHit(target, source, move) {
+			if (target !== source && (move.type as string) === 'Cosmic') {
+				this.add('-immune', target, '[from] ability: Anomaly');
+				return null;
+			}
+		},
+		shortDesc: "Gives immunity to Cosmic-type moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Anomaly",
+		rating: 1,
+		num: 10068,
+	},
+
+	// --- Rows 371–372: Manifestation abilities ---
+	offensivemanifestation: {
+		onDamagingHit(damage, target, source, move) {
+			if (target.hasType(move.type)) {
+				this.boost({ atk: 1, spa: 1 }, target);
+				this.heal(Math.floor(target.baseMaxhp / 4));
+			}
+		},
+		shortDesc: "When hit by a same-type move, raises Atk and SpA by 1 and heals 1/4 max HP.",
+		origin: 'Custom',
+		flags: {},
+		name: "Offensive Manifestation",
+		rating: 3,
+		num: 10069,
+	},
+	defensivemanifestation: {
+		onDamagingHit(damage, target, source, move) {
+			if (target.hasType(move.type)) {
+				this.boost({ def: 1, spd: 1 }, target);
+				this.heal(Math.floor(target.baseMaxhp / 4));
+			}
+		},
+		shortDesc: "When hit by a same-type move, raises Def and SpD by 1 and heals 1/4 max HP.",
+		origin: 'Custom',
+		flags: {},
+		name: "Defensive Manifestation",
+		rating: 3,
+		num: 10070,
+	},
+
+	// --- Row 374: Luck's Due ---
+	lucksdue: {
+		onAfterMove(source, target, move) {
+			if (move.missed) {
+				this.effectState.ready = true;
+			} else if (move.category !== 'Status') {
+				this.effectState.ready = false;
+			}
+		},
+		onModifyCritRatio(critRatio, source) {
+			if (this.effectState.ready) return 3;
+		},
+		shortDesc: "If the user's last attack missed, the next attack is a Critical Hit.",
+		origin: 'Custom',
+		flags: {},
+		name: "Luck's Due",
+		rating: 3,
+		num: 10071,
+	},
+
+	// --- Row 375: Awakend Trace ---
+	awakendtrace: {
+		onStart(pokemon) {
+			const target = this.battle.randomFoe();
+			if (!target) return;
+			const awakenedId = this.battle.toID(target.species.abilities['H'] ?? '');
+			if (!awakenedId) return;
+			const ability = this.battle.dex.abilities.get(awakenedId);
+			if (!ability.exists || ability.id === pokemon.ability) return;
+			if (pokemon.setAbility(ability.id)) {
+				this.add('-ability', pokemon, ability.name, '[from] ability: Awakend Trace');
+			}
+		},
+		shortDesc: "On switch-in, copies a foe's Awakened (H-slot) Ability.",
+		origin: 'Custom',
+		flags: {},
+		name: "Awakend Trace",
+		rating: 3,
+		num: 10072,
+	},
+
+	// --- Row 376: Reactive Flyer ---
+	reactiveflyer: {
+		onTryHit(target, source, move) {
+			if (target !== source && move.type === 'Ground') {
+				this.add('-immune', target, '[from] ability: Reactive Flyer');
+				return null;
+			}
+		},
+		shortDesc: "Gives immunity to Ground-type moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Reactive Flyer",
+		rating: 2,
+		num: 10073,
+	},
+
+	// --- Row 377: Caclulated ---
+	caclulated: {
+		onFractionalPriority: -0.1,
+		onModifyMove(move) {
+			move.accuracy = true;
+		},
+		shortDesc: "User moves last in its priority bracket; its moves cannot miss.",
+		origin: 'Custom',
+		flags: {},
+		name: "Caclulated",
+		rating: 3,
+		num: 10074,
+	},
 };
