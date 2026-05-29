@@ -7453,7 +7453,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	// --- Row 375: Awakend Trace ---
 	awakendtrace: {
 		onStart(pokemon) {
-			const target = this.battle.randomFoe();
+			const target = this.randomFoe();
 			if (!target) return;
 			const awakenedId = this.battle.toID(target.species.abilities['H'] ?? '');
 			if (!awakenedId) return;
@@ -7626,7 +7626,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	hardertheyfall: {
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker) {
-			const foe = this.battle.randomFoe();
+			const foe = this.randomFoe();
 			if (!foe) return;
 			const userBST = (Object.values(attacker.baseStats) as number[]).reduce((a, b) => a + b, 0);
 			const foeBST = (Object.values(foe.baseStats) as number[]).reduce((a, b) => a + b, 0);
@@ -7635,7 +7635,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		},
 		onModifyDefPriority: 6,
 		onModifyDef(def, target) {
-			const foe = this.battle.randomFoe();
+			const foe = this.randomFoe();
 			if (!foe) return;
 			const userBST = (Object.values(target.baseStats) as number[]).reduce((a, b) => a + b, 0);
 			const foeBST = (Object.values(foe.baseStats) as number[]).reduce((a, b) => a + b, 0);
@@ -7644,7 +7644,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(spa, attacker) {
-			const foe = this.battle.randomFoe();
+			const foe = this.randomFoe();
 			if (!foe) return;
 			const userBST = (Object.values(attacker.baseStats) as number[]).reduce((a, b) => a + b, 0);
 			const foeBST = (Object.values(foe.baseStats) as number[]).reduce((a, b) => a + b, 0);
@@ -7653,7 +7653,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		},
 		onModifySpDPriority: 6,
 		onModifySpD(spd, target) {
-			const foe = this.battle.randomFoe();
+			const foe = this.randomFoe();
 			if (!foe) return;
 			const userBST = (Object.values(target.baseStats) as number[]).reduce((a, b) => a + b, 0);
 			const foeBST = (Object.values(foe.baseStats) as number[]).reduce((a, b) => a + b, 0);
@@ -7662,7 +7662,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		},
 		onModifySpePriority: 5,
 		onModifySpe(spe, pokemon) {
-			const foe = this.battle.randomFoe();
+			const foe = this.randomFoe();
 			if (!foe) return;
 			const userBST = (Object.values(pokemon.baseStats) as number[]).reduce((a, b) => a + b, 0);
 			const foeBST = (Object.values(foe.baseStats) as number[]).reduce((a, b) => a + b, 0);
