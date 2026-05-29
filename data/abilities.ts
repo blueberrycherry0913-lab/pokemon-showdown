@@ -4142,6 +4142,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			// most of the implementation is in Battle#getTarget
 			move.tracksTarget = move.target !== 'scripted';
 		},
+		shortDesc: "Ignores moves and abilities that draw in moves.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Propeller Tail",
 		rating: 0,
@@ -4158,6 +4160,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.add('-start', source, 'typechange', type, '[from] ability: Protean');
 			}
 		},
+		shortDesc: "Changes the Pokémon's type to its last used move.",
+		origin: 'Standby',
 		flags: {},
 		name: "Protean",
 		rating: 4,
@@ -4241,6 +4245,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.add('-end', pokemon, 'Protosynthesis');
 			},
 		},
+		shortDesc: "Raises highest stat in harsh sunlight, or if holding Booster Energy.",
+		origin: 'Standby',
 		flags: { failroleplay: 1, noreceiver: 1, noentrain: 1, notrace: 1, failskillswap: 1, notransform: 1 },
 		name: "Protosynthesis",
 		rating: 3,
@@ -4250,6 +4256,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onStart(source) {
 			this.field.setTerrain('psychicterrain');
 		},
+		shortDesc: "The Pokémon creates a Psychic Terrain when it enters a battle.",
+		origin: 'Standby',
 		flags: {},
 		name: "Psychic Surge",
 		rating: 4,
@@ -4269,6 +4277,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify(0.5);
 			}
 		},
+		shortDesc: "Boosts sound-based moves and halves damage from the same moves.",
+		origin: 'Standby',
 		flags: { breakable: 1 },
 		name: "Punk Rock",
 		rating: 3.5,
@@ -4279,6 +4289,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onModifyAtk(atk) {
 			return this.chainModify(2);
 		},
+		shortDesc: "Doubles the Pokémon's Attack stat.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Pure Power",
 		rating: 5,
@@ -4311,6 +4323,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify(0.5);
 			}
 		},
+		shortDesc: "Protects from status conditions and halves damage from Ghost-type moves.",
+		origin: 'Unchanged',
 		flags: { breakable: 1 },
 		name: "Purifying Salt",
 		rating: 4,
@@ -4377,6 +4391,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.add('-end', pokemon, 'Quark Drive');
 			},
 		},
+		shortDesc: "Raises highest stat on Electric Terrain, or if holding Booster Energy.",
+		origin: 'Standby',
 		flags: { failroleplay: 1, noreceiver: 1, noentrain: 1, notrace: 1, failskillswap: 1, notransform: 1 },
 		name: "Quark Drive",
 		rating: 3,
@@ -4396,6 +4412,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return false;
 			}
 		},
+		shortDesc: "Blocks priority moves of priority +1 or higher, barring Protection moves.",
+		origin: 'Unchanged',
 		flags: { breakable: 1 },
 		name: "Queenly Majesty",
 		rating: 2.5,
@@ -4409,6 +4427,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return 0.1;
 			}
 		},
+		shortDesc: "30% chance for the Pokémon to move first.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Quick Draw",
 		rating: 2.5,
@@ -4420,6 +4440,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify(1.5);
 			}
 		},
+		shortDesc: "Boosts Speed by x1.5 if statused; ignores Speed-reducing effects of statuses.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Quick Feet",
 		rating: 2.5,
@@ -4432,6 +4454,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.heal(target.baseMaxhp / 16);
 			}
 		},
+		shortDesc: "The Pokémon gradually regains HP in rain.",
+		origin: 'Standby',
 		flags: {},
 		name: "Rain Dish",
 		rating: 1.5,
@@ -4448,21 +4472,33 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.boost({ spe: 1 });
 			}
 		},
+		shortDesc: "Bug, Ghost, or Dark moves and Intimidate scare the Pokémon, boosting its Speed by +1.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Rattled",
 		rating: 1,
 		num: 155,
 	},
 	receiver: {
-		onAllyFaint(target) {
-			if (!this.effectState.target.hp) return;
-			const ability = target.getAbility();
-			if (ability.flags['noreceiver'] || ability.id === 'noability') return;
-			this.effectState.target.setAbility(ability, target);
+		// Reworked: blocks Ball/Bursting moves and returns them at full power using the attacker's own stats.
+		onTryHitPriority: 1,
+		onTryHit(target, source, move) {
+			if (target === source) return;
+			if (!move.flags['ball'] && !move.flags['bursting']) return;
+			this.add('-ability', target, 'Receiver');
+			if (move.basePower > 0 && move.category !== 'Status') {
+				const returnDamage = this.actions.getDamage(source, source, move, false as any);
+				if (typeof returnDamage === 'number' && returnDamage > 0) {
+					this.damage(returnDamage, source, target, move);
+				}
+			}
+			return null;
 		},
-		flags: { failroleplay: 1, noreceiver: 1, noentrain: 1, notrace: 1 },
+		shortDesc: "Blocks Ball and Bursting attacks, returning them at full power using the attacker's own stats.",
+		origin: 'Reworked',
+		flags: { breakable: 1 },
 		name: "Receiver",
-		rating: 0,
+		rating: 2.5,
 		num: 222,
 	},
 	reckless: {
@@ -4473,6 +4509,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify([4915, 4096]);
 			}
 		},
+		shortDesc: "Powers up moves that have recoil damage by x1.2.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Reckless",
 		rating: 3,
@@ -4494,6 +4532,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onBasePower(basePower, pokemon, target, move) {
 			if (move.typeChangerBoosted === this.effect) return this.chainModify([4915, 4096]);
 		},
+		shortDesc: "Turns Normal-type moves into Ice-type moves and increases their power by x1.2.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Refrigerate",
 		rating: 4,
@@ -4503,6 +4543,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onSwitchOut(pokemon) {
 			pokemon.heal(pokemon.baseMaxhp / 3);
 		},
+		shortDesc: "Restores 1/3 MaxHP when withdrawn from battle.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Regenerator",
 		rating: 4.5,
@@ -4542,6 +4584,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			// Record if the pokemon ate a berry to resist the attack
 			pokemon.abilityState.berryWeaken = weakenBerries.includes(item.name);
 		},
+		shortDesc: "Doubles the effect of berries.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Ripen",
 		rating: 2,
@@ -4553,20 +4597,24 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			if (attacker.gender && defender.gender) {
 				if (attacker.gender === defender.gender) {
 					this.debug('Rivalry boost');
-					return this.chainModify(1.25);
+					return this.chainModify(1.3);
 				} else {
 					this.debug('Rivalry weaken');
-					return this.chainModify(0.75);
+					return this.chainModify(0.8);
 				}
 			}
 		},
+		shortDesc: "Deals x1.3 damage vs same gender; x0.8 vs opposite gender.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Rivalry",
-		rating: 0,
+		rating: 0.5,
 		num: 79,
 	},
 	rkssystem: {
 		// RKS System's type-changing itself is implemented in statuses.js
+		shortDesc: "Changes type depending on held item.",
+		origin: 'Standby',
 		flags: { failroleplay: 1, noreceiver: 1, noentrain: 1, notrace: 1, failskillswap: 1, cantsuppress: 1 },
 		name: "RKS System",
 		rating: 4,
@@ -4578,10 +4626,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				if (!this.activeMove) throw new Error("Battle.activeMove is null");
 				if (this.activeMove.id !== 'struggle') return null;
 			}
+			if (effect.id === 'lifeorb') return null;
 		},
+		shortDesc: "Protects the Pokémon from recoil damage, including Life Orb recoil.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Rock Head",
-		rating: 3,
+		rating: 3.5,
 		num: 69,
 	},
 	rockypayload: {
@@ -4599,6 +4650,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify(1.5);
 			}
 		},
+		shortDesc: "Powers up Rock-type moves by x1.5.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Rocky Payload",
 		rating: 3.5,
@@ -4611,15 +4664,32 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.damage(source.baseMaxhp / 8, source, target);
 			}
 		},
+		shortDesc: "Inflicts 1/8 MaxHP damage to attackers on contact.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Rough Skin",
 		rating: 2.5,
 		num: 24,
 	},
 	runaway: {
-		flags: {},
+		// Cannot be trapped; +1 Speed once the first time trapping is attempted per switch-in.
+		onStart(pokemon) {
+			this.effectState.trapBoostGiven = false;
+		},
+		onImmunity(type, pokemon) {
+			if (type === 'trapped') {
+				if (!this.effectState.trapBoostGiven) {
+					this.effectState.trapBoostGiven = true;
+					this.boost({ spe: 1 }, pokemon);
+				}
+				return false;
+			}
+		},
+		shortDesc: "Cannot be trapped; gains +1 Speed the first time a foe attempts to trap it.",
+		origin: 'Buffed',
+		flags: { breakable: 1 },
 		name: "Run Away",
-		rating: 0,
+		rating: 1.5,
 		num: 50,
 	},
 	sandforce: {
@@ -4635,6 +4705,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onImmunity(type, pokemon) {
 			if (type === 'sandstorm') return false;
 		},
+		shortDesc: "Boosts certain moves' power in a sandstorm.",
+		origin: 'Standby',
 		flags: {},
 		name: "Sand Force",
 		rating: 2,
@@ -4649,6 +4721,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onImmunity(type, pokemon) {
 			if (type === 'sandstorm') return false;
 		},
+		shortDesc: "Boosts the Pokémon's Speed in a sandstorm.",
+		origin: 'Standby',
 		flags: {},
 		name: "Sand Rush",
 		rating: 3,
@@ -4658,6 +4732,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onDamagingHit(damage, target, source, move) {
 			this.field.setWeather('sandstorm');
 		},
+		shortDesc: "Creates a sandstorm when hit by an attack.",
+		origin: 'Standby',
 		flags: {},
 		name: "Sand Spit",
 		rating: 1,
@@ -4667,6 +4743,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onStart(source) {
 			this.field.setWeather('sandstorm');
 		},
+		shortDesc: "The Pokémon summons a sandstorm in battle.",
+		origin: 'Standby',
 		flags: {},
 		name: "Sand Stream",
 		rating: 4,
@@ -4684,28 +4762,24 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify([3277, 4096]);
 			}
 		},
+		shortDesc: "Boosts the Pokémon's evasion in a sandstorm.",
+		origin: 'Standby',
 		flags: { breakable: 1 },
 		name: "Sand Veil",
 		rating: 1.5,
 		num: 8,
 	},
 	sapsipper: {
-		onTryHitPriority: 1,
-		onTryHit(target, source, move) {
-			if (target !== source && move.type === 'Grass') {
-				if (!this.boost({ atk: 1 })) {
-					this.add('-immune', target, '[from] ability: Sap Sipper');
-				}
-				return null;
-			}
+		// Altered: 50% damage reduction instead of immunity; boosts both Atk and SpA.
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Grass') return this.chainModify(0.5);
 		},
-		onAllyTryHitSide(target, source, move) {
-			if (source === this.effectState.target || !target.isAlly(source)) return;
-			if (move.type === 'Grass') {
-				this.boost({ atk: 1 }, this.effectState.target);
-			}
+		onDamagingHit(damage, target, source, move) {
+			if (move.type === 'Grass') this.boost({ atk: 1, spa: 1 }, target);
 		},
-		flags: { breakable: 1 },
+		shortDesc: "Halves damage from Grass-type moves; raises Attack and Sp. Atk by +1 when hit by one.",
+		origin: 'Altered',
+		flags: {},
 		name: "Sap Sipper",
 		rating: 3,
 		num: 157,
@@ -4740,6 +4814,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				}
 			}
 		},
+		shortDesc: "Changes Wishiwashi to School Form.",
+		origin: 'Standby',
 		flags: { failroleplay: 1, noreceiver: 1, noentrain: 1, notrace: 1, failskillswap: 1, cantsuppress: 1 },
 		name: "Schooling",
 		rating: 3,
@@ -4760,6 +4836,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.add('-fail', target, 'unboost', 'Attack', '[from] ability: Scrappy', `[of] ${target}`);
 			}
 		},
+		shortDesc: "Normal and Fighting moves hit Ghost types; immune to Intimidate.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Scrappy",
 		rating: 3,
@@ -4780,6 +4858,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				}
 			}
 		},
+		shortDesc: "Nullifies effects of Light Screen, Reflect, and Aurora Veil on switch-in.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Screen Cleaner",
 		rating: 2,
@@ -4789,6 +4869,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onDamagingHit(damage, target, source, move) {
 			this.field.setTerrain('grassyterrain');
 		},
+		shortDesc: "Turns the ground into Grassy Terrain when the Pokémon is hit by an attack.",
+		origin: 'Standby',
 		flags: {},
 		name: "Seed Sower",
 		rating: 2.5,
@@ -4805,6 +4887,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 			if (move.self?.chance) move.self.chance *= 2;
 		},
+		shortDesc: "Doubles the likelihood of added effects occurring.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Serene Grace",
 		rating: 3.5,
@@ -4817,6 +4901,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify(0.5);
 			}
 		},
+		shortDesc: "Halves damage taken when HP is full.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Shadow Shield",
 		rating: 3.5,
@@ -4835,9 +4921,18 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				pokemon.maybeTrapped = true;
 			}
 		},
+		// Nerfed: also traps the user.
+		onTrapPokemon(pokemon) {
+			pokemon.tryTrap(true);
+		},
+		onMaybeTrapPokemon(pokemon) {
+			pokemon.maybeTrapped = true;
+		},
+		shortDesc: "Prevents all Pokémon, including the user, from switching out.",
+		origin: 'Nerfed',
 		flags: {},
 		name: "Shadow Tag",
-		rating: 5,
+		rating: 3.5,
 		num: 23,
 	},
 	sharpness: {
@@ -4848,6 +4943,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify(1.5);
 			}
 		},
+		shortDesc: "Boosts the power of slicing moves by x1.5.",
+		origin: 'Unchanged',
 		flags: {},
 		name: "Sharpness",
 		rating: 3.5,
@@ -4857,15 +4954,20 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onResidualOrder: 5,
 		onResidualSubOrder: 3,
 		onResidual(pokemon) {
-			if (pokemon.hp && pokemon.status && this.randomChance(33, 100)) {
+			if (pokemon.hp && pokemon.status && this.randomChance(1, 2)) {
 				this.debug('shed skin');
 				this.add('-activate', pokemon, 'ability: Shed Skin');
 				pokemon.cureStatus();
 			}
 		},
-		flags: {},
+		onImmunity(type, pokemon) {
+			if (type === 'trapped') return false;
+		},
+		shortDesc: "50% chance to heal status at end of each turn; cannot be trapped.",
+		origin: 'Buffed',
+		flags: { breakable: 1 },
 		name: "Shed Skin",
-		rating: 3,
+		rating: 3.5,
 		num: 61,
 	},
 	sheerforce: {
