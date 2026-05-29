@@ -7879,15 +7879,27 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 10093,
 	},
 
-	// --- Row 398: Death Roll (stub — Death Grip status pending user definition) ---
+	// --- Row 398: Death Roll ---
 	deathroll: {
-		// TODO: Biting moves deal ×1.1 power and inflict "Death Grip" status.
-		// Death Grip is not yet defined. Stub reserved; implement once status is specified.
-		shortDesc: "Biting moves deal ×1.1 power and inflict Death Grip (pending definition).",
+		onBasePowerPriority: 10,
+		onBasePower(basePower, attacker, defender, move) {
+			if (move.flags['bite']) return this.chainModify(1.1);
+		},
+		onAfterMoveSecondarySelf(source, target, move) {
+			if (!move.flags['bite'] || !target || target.fainted) return;
+			// Cannot apply Death Grip if either Pokémon is already Interlocked or in Death Grip
+			if (source.volatiles['interlocked'] || target.volatiles['interlocked']) return;
+			if (source.volatiles['deathgrip'] || target.volatiles['deathgrip']) return;
+			// Apply Death Grip: source = aggressor, target = victim
+			source.addVolatile('deathgrip', target);
+			target.addVolatile('deathgrip', source);
+			if (target.volatiles['deathgrip']) target.volatiles['deathgrip'].isVictim = true;
+		},
+		shortDesc: "Biting moves deal ×1.1 power and inflict Death Grip on the target.",
 		origin: 'Custom',
 		flags: {},
 		name: "Death Roll",
-		rating: 1,
+		rating: 4,
 		num: 10094,
 	},
 };
