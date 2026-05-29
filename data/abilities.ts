@@ -7453,11 +7453,12 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	// --- Row 375: Awakend Trace ---
 	awakendtrace: {
 		onStart(pokemon) {
-			const target = this.randomFoe();
+			const foeSide = this.sides.find(s => s !== pokemon.side);
+			const target = foeSide?.active.find(p => !!p && !p.fainted) ?? null;
 			if (!target) return;
-			const awakenedId = this.battle.toID(target.species.abilities['H'] ?? '');
+			const awakenedId = this.toID(target.species.abilities['H'] ?? '');
 			if (!awakenedId) return;
-			const ability = this.battle.dex.abilities.get(awakenedId);
+			const ability = this.dex.abilities.get(awakenedId);
 			if (!ability.exists || ability.id === pokemon.ability) return;
 			if (pokemon.setAbility(ability.id)) {
 				this.add('-ability', pokemon, ability.name, '[from] ability: Awakend Trace');
@@ -7626,7 +7627,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	hardertheyfall: {
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker) {
-			const foe = this.randomFoe();
+			const foeSide = this.sides.find(s => s !== attacker.side);
+			const foe = foeSide?.active.find(p => !!p && !p.fainted) ?? null;
 			if (!foe) return;
 			const userBST = (Object.values(attacker.baseStats) as number[]).reduce((a, b) => a + b, 0);
 			const foeBST = (Object.values(foe.baseStats) as number[]).reduce((a, b) => a + b, 0);
@@ -7635,7 +7637,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		},
 		onModifyDefPriority: 6,
 		onModifyDef(def, target) {
-			const foe = this.randomFoe();
+			const foeSide = this.sides.find(s => s !== target.side);
+			const foe = foeSide?.active.find(p => !!p && !p.fainted) ?? null;
 			if (!foe) return;
 			const userBST = (Object.values(target.baseStats) as number[]).reduce((a, b) => a + b, 0);
 			const foeBST = (Object.values(foe.baseStats) as number[]).reduce((a, b) => a + b, 0);
@@ -7644,7 +7647,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(spa, attacker) {
-			const foe = this.randomFoe();
+			const foeSide = this.sides.find(s => s !== attacker.side);
+			const foe = foeSide?.active.find(p => !!p && !p.fainted) ?? null;
 			if (!foe) return;
 			const userBST = (Object.values(attacker.baseStats) as number[]).reduce((a, b) => a + b, 0);
 			const foeBST = (Object.values(foe.baseStats) as number[]).reduce((a, b) => a + b, 0);
@@ -7653,7 +7657,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		},
 		onModifySpDPriority: 6,
 		onModifySpD(spd, target) {
-			const foe = this.randomFoe();
+			const foeSide = this.sides.find(s => s !== target.side);
+			const foe = foeSide?.active.find(p => !!p && !p.fainted) ?? null;
 			if (!foe) return;
 			const userBST = (Object.values(target.baseStats) as number[]).reduce((a, b) => a + b, 0);
 			const foeBST = (Object.values(foe.baseStats) as number[]).reduce((a, b) => a + b, 0);
@@ -7662,7 +7667,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		},
 		onModifySpePriority: 5,
 		onModifySpe(spe, pokemon) {
-			const foe = this.randomFoe();
+			const foeSide = this.sides.find(s => s !== pokemon.side);
+			const foe = foeSide?.active.find(p => !!p && !p.fainted) ?? null;
 			if (!foe) return;
 			const userBST = (Object.values(pokemon.baseStats) as number[]).reduce((a, b) => a + b, 0);
 			const foeBST = (Object.values(foe.baseStats) as number[]).reduce((a, b) => a + b, 0);
