@@ -7630,8 +7630,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			const foeSide = this.sides.find(s => s !== attacker.side);
 			const foe = foeSide?.active.find(p => !!p && !p.fainted) ?? null;
 			if (!foe) return;
-			const userBST = (Object.values(attacker.baseStats) as number[]).reduce((a, b) => a + b, 0);
-			const foeBST = (Object.values(foe.baseStats) as number[]).reduce((a, b) => a + b, 0);
+			const userBST = (Object.values(attacker.species.baseStats) as number[]).reduce((a, b) => a + b, 0);
+			const foeBST = (Object.values(foe.species.baseStats) as number[]).reduce((a, b) => a + b, 0);
 			const boost = Math.min(Math.floor(Math.max(0, foeBST - userBST) * 0.4), 50);
 			if (boost > 0) return atk + boost;
 		},
@@ -7640,8 +7640,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			const foeSide = this.sides.find(s => s !== target.side);
 			const foe = foeSide?.active.find(p => !!p && !p.fainted) ?? null;
 			if (!foe) return;
-			const userBST = (Object.values(target.baseStats) as number[]).reduce((a, b) => a + b, 0);
-			const foeBST = (Object.values(foe.baseStats) as number[]).reduce((a, b) => a + b, 0);
+			const userBST = (Object.values(target.species.baseStats) as number[]).reduce((a, b) => a + b, 0);
+			const foeBST = (Object.values(foe.species.baseStats) as number[]).reduce((a, b) => a + b, 0);
 			const boost = Math.min(Math.floor(Math.max(0, foeBST - userBST) * 0.4), 50);
 			if (boost > 0) return def + boost;
 		},
@@ -7650,8 +7650,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			const foeSide = this.sides.find(s => s !== attacker.side);
 			const foe = foeSide?.active.find(p => !!p && !p.fainted) ?? null;
 			if (!foe) return;
-			const userBST = (Object.values(attacker.baseStats) as number[]).reduce((a, b) => a + b, 0);
-			const foeBST = (Object.values(foe.baseStats) as number[]).reduce((a, b) => a + b, 0);
+			const userBST = (Object.values(attacker.species.baseStats) as number[]).reduce((a, b) => a + b, 0);
+			const foeBST = (Object.values(foe.species.baseStats) as number[]).reduce((a, b) => a + b, 0);
 			const boost = Math.min(Math.floor(Math.max(0, foeBST - userBST) * 0.4), 50);
 			if (boost > 0) return spa + boost;
 		},
@@ -7660,8 +7660,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			const foeSide = this.sides.find(s => s !== target.side);
 			const foe = foeSide?.active.find(p => !!p && !p.fainted) ?? null;
 			if (!foe) return;
-			const userBST = (Object.values(target.baseStats) as number[]).reduce((a, b) => a + b, 0);
-			const foeBST = (Object.values(foe.baseStats) as number[]).reduce((a, b) => a + b, 0);
+			const userBST = (Object.values(target.species.baseStats) as number[]).reduce((a, b) => a + b, 0);
+			const foeBST = (Object.values(foe.species.baseStats) as number[]).reduce((a, b) => a + b, 0);
 			const boost = Math.min(Math.floor(Math.max(0, foeBST - userBST) * 0.4), 50);
 			if (boost > 0) return spd + boost;
 		},
@@ -7670,8 +7670,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			const foeSide = this.sides.find(s => s !== pokemon.side);
 			const foe = foeSide?.active.find(p => !!p && !p.fainted) ?? null;
 			if (!foe) return;
-			const userBST = (Object.values(pokemon.baseStats) as number[]).reduce((a, b) => a + b, 0);
-			const foeBST = (Object.values(foe.baseStats) as number[]).reduce((a, b) => a + b, 0);
+			const userBST = (Object.values(pokemon.species.baseStats) as number[]).reduce((a, b) => a + b, 0);
+			const foeBST = (Object.values(foe.species.baseStats) as number[]).reduce((a, b) => a + b, 0);
 			const boost = Math.min(Math.floor(Math.max(0, foeBST - userBST) * 0.4), 50);
 			if (boost > 0) return spe + boost;
 		},
