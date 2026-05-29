@@ -556,7 +556,12 @@ export class Battle {
 			if (handler.state?.target instanceof Pokemon) {
 				let expectedStateLocation;
 				if (effect.effectType === 'Ability' && !handler.state.id.startsWith('ability:')) {
-					expectedStateLocation = handler.state.target.abilityState;
+					// Dual-ability system: a handler may belong to either the primary ability
+					// (abilityState) or the awakened ability (abilityState2). Compare against
+					// whichever slot this handler's state actually is, so awakened-ability
+					// onStart handlers aren't wrongly skipped during fieldEvent (e.g. SwitchIn).
+					expectedStateLocation = (handler.state === handler.state.target.abilityState2) ?
+						handler.state.target.abilityState2 : handler.state.target.abilityState;
 				} else if (effect.effectType === 'Item' && !handler.state.id.startsWith('item:')) {
 					expectedStateLocation = handler.state.target.itemState;
 				} else if (effect.effectType === 'Status') {
