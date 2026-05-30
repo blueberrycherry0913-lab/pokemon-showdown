@@ -3810,6 +3810,22 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 253,
 	},
 	pickpocket: {
+		// Steals item when making contact OR when being hit by a contact move.
+		onAfterMove(source, target, move) {
+			if (target && target !== source && move?.flags['contact']) {
+				if (source.item || source.switchFlag || source.forceSwitchFlag || target.switchFlag === true) {
+					return;
+				}
+				const theirItem = target.takeItem(source);
+				if (!theirItem) return;
+				if (!source.setItem(theirItem)) {
+					target.item = theirItem.id;
+					return;
+				}
+				this.add('-enditem', target, theirItem, '[silent]', '[from] ability: Pickpocket', `[of] ${source}`);
+				this.add('-item', source, theirItem, '[from] ability: Pickpocket', `[of] ${source}`);
+			}
+		},
 		onAfterMoveSecondary(target, source, move) {
 			if (source && source !== target && move?.flags['contact']) {
 				if (target.item || target.switchFlag || target.forceSwitchFlag || source.switchFlag === true) {
@@ -4163,7 +4179,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			if (!target.hp) {
 				target.side.addSideCondition('protectivesoulbarrier', target);
 				const sc = target.side.sideConditions['protectivesoulbarrier'];
-				if (sc) (sc as any).barrierHP = Math.floor(target.baseMaxhp / 4);
+				if (sc) (sc as any).barrierHP = 1;
 			}
 		},
 		shortDesc: "When KO'd, the next ally that switches in receives a free substitute.",

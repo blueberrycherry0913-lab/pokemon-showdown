@@ -1693,7 +1693,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				pokemon.side.removeSideCondition('protectivesoulbarrier');
 				return;
 			}
-			const hp = (this.effectState as any).barrierHP || Math.floor(pokemon.baseMaxhp / 4);
+			const hp = (this.effectState as any).barrierHP || 1;
 			// Install the substitute volatile directly (no HP deducted from the incoming Pokémon).
 			(pokemon.volatiles as any)['substitute'] = {hp, id: 'substitute', target: pokemon, source: pokemon};
 			this.add('-start', pokemon, 'Substitute');
