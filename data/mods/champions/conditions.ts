@@ -1528,6 +1528,8 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				if (pokemon.hasAbility('earlybird')) this.boost({ spe: 2 }, pokemon, pokemon, null);
 				return;
 			}
+			// Heavy Sleeper: ignores lockout, sleep turns still accumulate for natural wake
+			if (pokemon.hasAbility('heavysleeper')) return;
 			// Dream Guide: holder and active allies can attack despite sleep lockout (turns still accumulate)
 			if (pokemon.hasAbility('dreamguide') ||
 				pokemon.alliesActive().some(p => !p.fainted && p.hasAbility('dreamguide'))) return;
@@ -1544,12 +1546,12 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		// Takes 10% more damage from all attacks while asleep.
 		// onSourceModifyDamage fires on the DEFENDER's conditions; source = attacker, target = sleeping Pokémon.
 		onSourceModifyDamage(damage, source, target, move) {
-			if (target.hasAbility('comatose')) return;
+			if (target.hasAbility('comatose') || target.hasAbility('heavysleeper')) return;
 			return this.chainModify(1.1);
 		},
 		// Active wake-up: a single hit dealing ≥50% of the sleeper's max HP wakes it immediately.
 		onDamagingHit(damage, target, source, move) {
-			if (target.hasAbility('comatose')) return;
+			if (target.hasAbility('comatose') || target.hasAbility('heavysleeper')) return;
 			if (target.status !== 'slp') return;
 			if (damage >= target.baseMaxhp / 2) {
 				target.cureStatus();

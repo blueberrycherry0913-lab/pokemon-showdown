@@ -3676,6 +3676,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				}
 			}
 		},
+		shortDesc: "Raises Sp. Atk by 1 stage each turn, but loses 1/8 max HP.",
+		origin: 'Custom',
 		flags: {},
 		name: "Overthinker",
 		rating: 3,
@@ -7907,5 +7909,124 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		name: "Death Roll",
 		rating: 4,
 		num: 10094,
+	},
+
+	// --- Row 399: Magnetic Core ---
+	magneticcore: {
+		onStart(pokemon) {
+			pokemon.addVolatile('magnetrise');
+		},
+		shortDesc: "Sets Magnet Rise on switch-in.",
+		origin: 'Custom',
+		flags: {},
+		name: "Magnetic Core",
+		rating: 2,
+		num: 10095,
+	},
+
+	// --- Row 402: Punisher ---
+	punisher: {
+		onModifyDamage(damage, source, target, move) {
+			if (target.getMoveHitData(move).typeMod > 0) {
+				return this.chainModify(2);
+			}
+		},
+		shortDesc: "Super Effective moves deal an additional ×2 damage.",
+		origin: 'Custom',
+		flags: {},
+		name: "Punisher",
+		rating: 3,
+		num: 10096,
+	},
+
+	// --- Row 404: Evasive ---
+	evasive: {
+		onStart(pokemon) {
+			this.boost({ evasion: 1 }, pokemon);
+		},
+		shortDesc: "Raises evasion by 1 stage on switch-in.",
+		origin: 'Custom',
+		flags: {},
+		name: "Evasive",
+		rating: 2,
+		num: 10097,
+	},
+
+	// --- Row 405: Slippery ---
+	slippery: {
+		onStart(pokemon) {
+			this.boost({ evasion: 1 }, pokemon);
+		},
+		shortDesc: "Raises evasion by 1 stage on switch-in.",
+		origin: 'Custom',
+		flags: {},
+		name: "Slippery",
+		rating: 2,
+		num: 10098,
+	},
+
+	// --- Row 406: Light-footed ---
+	lightfooted: {
+		shortDesc: "Immune to entry hazards.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Light-footed",
+		rating: 2,
+		num: 10099,
+	},
+
+	// --- Row 407: Tiny Feet ---
+	tinyfeet: {
+		shortDesc: "Immune to entry hazards.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Tiny Feet",
+		rating: 2,
+		num: 10100,
+	},
+
+	// --- Row 408: Best in Show ---
+	bestinshow: {
+		onModifyDamage(damage, source, target, move) {
+			const atkTypes = [...source.types].sort();
+			if (!atkTypes.includes(move.type)) return;
+			const defTypes = [...target.types].sort();
+			if (atkTypes.length !== defTypes.length || !atkTypes.every((t, i) => t === defTypes[i])) return;
+			const typeMod = target.getMoveHitData(move).typeMod;
+			if (typeMod >= 1) return;
+			return this.chainModify(Math.pow(2, 1 - typeMod));
+		},
+		shortDesc: "Moves sharing user's type deal SE damage to foes with user's exact type combo.",
+		origin: 'Custom',
+		flags: {},
+		name: "Best in Show",
+		rating: 2,
+		num: 10101,
+	},
+
+	// --- Row 409: Inverse Mold Breaker ---
+	inversemoldbreaker: {
+		onTryHit(target, source, move) {
+			move.ignoreAbility = true;
+		},
+		shortDesc: "When attacked, the attacker's ability is suppressed for that hit.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Inverse Mold Breaker",
+		rating: 3,
+		num: 10102,
+	},
+
+	// --- Row 410: Heavy Sleeper ---
+	heavysleeper: {
+		onSourceModifyDamage(damage, source, target, move) {
+			return this.chainModify(0.9);
+		},
+		shortDesc: "Ignores sleep's negative effects; 10% damage resistance; no damage-threshold wake.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Heavy Sleeper",
+		rating: 3,
+		num: 10103,
 	},
 };
