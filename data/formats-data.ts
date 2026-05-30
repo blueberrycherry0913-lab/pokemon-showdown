@@ -763,8 +763,8 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 	marowak: {
 		tier: "ZU",
 	},
-	marowakf: {
-		tier: "ZU",
+	osteokhan: {
+		isNonstandard: "custom" as const,
 	},
 	marowakalola: {
 		isNonstandard: "Past",
