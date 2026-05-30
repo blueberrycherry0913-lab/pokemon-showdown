@@ -103,5 +103,44 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 				if (pokemon.volatiles['marked']) pokemon.removeVolatile('marked');
 			}
 		},
+		// ── Blanket type effects (§1.5) ──────────────────────────────────────────
+		// Fighting types are immune to flinching; Dark types are immune to Taunt and
+		// Torment. Mirrors Inner Focus's canon pattern (return null blocks the volatile).
+		onTryAddVolatile(status, pokemon) {
+			if (status.id === 'flinch' && pokemon.hasType('Fighting')) return null;
+			if ((status.id === 'taunt' || status.id === 'torment') && pokemon.hasType('Dark')) return null;
+		},
+		// Steel types cannot be phazed (§1.5): immune to forced-switch effects (Roar,
+		// Whirlwind, Dragon Tail, Circle Throw, etc.). DragOut fires for both the
+		// forceSwitch action and damaging forceSwitch moves.
+		onDragOut(pokemon) {
+			if (pokemon.hasType('Steel')) {
+				this.add('-fail', pokemon);
+				return false;
+			}
+		},
+		// Flying types benefit from enemy-set Tailwind (§1.5), in addition to ally-set
+		// Tailwind. The own-side Tailwind ×2 is handled by the canon tailwind condition;
+		// this adds the foe-side Tailwind ×2 (they stack).
+		onModifySpe(spe, pokemon) {
+			if (pokemon.hasType('Flying') && pokemon.side.foe.sideConditions['tailwind']) {
+				return this.chainModify(2);
+			}
+		},
+		// Water types purge all non-volatile status at the end of the second turn after
+		// infliction (§1.5): the status chips on turns 1 and 2, then clears. The counter
+		// lives on statusState, which is recreated on every (re-)infliction, so Toxic's
+		// escalating clock resets on purge automatically. High onResidualOrder so the
+		// second chip lands before the cure. This format-level onResidual fires once per
+		// active Pokémon (findBattleEventHandlers is called per-active in fieldEvent), so we
+		// operate on the single pokemon arg — looping getAllActive here would multi-count.
+		onResidualOrder: 100,
+		onResidual(pokemon) {
+			if (!pokemon.status || !pokemon.hasType('Water')) return;
+			pokemon.statusState.waterPurge = (pokemon.statusState.waterPurge || 0) + 1;
+			if (pokemon.statusState.waterPurge >= 2) {
+				pokemon.cureStatus();
+			}
+		},
 	},
 ];

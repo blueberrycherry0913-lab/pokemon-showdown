@@ -1700,4 +1700,189 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			pokemon.side.removeSideCondition('protectivesoulbarrier');
 		},
 	},
+
+	// ── Minimal weather overrides (§2) — built so the §1.5 weather-coupled blanket
+	// immunities (Ice+Steel/Snowstorm, Water/Heavy Rain, Fire/Harsh Sun) have real
+	// mechanics to hook into. Canon weather IDs/names are retained; flavor renames and
+	// the full §2 weather pass (power-boost removal, etc.) are a separate task. Each
+	// condition is copied whole from data/conditions.ts because mod conditions replace
+	// the base entry, then modified.
+
+	// Sandstorm — chip raised to 1/12 (§2). Rock/Ground/Steel immunity is canon
+	// (enforced by runStatusImmunity('sandstorm') before onWeather fires).
+	sandstorm: {
+		name: 'Sandstorm',
+		effectType: 'Weather',
+		duration: 5,
+		durationCallback(source, effect) {
+			if (source?.hasItem('smoothrock')) return 8;
+			return 5;
+		},
+		onModifySpDPriority: 10,
+		onModifySpD(spd, pokemon) {
+			if (pokemon.hasType('Rock') && pokemon.effectiveWeather() === 'sandstorm') {
+				return this.modify(spd, 1.5);
+			}
+		},
+		onFieldStart(field, source, effect) {
+			if (effect?.effectType === 'Ability') {
+				if (this.gen <= 5) this.effectState.duration = 0;
+				this.add('-weather', 'Sandstorm', '[from] ability: ' + effect.name, `[of] ${source}`);
+			} else {
+				this.add('-weather', 'Sandstorm');
+			}
+		},
+		onFieldResidualOrder: 1,
+		onFieldResidual() {
+			this.add('-weather', 'Sandstorm', '[upkeep]');
+			if (this.field.isWeather('sandstorm')) this.eachEvent('Weather');
+		},
+		onWeather(target) {
+			this.damage(target.baseMaxhp / 12);
+		},
+		onFieldEnd() {
+			this.add('-weather', 'none');
+		},
+	},
+
+	// Snowscape (Snowstorm) — hail-style chip (1/12) instead of the canon Snow Defense
+	// boost (§2). Ice and Steel types are immune to the chip (§1.5).
+	snowscape: {
+		name: 'Snowscape',
+		effectType: 'Weather',
+		duration: 5,
+		durationCallback(source, effect) {
+			if (source?.hasItem('icyrock')) return 8;
+			return 5;
+		},
+		onFieldStart(field, source, effect) {
+			if (effect?.effectType === 'Ability') {
+				if (this.gen <= 5) this.effectState.duration = 0;
+				this.add('-weather', 'Snowscape', '[from] ability: ' + effect.name, `[of] ${source}`);
+			} else {
+				this.add('-weather', 'Snowscape');
+			}
+		},
+		onFieldResidualOrder: 1,
+		onFieldResidual() {
+			this.add('-weather', 'Snowscape', '[upkeep]');
+			if (this.field.isWeather('snowscape')) this.eachEvent('Weather');
+		},
+		onWeather(target) {
+			if (target.hasType('Ice') || target.hasType('Steel')) return;
+			this.damage(target.baseMaxhp / 12);
+		},
+		onFieldEnd() {
+			this.add('-weather', 'none');
+		},
+	},
+
+	// RainDance (Heavy Rain) — non-Water Pokémon spend +1 PP per move (§2); Water types
+	// are immune (§1.5). Burn cannot be inflicted while raining (Will-O-Wisp's move-level
+	// override is deferred to §5). Canon power modifiers retained.
+	raindance: {
+		name: 'RainDance',
+		effectType: 'Weather',
+		duration: 5,
+		durationCallback(source, effect) {
+			if (source?.hasItem('damprock')) return 8;
+			return 5;
+		},
+		onWeatherModifyDamage(damage, attacker, defender, move) {
+			if (defender.effectiveWeather() !== 'raindance') return;
+			if (move.type === 'Water') {
+				this.debug('rain water boost');
+				return this.chainModify(1.5);
+			}
+			if (move.type === 'Fire') {
+				this.debug('rain fire suppress');
+				return this.chainModify(0.5);
+			}
+		},
+		onImmunity(type, pokemon) {
+			if (pokemon.effectiveWeather() !== 'raindance') return;
+			if (type === 'brn') return false;
+		},
+		onAfterMove(source, target, move) {
+			if (source.effectiveWeather() !== 'raindance') return;
+			if (source.hasType('Water')) return;
+			// Moves at 1 PP drop to 0; deductPP clamps at 0.
+			source.deductPP(move.id, 1);
+		},
+		onFieldStart(field, source, effect) {
+			if (effect?.effectType === 'Ability') {
+				if (this.gen <= 5) this.effectState.duration = 0;
+				this.add('-weather', 'RainDance', '[from] ability: ' + effect.name, `[of] ${source}`);
+			} else {
+				this.add('-weather', 'RainDance');
+			}
+		},
+		onFieldResidualOrder: 1,
+		onFieldResidual() {
+			this.add('-weather', 'RainDance', '[upkeep]');
+			this.eachEvent('Weather');
+		},
+		onFieldEnd() {
+			this.add('-weather', 'none');
+		},
+	},
+
+	// SunnyDay (Harsh Sun) — self-stat-drop moves drop one ADDITIONAL stage (§2); Fire and
+	// Grass types are exempt (Fire's exemption is its §1.5 blanket effect). Frostbite (and
+	// canon Freeze) cannot be inflicted while the sun is harsh. Canon power modifiers retained.
+	sunnyday: {
+		name: 'SunnyDay',
+		effectType: 'Weather',
+		duration: 5,
+		durationCallback(source, effect) {
+			if (source?.hasItem('heatrock')) return 8;
+			return 5;
+		},
+		onWeatherModifyDamage(damage, attacker, defender, move) {
+			if (move.id === 'hydrosteam' && attacker.effectiveWeather() === 'sunnyday') {
+				this.debug('Sunny Day Hydro Steam boost');
+				return this.chainModify(1.5);
+			}
+			if (defender.effectiveWeather() !== 'sunnyday') return;
+			if (move.type === 'Fire') {
+				this.debug('Sunny Day fire boost');
+				return this.chainModify(1.5);
+			}
+			if (move.type === 'Water') {
+				this.debug('Sunny Day water suppress');
+				return this.chainModify(0.5);
+			}
+		},
+		onImmunity(type, pokemon) {
+			if (pokemon.effectiveWeather() !== 'sunnyday') return;
+			if (type === 'frz' || type === 'frb') return false;
+		},
+		onChangeBoost(boost, target, source, effect) {
+			if (target.effectiveWeather() !== 'sunnyday') return;
+			if (target !== source) return; // self-stat-drops only
+			if (!effect || effect.effectType !== 'Move') return;
+			if (target.hasType('Fire') || target.hasType('Grass')) return;
+			let stat: BoostID;
+			for (stat in boost) {
+				const v = boost[stat]!;
+				if (v < 0) boost[stat] = v - 1;
+			}
+		},
+		onFieldStart(field, source, effect) {
+			if (effect?.effectType === 'Ability') {
+				if (this.gen <= 5) this.effectState.duration = 0;
+				this.add('-weather', 'SunnyDay', '[from] ability: ' + effect.name, `[of] ${source}`);
+			} else {
+				this.add('-weather', 'SunnyDay');
+			}
+		},
+		onFieldResidualOrder: 1,
+		onFieldResidual() {
+			this.add('-weather', 'SunnyDay', '[upkeep]');
+			this.eachEvent('Weather');
+		},
+		onFieldEnd() {
+			this.add('-weather', 'none');
+		},
+	},
 };

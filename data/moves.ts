@@ -17484,6 +17484,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 			},
 			onSwitchIn(pokemon) {
 				if (!pokemon.isGrounded() || pokemon.hasItem('heavydutyboots') || pokemon.hasAbility('lightfooted') || pokemon.hasAbility('tinyfeet')) return;
+				// Bug blanket effect (§1.5): immune to entry hazards except Sticky Web (personal — does not absorb).
+				if (pokemon.hasType('Bug')) return;
+				// Ground blanket effect (§1.5): absorbs Spikes side-wide on switch-in.
+				if (pokemon.hasType('Ground')) {
+					this.add('-sideend', pokemon.side, 'Spikes', `[of] ${pokemon}`);
+					pokemon.side.removeSideCondition('spikes');
+					return;
+				}
 				const damageAmounts = [0, 3, 4, 6]; // 1/8, 1/6, 1/4
 				this.damage(damageAmounts[this.effectState.layers] * pokemon.maxhp / 24);
 			},
@@ -17792,6 +17800,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 			},
 			onSwitchIn(pokemon) {
 				if (pokemon.hasItem('heavydutyboots') || pokemon.hasAbility('lightfooted') || pokemon.hasAbility('tinyfeet')) return;
+				// Bug blanket effect (§1.5): immune to entry hazards except Sticky Web (personal — does not absorb).
+				if (pokemon.hasType('Bug')) return;
+				// Rock blanket effect (§1.5): absorbs Stealth Rock side-wide on switch-in.
+				if (pokemon.hasType('Rock')) {
+					this.add('-sideend', pokemon.side, 'move: Stealth Rock', `[of] ${pokemon}`);
+					pokemon.side.removeSideCondition('stealthrock');
+					return;
+				}
 				const typeMod = this.clampIntRange(pokemon.runEffectiveness(this.dex.getActiveMove('stealthrock')), -6, 6);
 				this.damage(pokemon.maxhp * (2 ** typeMod) / 8);
 			},
@@ -19738,6 +19754,8 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 			},
 			onSwitchIn(pokemon) {
 				if (!pokemon.isGrounded()) return;
+				// Bug blanket effect (§1.5): immune to entry hazards except Sticky Web (personal — does not absorb).
+				if (pokemon.hasType('Bug')) return;
 				if (pokemon.hasType('Poison')) {
 					this.add('-sideend', pokemon.side, 'move: Toxic Spikes', `[of] ${pokemon}`);
 					pokemon.side.removeSideCondition('toxicspikes');

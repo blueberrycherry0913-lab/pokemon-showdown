@@ -1,5 +1,15 @@
 export const Scripts: ModdedBattleScriptsData = {
 	gen: 9,
+	// Dragon ability-bypass protection (§1.5): a Dragon-type's own abilities cannot be ignored
+	// by offensive ability-bypassing effects (Mold Breaker, Teravolt, Turboblaze, etc.).
+	// Defensive scope only — this only stops the *defender's* (Dragon's) abilities from being
+	// suppressed; it does not affect offensive ability-bypass that targets the attacker.
+	// Mirrors the canon body otherwise (sim/battle.ts).
+	suppressingAbility(target) {
+		if (target?.hasType('Dragon')) return false;
+		return this.activePokemon && this.activePokemon.isActive && (this.activePokemon !== target || this.gen < 8) &&
+			this.activeMove && this.activeMove.ignoreAbility && !target?.hasItem('Ability Shield');
+	},
 	// Pokemon Champions SP (Stat Point) system: 1 SP = +1 to that stat at Level 50.
 	// EV field is reinterpreted as SP (0-32 per stat, 66 total — enforced in
 	// sim/team-validator.ts via `useStatPoints = dex.currentMod === 'champions'`
@@ -33,6 +43,16 @@ export const Scripts: ModdedBattleScriptsData = {
 		return stat;
 	},
 	pokemon: {
+		// Ghost types are immune to all trapping effects (§1.5): Arena Trap, Shadow Tag,
+		// Mean Look, and binding moves (Wrap/Fire Spin/etc.) all route through tryTrap.
+		// They can always switch out. Mirrors the canon body otherwise.
+		tryTrap(isHidden = false) {
+			if (this.hasType('Ghost')) return false;
+			if (!this.runStatusImmunity('trapped')) return false;
+			if (this.trapped && isHidden) return true;
+			this.trapped = isHidden ? 'hidden' : true;
+			return true;
+		},
 		// Poisoned → Toxic escalation: re-applying Poisoned to an already-Poisoned Pokémon
 		// escalates to Toxic instead of failing. Mirrors §4 of the master reference:
 		// "Re-applying the minor version while it's active escalates to the severe version."
@@ -49,6 +69,21 @@ export const Scripts: ModdedBattleScriptsData = {
 			}
 			// Ice types are immune to Frostbitten and Frozen (§1.5).
 			if ((statusId === 'frb' || statusId === 'frz') && this.hasType('Ice')) {
+				return false;
+			}
+			// Fire types are immune to Burned and Scorched (§1.5).
+			if ((statusId === 'brn' || statusId === 'scr') && this.hasType('Fire')) {
+				return false;
+			}
+			// Poison types are immune to the entire Poison/Corrosion status family (§1.5):
+			// Poisoned, Toxic, Corroded, and Melting.
+			if (['psn', 'tox', 'cor', 'mlt'].includes(statusId) && this.hasType('Poison')) {
+				return false;
+			}
+			// Steel types are immune to Corroded and Melting (§1.5) — but Corrosive moves (§5)
+			// bypass this at the move level. (Steel's psn/tox immunity is canon via setStatus.)
+			if ((statusId === 'cor' || statusId === 'mlt') && this.hasType('Steel') &&
+				!(sourceEffect && (sourceEffect as ActiveMove).flags?.['corrosive'])) {
 				return false;
 			}
 			// Frostbitten → Frozen escalation: re-applying Frostbitten (or directly inflicting Frozen)

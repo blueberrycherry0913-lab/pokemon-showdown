@@ -1653,7 +1653,13 @@ export class BattleActions {
 		moveHit.crit = move.willCrit || false;
 		if (move.willCrit === undefined) {
 			if (critRatio) {
-				moveHit.crit = this.battle.randomChance(1, critMult[critRatio]);
+				// Fairy blanket effect (§1.5): crit chance against Fairy-type Pokémon is
+				// halved at every ratio stage (1/24→1/48, 1/8→1/16, 1/2→1/4, ratio-guaranteed
+				// →1/2). willCrit moves (Frost Breath, etc.) are untouched. This core edit is
+				// effectively format-scoped because the server runs only Testing Standard.
+				let critDenom = critMult[critRatio];
+				if (target.hasType('Fairy')) critDenom *= 2;
+				moveHit.crit = this.battle.randomChance(1, critDenom);
 			}
 		}
 
