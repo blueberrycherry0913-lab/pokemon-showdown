@@ -127,6 +127,22 @@ export const Rulesets: import('../../../sim/dex-formats').ModdedFormatDataTable 
 	// of custom items.
 	natdexmod: {
 		inherit: true,
+		// Mega → base-form conversion: when the teambuilder submits a mega species,
+		// silently convert to the base species + mega stone so the battle starts with
+		// the pre-mega Pokémon. The format's onBeforeMove auto-triggers mega evolution
+		// on the first move, and the formeChange override in scripts.ts keeps it
+		// permanent. The teambuilder continues to show mega stats for planning.
+		onChangeSet(set) {
+			const species = this.dex.species.get(set.species);
+			if (species.isMega && species.requiredItem) {
+				// Convert to base form + stone
+				set.item = species.requiredItem;
+				set.species = species.baseSpecies;
+				// Pick the base form's first ability (pre-mega ability)
+				const base = this.dex.species.get(species.baseSpecies);
+				if (base.exists) set.ability = base.abilities['0'];
+			}
+		},
 		onValidateSet(set) {
 			const species = this.dex.species.get(set.species);
 			if (species.natDexTier === 'Illegal') {
