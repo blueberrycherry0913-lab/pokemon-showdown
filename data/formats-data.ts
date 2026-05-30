@@ -981,15 +981,12 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 	},
 	taurospaldeacombat: {
 		tier: "ZU",
-		natDexTier: "Illegal",
 	},
 	taurospaldeablaze: {
 		tier: "ZU",
-		natDexTier: "Illegal",
 	},
 	taurospaldeaaqua: {
 		tier: "ZU",
-		natDexTier: "Illegal",
 	},
 	magikarp: {
 		tier: "LC",
