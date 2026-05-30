@@ -1883,7 +1883,6 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		color: "Brown",
 		prevo: "Geodude",
 		evoLevel: 25,
-		evos: ["Golem"],
 		eggGroups: ["Mineral"],
 		otherFormes: ["Graveler-Alola"],
 		formeOrder: ["Graveler", "Graveler-Alola"],
@@ -1901,7 +1900,6 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		color: "Gray",
 		prevo: "Geodude-Alola",
 		evoLevel: 25,
-		evos: ["Golem-Alola"],
 		eggGroups: ["Mineral"],
 	},
 	golem: {
@@ -1913,8 +1911,6 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		heightm: 1.4,
 		weightkg: 300,
 		color: "Brown",
-		prevo: "Graveler",
-		evoType: "trade",
 		eggGroups: ["Mineral"],
 		otherFormes: ["Golem-Alola"],
 		formeOrder: ["Golem", "Golem-Alola"],
@@ -1930,8 +1926,6 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		heightm: 1.7,
 		weightkg: 316,
 		color: "Gray",
-		prevo: "Graveler-Alola",
-		evoType: "trade",
 		eggGroups: ["Mineral"],
 	},
 	ponyta: {
