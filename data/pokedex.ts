@@ -2460,7 +2460,7 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 	},
 	electrodehisui: {
 		num: 101,
-		name: "Electrode-Hisui",
+		name: "Electronut",
 		baseSpecies: "Electrode",
 		forme: "Hisui",
 		types: ["Grass", "Electric"],

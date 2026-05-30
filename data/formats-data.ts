@@ -742,7 +742,7 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 	electrode: {
 		tier: "ZU",
 		doublesTier: "(DUU)",
-		natDexTier: "RU",
+		natDexTier: "Illegal",
 	},
 	electrodehisui: {
 		tier: "ZUBL",
