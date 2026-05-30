@@ -623,10 +623,11 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 	},
 	farfetchd: {
 		tier: "ZU",
-		natDexTier: "Illegal",
 	},
 	farfetchdgalar: {
-		tier: "ZU",
+		isNonstandard: "Past",
+		tier: "Illegal",
+		natDexTier: "LC",
 	},
 	sirfetchd: {
 		isNonstandard: "Past",
@@ -656,11 +657,12 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 	muk: {
 		tier: "ZU",
 		doublesTier: "(DUU)",
-		natDexTier: "Illegal",
+		natDexTier: "RU",
 	},
 	mukalola: {
-		tier: "ZU",
+		tier: "RU",
 		doublesTier: "(DUU)",
+		natDexTier: "RU",
 	},
 	shellder: {
 		tier: "NFE",

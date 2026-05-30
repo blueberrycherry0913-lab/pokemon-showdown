@@ -294,7 +294,10 @@ export const Tags: { [id: IDEntry]: TagData } = {
 	},
 	nonexistent: {
 		name: "Nonexistent",
-		genericFilter: thing => !!thing.isNonstandard && thing.isNonstandard !== 'Unobtainable',
+		// Lowercase 'custom' is the fan-game convention for wholly-custom species
+		// the user invented (distinct from canon capital-C 'Custom' used for
+		// Missingno / Pokestar mons). It should pass the existence gate.
+		genericFilter: thing => !!thing.isNonstandard && thing.isNonstandard !== 'Unobtainable' && thing.isNonstandard !== 'custom',
 	},
 
 	// filter columns

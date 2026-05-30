@@ -146,10 +146,22 @@ export const Rulesets: import('../../../sim/dex-formats').ModdedFormatDataTable 
 		onValidateSet(set) {
 			const species = this.dex.species.get(set.species);
 			if (species.natDexTier === 'Illegal') {
-				// Gen 1 lineage always passes — the Gen 1 Only clause is the species gate.
-				// natDexTier 'Illegal' is only enforced for non-Gen1 species.
-				if (isGen1Lineage(this.dex, species)) return;
 				if (this.ruleTable.has(`+pokemon:${species.id}`)) return;
+				// Gen 1 lineage is legal by default (Gen 1 Only is the species gate),
+				// but honor an explicit Illegal tag on regional/alt formes the user has
+				// gated. Keep Megas, custom species, and cosmetic 'Other'-bucket formes
+				// (Gmax / Cosplay / Cap / Starter / Spiky-eared) always legal — these
+				// mirror the teambuilder's Megas/Other/Custom buckets in build-indexes.
+				if (isGen1Lineage(this.dex, species)) {
+					if ((species as any).isMega) return;
+					if (species.isNonstandard === 'custom') return;
+					const otherFormes = [
+						'Cosplay', 'Rock-Star', 'Belle', 'Pop-Star', 'PhD', 'Libre',
+						'Original', 'Hoenn', 'Sinnoh', 'Unova', 'Kalos', 'Partner', 'World',
+						'Spiky-eared', 'Starter',
+					];
+					if (species.forme && (species.forme.endsWith('Gmax') || otherFormes.includes(species.forme))) return;
+				}
 				return [`${set.name || set.species} is not available yet.`];
 			}
 			const requireObtainable = this.ruleTable.has('obtainable');
