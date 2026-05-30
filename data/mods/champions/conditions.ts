@@ -1708,7 +1708,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 	// condition is copied whole from data/conditions.ts because mod conditions replace
 	// the base entry, then modified.
 
-	// Sandstorm — chip raised to 1/12 (§2). Rock/Ground/Steel immunity is canon
+	// Sandstorm — chip 1/16 (§2). Rock/Ground/Steel immunity is canon
 	// (enforced by runStatusImmunity('sandstorm') before onWeather fires).
 	sandstorm: {
 		name: 'Sandstorm',
@@ -1738,14 +1738,14 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			if (this.field.isWeather('sandstorm')) this.eachEvent('Weather');
 		},
 		onWeather(target) {
-			this.damage(target.baseMaxhp / 12);
+			this.damage(target.baseMaxhp / 16);
 		},
 		onFieldEnd() {
 			this.add('-weather', 'none');
 		},
 	},
 
-	// Snowscape (Snowstorm) — hail-style chip (1/12) instead of the canon Snow Defense
+	// Snowscape (Snowstorm) — hail-style chip (1/16) instead of the canon Snow Defense
 	// boost (§2). Ice and Steel types are immune to the chip (§1.5).
 	snowscape: {
 		name: 'Snowscape',
@@ -1770,7 +1770,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onWeather(target) {
 			if (target.hasType('Ice') || target.hasType('Steel')) return;
-			this.damage(target.baseMaxhp / 12);
+			this.damage(target.baseMaxhp / 16);
 		},
 		onFieldEnd() {
 			this.add('-weather', 'none');

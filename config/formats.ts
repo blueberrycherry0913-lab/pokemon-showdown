@@ -104,11 +104,38 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			}
 		},
 		// ── Blanket type effects (§1.5) ──────────────────────────────────────────
-		// Fighting types are immune to flinching; Dark types are immune to Taunt and
-		// Torment. Mirrors Inner Focus's canon pattern (return null blocks the volatile).
+		// Fighting types are immune to flinching. Mirrors Inner Focus's canon pattern
+		// (return null blocks the volatile). (Dark's Taunt/Torment immunity is handled by
+		// the broader Dark-type-status-move immunity in onTryHit below.)
 		onTryAddVolatile(status, pokemon) {
 			if (status.id === 'flinch' && pokemon.hasType('Fighting')) return null;
-			if ((status.id === 'taunt' || status.id === 'torment') && pokemon.hasType('Dark')) return null;
+		},
+		// Two §1.5 hit-time effects:
+		//  - Dark types are immune to ALL Dark-type status moves used against them (Taunt,
+		//    Torment, Fake Tears, Parting Shot, Topsy-Turvy, etc.). The canon Prankster-Dark
+		//    immunity (any-type Prankster-boosted status move) is separate and stays canon.
+		//  - Flying types gain +1 Speed stage when hit by a Wind-flagged move. NO immunity is
+		//    granted — the wind move still deals full damage (we do not return null for it).
+		onTryHit(target, source, move) {
+			if (target === source) return;
+			if (move.flags?.['wind'] && target.hasType('Flying')) {
+				this.boost({ spe: 1 }, target, target);
+				// fall through — wind move proceeds at full effect (no immunity)
+			}
+			if (move.category === 'Status' && move.type === 'Dark' && target.hasType('Dark')) {
+				this.add('-immune', target);
+				return null;
+			}
+		},
+		// Flying types gain +1 Speed stage whenever Tailwind is set by EITHER side of the
+		// field (§1.5), including their own. SideConditionStart fires globally from
+		// Side.addSideCondition (sim/side.ts). The own-side Tailwind ×2 speed is still
+		// applied by the canon tailwind condition and stacks with this stage boost.
+		onSideConditionStart(targetSide, source, sideCondition) {
+			if (sideCondition.id !== 'tailwind') return;
+			for (const pokemon of this.getAllActive()) {
+				if (pokemon.hasType('Flying')) this.boost({ spe: 1 }, pokemon, pokemon);
+			}
 		},
 		// Steel types cannot be phazed (§1.5): immune to forced-switch effects (Roar,
 		// Whirlwind, Dragon Tail, Circle Throw, etc.). DragOut fires for both the
@@ -117,14 +144,6 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			if (pokemon.hasType('Steel')) {
 				this.add('-fail', pokemon);
 				return false;
-			}
-		},
-		// Flying types benefit from enemy-set Tailwind (§1.5), in addition to ally-set
-		// Tailwind. The own-side Tailwind ×2 is handled by the canon tailwind condition;
-		// this adds the foe-side Tailwind ×2 (they stack).
-		onModifySpe(spe, pokemon) {
-			if (pokemon.hasType('Flying') && pokemon.side.foe.sideConditions['tailwind']) {
-				return this.chainModify(2);
 			}
 		},
 		// Water types purge all non-volatile status at the end of the second turn after

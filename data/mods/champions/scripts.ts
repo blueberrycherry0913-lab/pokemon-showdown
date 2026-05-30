@@ -80,12 +80,8 @@ export const Scripts: ModdedBattleScriptsData = {
 			if (['psn', 'tox', 'cor', 'mlt'].includes(statusId) && this.hasType('Poison')) {
 				return false;
 			}
-			// Steel types are immune to Corroded and Melting (§1.5) — but Corrosive moves (§5)
-			// bypass this at the move level. (Steel's psn/tox immunity is canon via setStatus.)
-			if ((statusId === 'cor' || statusId === 'mlt') && this.hasType('Steel') &&
-				!(sourceEffect && (sourceEffect as ActiveMove).flags?.['corrosive'])) {
-				return false;
-			}
+			// NOTE: Steel is NOT immune to Corroded/Melting (§1.5) — Steel is the primary target
+			// of the Corrosion family. Steel's psn/tox immunity stays canon (via setStatus).
 			// Frostbitten → Frozen escalation: re-applying Frostbitten (or directly inflicting Frozen)
 			// while Frostbitten escalates to Frozen. onStart sets Phase 1 + new lockout.
 			if (this.status === 'frb' && (statusId === 'frb' || statusId === 'frz')) {
