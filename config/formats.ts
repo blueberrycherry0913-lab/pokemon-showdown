@@ -85,6 +85,22 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			if (types[0] === move.type) return 1.5; // primary
 			return 1.4; // secondary
 		},
+		// Normal blanket effects (§1.5), applied as flat end-of-calc damage multipliers:
+		//  - Inverse-STAB: a Normal-type attacker deals ×1.1 on NON-STAB moves (move type is
+		//    not one of its types). Mutually exclusive with STAB — STAB moves are handled by
+		//    onModifySTAB above, so the !hasType(move.type) guard prevents any double-dip.
+		//  - Soft Resistance: a Normal-type defender takes ×0.9 from every move except Fighting
+		//    and Ghost, regardless of type effectiveness.
+		// Both accumulate into the ModifyDamage event modifier (chainModify, no return), so when
+		// a Normal attacks a Normal with a non-STAB non-Fighting/Ghost move both apply (×0.99).
+		onModifyDamage(damage, source, target, move) {
+			if (source.hasType('Normal') && !source.hasType(move.type) && !move.forceSTAB) {
+				this.chainModify(1.1); // Inverse-STAB
+			}
+			if (target.hasType('Normal') && move.type !== 'Fighting' && move.type !== 'Ghost') {
+				this.chainModify(0.9); // Soft Resistance
+			}
+		},
 		// Marked persistence (§4): the marked volatile is re-added when the Marked Pokémon
 		// switches back in, because Pokemon objects persist for the whole battle but volatiles
 		// are cleared on switch-out. markedHunter is set in the marked condition's onStart.
