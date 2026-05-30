@@ -4182,7 +4182,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				if (sc) (sc as any).barrierHP = 1;
 			}
 		},
-		shortDesc: "When KO'd, the next ally that switches in receives a free substitute.",
+		shortDesc: "When KO'd, leaves a 1 HP substitute for the next ally that switches in.",
 		origin: 'Custom',
 		flags: {},
 		name: "Protective Soul",
@@ -7927,19 +7927,6 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 10094,
 	},
 
-	// --- Row 399: Magnetic Core ---
-	magneticcore: {
-		onStart(pokemon) {
-			pokemon.addVolatile('magnetrise');
-		},
-		shortDesc: "Sets Magnet Rise on switch-in.",
-		origin: 'Custom',
-		flags: {},
-		name: "Magnetic Core",
-		rating: 2,
-		num: 10095,
-	},
-
 	// --- Row 402: Punisher ---
 	punisher: {
 		onModifyDamage(damage, source, target, move) {
@@ -8044,5 +8031,32 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		name: "Heavy Sleeper",
 		rating: 3,
 		num: 10103,
+	},
+
+	// --- Row 403: Magnetism Pulse ---
+	magnetismpulse: {
+		onStart(pokemon) {
+			pokemon.addVolatile('magnetrise');
+		},
+		shortDesc: "Sets Magnet Rise on switch-in.",
+		origin: 'Custom',
+		flags: {},
+		name: "Magnetism Pulse",
+		rating: 2,
+		num: 10104,
+	},
+
+	// --- Row 238: Combative ---
+	combative: {
+		onAfterMove(source, target, move) {
+			if (move.category === 'Status') return;
+			this.boost({ spe: 1 }, source);
+		},
+		shortDesc: "Speed is boosted by +1 stage after each attacking move used.",
+		origin: 'Custom',
+		flags: {},
+		name: "Combative",
+		rating: 3,
+		num: 10105,
 	},
 };
