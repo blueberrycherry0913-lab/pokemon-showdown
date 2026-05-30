@@ -17485,9 +17485,13 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 			onSwitchIn(pokemon) {
 				if (!pokemon.isGrounded() || pokemon.hasItem('heavydutyboots') || pokemon.hasAbility('lightfooted') || pokemon.hasAbility('tinyfeet')) return;
 				// Bug blanket effect (§1.5): immune to entry hazards except Sticky Web (personal — does not absorb).
-				if (pokemon.hasType('Bug')) return;
+				if (pokemon.hasType('Bug')) {
+					this.add('-activate', pokemon, 'typeEffect', '[type]Bug', '[msg]Hazard Immunity');
+					return;
+				}
 				// Ground blanket effect (§1.5): absorbs Spikes side-wide on switch-in.
 				if (pokemon.hasType('Ground')) {
+					this.add('-activate', pokemon, 'typeEffect', '[type]Ground', '[msg]Absorbed Spikes');
 					this.add('-sideend', pokemon.side, 'Spikes', `[of] ${pokemon}`);
 					pokemon.side.removeSideCondition('spikes');
 					return;
@@ -17801,9 +17805,13 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 			onSwitchIn(pokemon) {
 				if (pokemon.hasItem('heavydutyboots') || pokemon.hasAbility('lightfooted') || pokemon.hasAbility('tinyfeet')) return;
 				// Bug blanket effect (§1.5): immune to entry hazards except Sticky Web (personal — does not absorb).
-				if (pokemon.hasType('Bug')) return;
+				if (pokemon.hasType('Bug')) {
+					this.add('-activate', pokemon, 'typeEffect', '[type]Bug', '[msg]Hazard Immunity');
+					return;
+				}
 				// Rock blanket effect (§1.5): absorbs Stealth Rock side-wide on switch-in.
 				if (pokemon.hasType('Rock')) {
+					this.add('-activate', pokemon, 'typeEffect', '[type]Rock', '[msg]Absorbed Stealth Rock');
 					this.add('-sideend', pokemon.side, 'move: Stealth Rock', `[of] ${pokemon}`);
 					pokemon.side.removeSideCondition('stealthrock');
 					return;
@@ -19755,7 +19763,10 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 			onSwitchIn(pokemon) {
 				if (!pokemon.isGrounded()) return;
 				// Bug blanket effect (§1.5): immune to entry hazards except Sticky Web (personal — does not absorb).
-				if (pokemon.hasType('Bug')) return;
+				if (pokemon.hasType('Bug')) {
+					this.add('-activate', pokemon, 'typeEffect', '[type]Bug', '[msg]Hazard Immunity');
+					return;
+				}
 				if (pokemon.hasType('Poison')) {
 					this.add('-sideend', pokemon.side, 'move: Toxic Spikes', `[of] ${pokemon}`);
 					pokemon.side.removeSideCondition('toxicspikes');

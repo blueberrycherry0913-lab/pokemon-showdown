@@ -47,7 +47,10 @@ export const Scripts: ModdedBattleScriptsData = {
 		// Mean Look, and binding moves (Wrap/Fire Spin/etc.) all route through tryTrap.
 		// They can always switch out. Mirrors the canon body otherwise.
 		tryTrap(isHidden = false) {
-			if (this.hasType('Ghost')) return false;
+			if (this.hasType('Ghost')) {
+				this.battle.add('-activate', this, 'typeEffect', '[type]Ghost', '[msg]Trap Immunity');
+				return false;
+			}
 			if (!this.runStatusImmunity('trapped')) return false;
 			if (this.trapped && isHidden) return true;
 			this.trapped = isHidden ? 'hidden' : true;
@@ -61,23 +64,28 @@ export const Scripts: ModdedBattleScriptsData = {
 			// Cosmic types are immune to foe-inflicted Sleep.
 			// Rest (source === this) bypasses this immunity so Cosmic Pokémon can still use Rest.
 			if (statusId === 'slp' && this.hasType('Cosmic') && source !== this) {
+				this.battle.add('-activate', this, 'typeEffect', '[type]Cosmic', '[msg]Sleep Immunity');
 				return false;
 			}
 			// Electric types are immune to both Stunned and Paralyzed.
 			if ((statusId === 'stun' || statusId === 'par') && this.hasType('Electric')) {
+				this.battle.add('-activate', this, 'typeEffect', '[type]Electric', '[msg]Paralysis Immunity');
 				return false;
 			}
 			// Ice types are immune to Frostbitten and Frozen (§1.5).
 			if ((statusId === 'frb' || statusId === 'frz') && this.hasType('Ice')) {
+				this.battle.add('-activate', this, 'typeEffect', '[type]Ice', '[msg]Freeze Immunity');
 				return false;
 			}
 			// Fire types are immune to Burned and Scorched (§1.5).
 			if ((statusId === 'brn' || statusId === 'scr') && this.hasType('Fire')) {
+				this.battle.add('-activate', this, 'typeEffect', '[type]Fire', '[msg]Burn Immunity');
 				return false;
 			}
 			// Poison types are immune to the entire Poison/Corrosion status family (§1.5):
 			// Poisoned, Toxic, Corroded, and Melting.
 			if (['psn', 'tox', 'cor', 'mlt'].includes(statusId) && this.hasType('Poison')) {
+				this.battle.add('-activate', this, 'typeEffect', '[type]Poison', '[msg]Poison Immunity');
 				return false;
 			}
 			// NOTE: Steel is NOT immune to Corroded/Melting (§1.5) — Steel is the primary target

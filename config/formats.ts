@@ -108,7 +108,10 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		// (return null blocks the volatile). (Dark's Taunt/Torment immunity is handled by
 		// the broader Dark-type-status-move immunity in onTryHit below.)
 		onTryAddVolatile(status, pokemon) {
-			if (status.id === 'flinch' && pokemon.hasType('Fighting')) return null;
+			if (status.id === 'flinch' && pokemon.hasType('Fighting')) {
+				this.add('-activate', pokemon, 'typeEffect', '[type]Fighting', '[msg]Flinch Immunity');
+				return null;
+			}
 		},
 		// Two §1.5 hit-time effects:
 		//  - Dark types are immune to ALL Dark-type status moves used against them (Taunt,
@@ -119,10 +122,12 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		onTryHit(target, source, move) {
 			if (target === source) return;
 			if (move.flags?.['wind'] && target.hasType('Flying')) {
+				this.add('-activate', target, 'typeEffect', '[type]Flying', '[msg]Wind Speed Boost');
 				this.boost({ spe: 1 }, target, target);
 				// fall through — wind move proceeds at full effect (no immunity)
 			}
 			if (move.category === 'Status' && move.type === 'Dark' && target.hasType('Dark')) {
+				this.add('-activate', target, 'typeEffect', '[type]Dark', '[msg]Dark Move Immunity');
 				this.add('-immune', target);
 				return null;
 			}
@@ -142,6 +147,7 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		// forceSwitch action and damaging forceSwitch moves.
 		onDragOut(pokemon) {
 			if (pokemon.hasType('Steel')) {
+				this.add('-activate', pokemon, 'typeEffect', '[type]Steel', '[msg]Phazing Immunity');
 				this.add('-fail', pokemon);
 				return false;
 			}
@@ -158,6 +164,7 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			if (!pokemon.status || !pokemon.hasType('Water')) return;
 			pokemon.statusState.waterPurge = (pokemon.statusState.waterPurge || 0) + 1;
 			if (pokemon.statusState.waterPurge >= 2) {
+				this.add('-activate', pokemon, 'typeEffect', '[type]Water', '[msg]Status Purge');
 				pokemon.cureStatus();
 			}
 		},
