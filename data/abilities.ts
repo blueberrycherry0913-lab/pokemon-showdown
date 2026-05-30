@@ -2115,7 +2115,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				if (target.species.id === 'cramorantgulping') {
 					this.boost({ def: -1 }, source, target, null, true);
 				} else {
-					source.trySetStatus('par', target, move);
+					source.trySetStatus('stun', target, move);
 				}
 				target.formeChange('cramorant', move);
 			}
@@ -2836,7 +2836,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		onSetStatus(status, target, source, effect) {
-			if (status.id !== 'par') return;
+			if (status.id !== 'par' && status.id !== 'stun') return;
 			if ((effect as Move)?.status) {
 				this.add('-immune', target, '[from] ability: Limber');
 			}
@@ -2983,7 +2983,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		onImmunity(type, pokemon) {
-			if (type === 'frz') return false;
+			if (type === 'frz' || type === 'frb') return false;
 		},
 		flags: { breakable: 1 },
 		name: "Magma Armor",
@@ -5300,7 +5300,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onDamagingHit(damage, target, source, move) {
 			if (this.checkMoveMakesContact(move, source, target)) {
 				if (this.randomChance(3, 10)) {
-					source.trySetStatus('par', target);
+					source.trySetStatus('stun', target);
 				}
 			}
 		},
@@ -5633,7 +5633,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onAfterSetStatus(status, target, source, effect) {
 			if (!source || source === target) return;
 			if (effect && effect.id === 'toxicspikes') return;
-			if (status.id === 'slp' || status.id === 'frz') return;
+			if (status.id === 'slp' || status.id === 'frz' || status.id === 'frb') return;
 			this.add('-activate', target, 'ability: Synchronize');
 			// Hack to make status-prevention abilities think Synchronize is a status move
 			// and show messages when activating against it.

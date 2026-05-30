@@ -1461,7 +1461,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		},
 		secondary: {
 			chance: 10,
-			status: 'frz',
+			status: 'frb',
 		},
 		target: "allAdjacentFoes",
 		type: "Ice",
@@ -1552,7 +1552,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { contact: 1, protect: 1, mirror: 1, nonsky: 1, metronome: 1, minimize: 1 },
 		secondary: {
 			chance: 30,
-			status: 'par',
+			status: 'stun',
 		},
 		target: "normal",
 		type: "Normal",
@@ -1590,7 +1590,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
 			chance: 20,
-			status: 'par',
+			status: 'stun',
 		},
 		target: "normal",
 		type: "Electric",
@@ -1698,7 +1698,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		},
 		secondary: {
 			chance: 30,
-			status: 'par',
+			status: 'stun',
 		},
 		target: "any",
 		type: "Flying",
@@ -2086,7 +2086,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { protect: 1, mirror: 1 },
 		secondary: {
 			chance: 100,
-			status: 'par',
+			status: 'stun',
 		},
 		target: "normal",
 		type: "Electric",
@@ -2615,7 +2615,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		},
 		secondary: {
 			chance: 30,
-			status: 'par',
+			status: 'stun',
 		},
 		target: "normal",
 		type: "Fighting",
@@ -3597,7 +3597,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		secondary: {
 			chance: 50,
 			onHit(target, source) {
-				const status = this.sample(['psn', 'par', 'slp']);
+				const status = this.sample(['psn', 'stun', 'slp']);
 				target.trySetStatus(status, source);
 			},
 		},
@@ -3697,7 +3697,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
 			chance: 30,
-			status: 'par',
+			status: 'stun',
 		},
 		target: "allAdjacent",
 		type: "Electric",
@@ -4006,7 +4006,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
 			chance: 30,
-			status: 'par',
+			status: 'stun',
 		},
 		target: "normal",
 		type: "Dragon",
@@ -6042,7 +6042,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
 			chance: 30,
-			status: 'par',
+			status: 'stun',
 		},
 		target: "normal",
 		type: "Fighting",
@@ -6128,7 +6128,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		},
 		secondary: {
 			chance: 10,
-			status: 'frz',
+			status: 'frb',
 		},
 		target: "normal",
 		type: "Ice",
@@ -6156,7 +6156,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		},
 		secondary: {
 			chance: 30,
-			status: 'par',
+			status: 'stun',
 		},
 		target: "normal",
 		type: "Ice",
@@ -6173,7 +6173,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { protect: 1, mirror: 1 },
 		secondary: {
 			chance: 10,
-			status: 'frz',
+			status: 'frb',
 		},
 		target: "normal",
 		type: "Psychic",
@@ -6644,7 +6644,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		pp: 30,
 		priority: 0,
 		flags: { protect: 1, reflectable: 1, mirror: 1, metronome: 1 },
-		status: 'par',
+		status: 'stun',
 		target: "normal",
 		type: "Normal",
 		zMove: { boost: { spd: 1 } },
@@ -6681,7 +6681,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		self: {
 			onHit(source) {
 				for (const pokemon of source.foes()) {
-					const status = this.sample(['slp', 'par', 'psn']);
+					const status = this.sample(['slp', 'stun', 'psn']);
 					pokemon.trySetStatus(status, source);
 				}
 			},
@@ -9271,7 +9271,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
 			chance: 10,
-			status: 'frz',
+			status: 'frb',
 		},
 		target: "normal",
 		type: "Ice",
@@ -9317,7 +9317,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		secondaries: [
 			{
 				chance: 10,
-				status: 'frz',
+				status: 'frb',
 			}, {
 				chance: 10,
 				volatileStatus: 'flinch',
@@ -9356,7 +9356,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { contact: 1, protect: 1, mirror: 1, punch: 1, metronome: 1 },
 		secondary: {
 			chance: 10,
-			status: 'frz',
+			status: 'frb',
 		},
 		target: "normal",
 		type: "Ice",
@@ -10238,7 +10238,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
 			chance: 30,
-			status: 'par',
+			status: 'stun',
 		},
 		target: "normal",
 		type: "Ghost",
@@ -12814,7 +12814,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
 			chance: 100,
-			status: 'par',
+			status: 'stun',
 		},
 		target: "normal",
 		type: "Electric",
@@ -13663,7 +13663,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
 			chance: 10,
-			status: 'frz',
+			status: 'frb',
 		},
 		target: "allAdjacentFoes",
 		type: "Ice",
@@ -15876,7 +15876,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 			if (this.field.isTerrain('electricterrain')) {
 				move.secondaries.push({
 					chance: 30,
-					status: 'par',
+					status: 'stun',
 				});
 			} else if (this.field.isTerrain('grassyterrain')) {
 				move.secondaries.push({
@@ -15901,7 +15901,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		},
 		secondary: {
 			chance: 30,
-			status: 'par',
+			status: 'stun',
 		},
 		target: "normal",
 		type: "Normal",
@@ -17312,7 +17312,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
 			chance: 30,
-			status: 'par',
+			status: 'stun',
 		},
 		target: "normal",
 		type: "Electric",
@@ -17715,7 +17715,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { protect: 1, mirror: 1 },
 		secondary: {
 			chance: 30,
-			status: 'par',
+			status: 'stun',
 		},
 		target: "allAdjacentFoes",
 		type: "Water",
@@ -18016,7 +18016,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		isZ: "aloraichiumz",
 		secondary: {
 			chance: 100,
-			status: 'par',
+			status: 'stun',
 		},
 		target: "normal",
 		type: "Electric",
@@ -18273,7 +18273,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		pp: 30,
 		priority: 0,
 		flags: { protect: 1, reflectable: 1, mirror: 1, metronome: 1, powder: 1 },
-		status: 'par',
+		status: 'stun',
 		target: "normal",
 		type: "Grass",
 		zMove: { boost: { spd: 1 } },
@@ -19451,7 +19451,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		},
 		secondary: {
 			chance: 30,
-			status: 'par',
+			status: 'stun',
 		},
 		target: "normal",
 		type: "Electric",
@@ -19468,7 +19468,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
 			chance: 10,
-			status: 'par',
+			status: 'stun',
 		},
 		target: "normal",
 		type: "Electric",
@@ -19519,7 +19519,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		secondaries: [
 			{
 				chance: 10,
-				status: 'par',
+				status: 'stun',
 			}, {
 				chance: 10,
 				volatileStatus: 'flinch',
@@ -19558,7 +19558,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { contact: 1, protect: 1, mirror: 1, punch: 1, metronome: 1 },
 		secondary: {
 			chance: 10,
-			status: 'par',
+			status: 'stun',
 		},
 		target: "normal",
 		type: "Electric",
@@ -19575,7 +19575,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
 			chance: 10,
-			status: 'par',
+			status: 'stun',
 		},
 		target: "normal",
 		type: "Electric",
@@ -19590,7 +19590,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		pp: 20,
 		priority: 0,
 		flags: { protect: 1, reflectable: 1, mirror: 1, metronome: 1 },
-		status: 'par',
+		status: 'stun',
 		ignoreImmunity: false,
 		target: "normal",
 		type: "Electric",
@@ -19854,7 +19854,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		secondary: {
 			chance: 20,
 			onHit(target, source) {
-				const status = this.sample(['brn', 'par', 'frz']);
+				const status = this.sample(['brn', 'stun', 'frb']);
 				target.trySetStatus(status, source);
 			},
 		},
@@ -20455,7 +20455,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		recoil: [33, 100],
 		secondary: {
 			chance: 10,
-			status: 'par',
+			status: 'stun',
 		},
 		target: "normal",
 		type: "Electric",
@@ -20865,7 +20865,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		},
 		secondary: {
 			chance: 20,
-			status: 'par',
+			status: 'stun',
 		},
 		target: "allAdjacentFoes",
 		type: "Electric",
@@ -21171,7 +21171,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { protect: 1, mirror: 1, metronome: 1, bullet: 1 },
 		secondary: {
 			chance: 100,
-			status: 'par',
+			status: 'stun',
 		},
 		target: "normal",
 		type: "Electric",
@@ -21535,7 +21535,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { protect: 1, mirror: 1, defrost: 1, nosketch: 1 },
 		secondary: {
 			chance: 10,
-			status: 'frz',
+			status: 'frb',
 		},
 		onAfterMoveSecondarySelf(pokemon) {
 			if (pokemon.baseSpecies.baseSpecies === 'Ramnarok' && !pokemon.transformed) {
@@ -21661,7 +21661,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		pp: 10,
 		priority: 0,
 		flags: { protect: 1, reflectable: 1, mirror: 1 },
-		status: 'frz',
+		status: 'frb',
 		target: "normal",
 		type: "Ice",
 		isNonstandard: "Custom",
