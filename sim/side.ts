@@ -550,7 +550,8 @@ export class Side {
 	chooseMove(
 		moveText?: string | number,
 		targetLoc = 0,
-		event: 'mega' | 'megax' | 'megay' | 'zmove' | 'ultra' | 'dynamax' | 'terastallize' | '' = ''
+		event: 'mega' | 'megax' | 'megay' | 'zmove' | 'ultra' | 'dynamax' | 'terastallize' | '' = '',
+		terastallizeType?: string
 	) {
 		if (this.requestState !== 'move') {
 			return this.emitChoiceError(`Can't move: You need a ${this.requestState} response`);
@@ -802,6 +803,14 @@ export class Side {
 			}
 		}
 		const terastallize = (event === 'terastallize');
+		// §11 Terra Crystal: validate the in-battle-chosen Tera type (any real type incl. Cosmic; not Stellar/???).
+		if (terastallize && terastallizeType) {
+			const teraTypeObj = this.battle.dex.types.get(terastallizeType);
+			if (!teraTypeObj.exists || teraTypeObj.name === 'Stellar' || teraTypeObj.name === '???') {
+				return this.emitChoiceError(`Can't move:  is not a valid Terastallization type.`);
+			}
+			terastallizeType = teraTypeObj.name;
+		}
 		if (terastallize && !pokemon.canTerastallize) {
 			// Make this work properly
 			return this.emitChoiceError(`Can't move: ${pokemon.name} can't Terastallize.`);
@@ -828,7 +837,7 @@ export class Side {
 			megay,
 			zmove: zMove,
 			maxMove: maxMove ? maxMove.id : undefined,
-			terastallize: terastallize ? pokemon.teraType : undefined,
+			terastallize: terastallize ? (terastallizeType || pokemon.teraType) : undefined,
 		});
 
 		if (pokemon.maybeDisabled && (this.battle.gameType === 'singles' || (
@@ -1200,6 +1209,8 @@ export class Side {
 				const error = () => this.emitChoiceError(`Conflicting arguments for "move": ${original}`);
 				let targetLoc: number | undefined;
 				let event: 'mega' | 'megax' | 'megay' | 'zmove' | 'ultra' | 'dynamax' | 'terastallize' | '' = '';
+				// §11 Terra Crystal: the chosen Tera type, parsed from 'move N terastallize <type>'.
+				let terastallizeType: string | undefined;
 				while (true) {
 					// If data ends with a number, treat it as a target location.
 					// We need to special case 'Conversion 2' so it doesn't get
@@ -1241,6 +1252,12 @@ export class Side {
 						if (event) return error();
 						event = 'dynamax';
 						data = data.slice(0, -4);
+					} else if (/ terastal(?:lize)? \S+$/i.test(data)) {
+						if (event) return error();
+						event = 'terastallize';
+						const teraMatch = / (?:terastallize|terastal) (\S+)$/i.exec(data)!;
+						terastallizeType = teraMatch[1];
+						data = data.slice(0, teraMatch.index);
 					} else if (data.endsWith(' terastal')) {
 						if (event) return error();
 						event = 'terastallize';
@@ -1253,7 +1270,7 @@ export class Side {
 						break;
 					}
 				}
-				if (!this.chooseMove(data, targetLoc, event)) return false;
+				if (!this.chooseMove(data, targetLoc, event, terastallizeType)) return false;
 				break;
 			case 'switch':
 				if (!this.chooseSwitch(data)) return false;

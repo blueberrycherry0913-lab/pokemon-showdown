@@ -114,6 +114,8 @@ export interface PokemonAction {
 	dragger?: Pokemon;
 	/** `event` only: the event to run */
 	event?: string;
+	/** `terastallize` only: the in-battle-chosen Tera type (§11 Terra Crystal) */
+	terastallizeType?: string;
 }
 
 export type Action = MoveAction | SwitchAction | TeamAction | FieldAction | PokemonAction;
@@ -236,6 +238,7 @@ export class BattleQueue {
 					actions.unshift(...this.resolveAction({
 						choice: 'terastallize',
 						pokemon: action.pokemon,
+						terastallizeType: action.terastallize,
 					}));
 				}
 				if (action.maxMove && !action.pokemon.volatiles['dynamax']) {

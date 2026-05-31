@@ -63,27 +63,37 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			'Hidden Power',
 		],
 		restricted: [],
-		// Type Order STAB (§6 of master reference):
-		//   Pure type (single type): ×1.6
-		//   Primary type (types[0]):  ×1.5
-		//   Secondary type (types[1]): ×1.4
-		// Adaptability and Specialist bypass the standard table (their ability handlers
-		// fire first; we detect them here to avoid clobbering their values).
-		// Specialist adds +0.75 additively to the type-order base.
+		// Type Order STAB (§6 of master reference) + Tera Crystal STAB (§11), as a single
+		// additive model: final = 1.0 (neutral) + original-typing bonus + Tera bonus.
+		//   Original-typing bonus (read from attacker.types, the PRE-Tera typing):
+		//     Pure (single type): +0.6 (→1.6) | Primary (types[0]): +0.5 (→1.5) | Secondary: +0.4 (→1.4)
+		//   Tera bonus (§11): +0.5 when the move's type matches the chosen Tera type
+		//     (attacker.terastallized). Stacks additively with the original-typing bonus, so a
+		//     dual-type that Teras into one of its types keeps Primary/Secondary (NOT Pure) and
+		//     adds +0.5 — you can never GAIN the Pure bonus via Tera. Original-type STAB is
+		//     preserved (e.g. Fire/Water Tera Fire still gets 1.4 on Water moves).
+		//   Doc table: Pure Fire→Tera Fire 2.1 | Fire/Dragon→Tera Fire 2.0 | Dragon/Fire→Tera Fire 1.9 | Water→Tera Fire 1.5.
+		// This handler runs even in the Tera case (canon runs ModifySTAB unconditionally and our
+		// return value wins), so it is the single source of truth for STAB in this format.
+		// Tera does NOT mutate attacker.types — getTypes() applies the mono-type override only
+		// for defense, so reading attacker.types here always gives the original offensive typing.
+		// Adaptability/Specialist keep their ability bonuses; the Tera +0.5 stacks additively.
 		onModifySTAB(stab, attacker, defender, move) {
-			if (stab <= 1) return stab; // move has no STAB (includes Specialist's 0.75x penalty)
-			if (attacker.hasAbility('adaptability')) return stab; // preserve Adaptability
-			const types = attacker.types;
-			if (!types.includes(move.type)) return stab; // forceSTAB edge case
-			if (attacker.hasAbility('specialist')) {
-				// Additive +0.75 on top of type-order base
-				if (types.length === 1) return 2.35; // 1.6 + 0.75
-				if (types[0] === move.type) return 2.25; // 1.5 + 0.75
-				return 2.15; // 1.4 + 0.75
+			if (stab <= 1) return stab; // engine: move matches neither an original type nor the Tera type → no STAB
+			const types = attacker.types; // ORIGINAL typing (pre-Tera)
+			const tera = attacker.terastallized; // chosen Tera type, or undefined
+			const teraBonus = (tera && move.type === tera) ? 0.5 : 0;
+			// Adaptability keeps its canon multiplier; the Tera bonus stacks on top.
+			if (attacker.hasAbility('adaptability')) return stab + teraBonus;
+			let bonus = 0; // §6 original-typing bonus, relative to 1.0
+			if (types.includes(move.type)) {
+				if (types.length === 1) bonus = 0.6; // pure
+				else if (types[0] === move.type) bonus = 0.5; // primary
+				else bonus = 0.4; // secondary
+				if (attacker.hasAbility('specialist')) bonus += 0.75; // Specialist additive
 			}
-			if (types.length === 1) return 1.6; // pure type
-			if (types[0] === move.type) return 1.5; // primary
-			return 1.4; // secondary
+			const result = 1 + bonus + teraBonus;
+			return result > 1 ? result : stab;
 		},
 		// Normal blanket effects (§1.5), applied as flat end-of-calc damage multipliers:
 		//  - Inverse-STAB: a Normal-type attacker deals ×1.1 on NON-STAB moves (move type is

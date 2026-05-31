@@ -90,6 +90,12 @@ export class Item extends BasicEffect implements Readonly<BasicEffect> {
 	readonly isPokeball: boolean;
 	/** Is this item a Red or Blue Orb? */
 	readonly isPrimalOrb: boolean;
+	/**
+	 * Custom (fan-game §11): if true, this is the Terastallization Crystal —
+	 * the held item that gates Terastallization. See data/mods/champions/scripts.ts
+	 * (actions.canTerastallize).
+	 */
+	readonly teraCrystal?: boolean;
 
 	declare readonly condition?: ConditionData;
 	declare readonly forcedForme?: string;
@@ -122,6 +128,7 @@ export class Item extends BasicEffect implements Readonly<BasicEffect> {
 		this.isGem = !!data.isGem;
 		this.isPokeball = !!data.isPokeball;
 		this.isPrimalOrb = !!data.isPrimalOrb;
+		this.teraCrystal = data.teraCrystal || undefined;
 
 		if (!this.gen) {
 			if (this.num >= 1124) {
