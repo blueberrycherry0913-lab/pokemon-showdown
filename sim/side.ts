@@ -803,7 +803,7 @@ export class Side {
 			}
 		}
 		const terastallize = (event === 'terastallize');
-		// §11 Terra Crystal: validate the in-battle-chosen Tera type (any real type incl. Cosmic; not Stellar/???).
+		// §11 Tera Crystal: validate the in-battle-chosen Tera type (any real type incl. Cosmic; not Stellar/???).
 		if (terastallize && terastallizeType) {
 			const teraTypeObj = this.battle.dex.types.get(terastallizeType);
 			if (!teraTypeObj.exists || teraTypeObj.name === 'Stellar' || teraTypeObj.name === '???') {
@@ -1209,7 +1209,7 @@ export class Side {
 				const error = () => this.emitChoiceError(`Conflicting arguments for "move": ${original}`);
 				let targetLoc: number | undefined;
 				let event: 'mega' | 'megax' | 'megay' | 'zmove' | 'ultra' | 'dynamax' | 'terastallize' | '' = '';
-				// §11 Terra Crystal: the chosen Tera type, parsed from 'move N terastallize <type>'.
+				// §11 Tera Crystal: the chosen Tera type, parsed from 'move N terastallize <type>'.
 				let terastallizeType: string | undefined;
 				while (true) {
 					// If data ends with a number, treat it as a target location.

@@ -114,7 +114,7 @@ export interface PokemonAction {
 	dragger?: Pokemon;
 	/** `event` only: the event to run */
 	event?: string;
-	/** `terastallize` only: the in-battle-chosen Tera type (§11 Terra Crystal) */
+	/** `terastallize` only: the in-battle-chosen Tera type (§11 Tera Crystal) */
 	terastallizeType?: string;
 }
 

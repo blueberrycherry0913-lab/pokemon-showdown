@@ -2902,7 +2902,7 @@ export class Battle {
 			if (action.pokemon.side.allySide) action.pokemon.side.allySide.dynamaxUsed = true;
 			break;
 		case 'terastallize':
-			// §11 Terra Crystal: apply the in-battle-chosen Tera type before activating.
+			// §11 Tera Crystal: apply the in-battle-chosen Tera type before activating.
 			// Execution is post-commit (un-undoable), so overriding teraType here is safe.
 			if (action.terastallizeType) action.pokemon.teraType = action.terastallizeType;
 			this.actions.terastallize(action.pokemon);

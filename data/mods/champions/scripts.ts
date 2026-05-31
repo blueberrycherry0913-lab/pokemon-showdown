@@ -196,7 +196,7 @@ export const Scripts: ModdedBattleScriptsData = {
 		},
 	},
 	actions: {
-		// §11 Terra Crystal: Terastallization is item-gated. Only a Pokémon holding the
+		// §11 Tera Crystal: Terastallization is item-gated. Only a Pokémon holding the
 		// Terastallization Crystal (item.teraCrystal) may Terastallize. Mirrors the canon
 		// body (sim/battle-actions.ts) otherwise. The actual Tera type is chosen in-battle
 		// and threaded through the choice; pokemon.teraType is just the default/preset.
