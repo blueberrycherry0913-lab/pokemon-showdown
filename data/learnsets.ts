@@ -1445,6 +1445,11 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			freezetest: ["9L1"],
 			charmedtest: ["9L1"],
 			stunnedtest: ["9L1"],
+			rainbowtest: ["9L1"],
+			fullmoontest: ["9L1"],
+			newmoontest: ["9L1"],
+			fogtest: ["9L1"],
+			clearskiestest: ["9L1"],
 			aerialace: ["7M", "6M", "5M", "4M", "3M"],
 			agility: ["8V", "7L32", "7V", "6L32", "5L32", "4L32", "3L48"],
 			aircutter: ["4T"],
@@ -100531,6 +100536,11 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	tester: {
 		learnset: {
 			"10000000voltthunderbolt": ["9L1"],
+			rainbowtest: ["9L1"],
+			fullmoontest: ["9L1"],
+			newmoontest: ["9L1"],
+			fogtest: ["9L1"],
+			clearskiestest: ["9L1"],
 			absorb: ["9L1"],
 			accelerock: ["9L1"],
 			acid: ["9L1"],

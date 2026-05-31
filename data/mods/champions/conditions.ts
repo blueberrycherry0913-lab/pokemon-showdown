@@ -1710,6 +1710,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	// Sandstorm — chip 1/16 (§2). Rock/Ground/Steel immunity is canon
 	// (enforced by runStatusImmunity('sandstorm') before onWeather fires).
+	// §2: weather no longer modifies power/stats — the canon Rock SpD ×1.5 boost is removed.
 	sandstorm: {
 		name: 'Sandstorm',
 		effectType: 'Weather',
@@ -1717,12 +1718,6 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		durationCallback(source, effect) {
 			if (source?.hasItem('smoothrock')) return 8;
 			return 5;
-		},
-		onModifySpDPriority: 10,
-		onModifySpD(spd, pokemon) {
-			if (pokemon.hasType('Rock') && pokemon.effectiveWeather() === 'sandstorm') {
-				return this.modify(spd, 1.5);
-			}
 		},
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -1779,7 +1774,8 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	// RainDance (Heavy Rain) — non-Water Pokémon spend +1 PP per move (§2); Water types
 	// are immune (§1.5). Burn cannot be inflicted while raining (Will-O-Wisp's move-level
-	// override is deferred to §5). Canon power modifiers retained.
+	// override is deferred to §5). §2: weather no longer modifies power — the canon Water ×1.5
+	// boost and Fire ×0.5 suppression are removed.
 	raindance: {
 		name: 'RainDance',
 		effectType: 'Weather',
@@ -1787,17 +1783,6 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		durationCallback(source, effect) {
 			if (source?.hasItem('damprock')) return 8;
 			return 5;
-		},
-		onWeatherModifyDamage(damage, attacker, defender, move) {
-			if (defender.effectiveWeather() !== 'raindance') return;
-			if (move.type === 'Water') {
-				this.debug('rain water boost');
-				return this.chainModify(1.5);
-			}
-			if (move.type === 'Fire') {
-				this.debug('rain fire suppress');
-				return this.chainModify(0.5);
-			}
 		},
 		onImmunity(type, pokemon) {
 			if (pokemon.effectiveWeather() !== 'raindance') return;
@@ -1829,7 +1814,8 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	// SunnyDay (Harsh Sun) — self-stat-drop moves drop one ADDITIONAL stage (§2); Fire and
 	// Grass types are exempt (Fire's exemption is its §1.5 blanket effect). Frostbite (and
-	// canon Freeze) cannot be inflicted while the sun is harsh. Canon power modifiers retained.
+	// canon Freeze) cannot be inflicted while the sun is harsh. §2: weather no longer modifies
+	// power — the canon Fire ×1.5 boost, Water ×0.5 suppression, and Hydro Steam boost are removed.
 	sunnyday: {
 		name: 'SunnyDay',
 		effectType: 'Weather',
@@ -1837,21 +1823,6 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		durationCallback(source, effect) {
 			if (source?.hasItem('heatrock')) return 8;
 			return 5;
-		},
-		onWeatherModifyDamage(damage, attacker, defender, move) {
-			if (move.id === 'hydrosteam' && attacker.effectiveWeather() === 'sunnyday') {
-				this.debug('Sunny Day Hydro Steam boost');
-				return this.chainModify(1.5);
-			}
-			if (defender.effectiveWeather() !== 'sunnyday') return;
-			if (move.type === 'Fire') {
-				this.debug('Sunny Day fire boost');
-				return this.chainModify(1.5);
-			}
-			if (move.type === 'Water') {
-				this.debug('Sunny Day water suppress');
-				return this.chainModify(0.5);
-			}
 		},
 		onImmunity(type, pokemon) {
 			if (pokemon.effectiveWeather() !== 'sunnyday') return;
@@ -1880,6 +1851,158 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldResidual() {
 			this.add('-weather', 'SunnyDay', '[upkeep]');
 			this.eachEvent('Weather');
+		},
+		onFieldEnd() {
+			this.add('-weather', 'none');
+		},
+	},
+
+	// ── New §2 weathers ───────────────────────────────────────────────────────────
+	// Rainbow, Full Moon, New Moon, Fog, Clear Skies. None modify power/stats (§2).
+	// Weather IDs are lowercase (rainbow/fullmoon/newmoon/fog/clearskies); the protocol
+	// strings below ("Rainbow", "Full Moon", …) toID() to those IDs on the client, where
+	// `weatherNameTable` supplies the display names.
+
+	// Rainbow — multiplies all secondary-effect rates of DAMAGING moves by ×1.25. Status
+	// moves' primary effects and accuracy are unaffected. Stacks multiplicatively with
+	// Serene Grace (both run through onModifyMove; the product is order-independent).
+	rainbow: {
+		name: 'Rainbow',
+		effectType: 'Weather',
+		duration: 5,
+		onModifyMovePriority: -2,
+		onModifyMove(move) {
+			if (move.category === 'Status') return;
+			if (move.secondaries) {
+				for (const secondary of move.secondaries) {
+					if (secondary.chance) secondary.chance *= 1.25;
+				}
+			}
+			if (move.self?.chance) move.self.chance *= 1.25;
+		},
+		onFieldStart(field, source, effect) {
+			if (effect?.effectType === 'Ability') {
+				if (this.gen <= 5) this.effectState.duration = 0;
+				this.add('-weather', 'Rainbow', '[from] ability: ' + effect.name, `[of] ${source}`);
+			} else {
+				this.add('-weather', 'Rainbow');
+			}
+		},
+		onFieldResidualOrder: 1,
+		onFieldResidual() {
+			this.add('-weather', 'Rainbow', '[upkeep]');
+		},
+		onFieldEnd() {
+			this.add('-weather', 'none');
+		},
+	},
+
+	// Full Moon — blocks moves with priority +1 or higher from being used. Same rule as canon
+	// Psychic Terrain, with the grounded-only restriction lifted (applies to ALL Pokémon).
+	// onTryHit only fires against foe-targeted moves, so protection/guard moves (target self or
+	// allySide) and zero/negative-priority moves are naturally exempt.
+	fullmoon: {
+		name: 'Full Moon',
+		effectType: 'Weather',
+		duration: 5,
+		onTryHitPriority: 4,
+		onTryHit(target, source, effect) {
+			if (effect && (effect.priority <= 0.1 || effect.target === 'self')) return;
+			if (target.isSemiInvulnerable() || target.isAlly(source)) return;
+			this.add('-activate', target, 'move: Full Moon');
+			return null;
+		},
+		onFieldStart(field, source, effect) {
+			if (effect?.effectType === 'Ability') {
+				if (this.gen <= 5) this.effectState.duration = 0;
+				this.add('-weather', 'Full Moon', '[from] ability: ' + effect.name, `[of] ${source}`);
+			} else {
+				this.add('-weather', 'Full Moon');
+			}
+		},
+		onFieldResidualOrder: 1,
+		onFieldResidual() {
+			this.add('-weather', 'Full Moon', '[upkeep]');
+		},
+		onFieldEnd() {
+			this.add('-weather', 'none');
+		},
+	},
+
+	// New Moon — blocks all forms of HP healing (mirrors Heal Block's onTryHeal). Exempt:
+	// Leftovers / Black Sludge (passive item healing), Regenerator (switch-out heal), and
+	// Z-Power heals. Pain Split redistributes HP via sethp and never reaches TryHeal, so it is
+	// inherently unaffected. Healing berries, drain heal portions, Strength Sap, recovery moves,
+	// and ability heals (Volt Absorb, Rain Dish, etc.) are all blocked by the default return.
+	newmoon: {
+		name: 'New Moon',
+		effectType: 'Weather',
+		duration: 5,
+		onTryHeal(damage, target, source, effect) {
+			if (!effect) return;
+			if (effect.id === 'leftovers' || effect.id === 'blacksludge') return;
+			if (effect.id === 'regenerator') return;
+			if (effect.id === 'zpower' || (effect as Move).isZ) return damage;
+			return false;
+		},
+		onFieldStart(field, source, effect) {
+			if (effect?.effectType === 'Ability') {
+				if (this.gen <= 5) this.effectState.duration = 0;
+				this.add('-weather', 'New Moon', '[from] ability: ' + effect.name, `[of] ${source}`);
+			} else {
+				this.add('-weather', 'New Moon');
+			}
+		},
+		onFieldResidualOrder: 1,
+		onFieldResidual() {
+			this.add('-weather', 'New Moon', '[upkeep]');
+		},
+		onFieldEnd() {
+			this.add('-weather', 'none');
+		},
+	},
+
+	// Fog — reduces the accuracy of all moves by ×0.8 (multiplicative; stacks with every other
+	// accuracy modifier). Cloud Nine / Air Lock suppress this like any weather effect.
+	fog: {
+		name: 'Fog',
+		effectType: 'Weather',
+		duration: 5,
+		onModifyAccuracyPriority: -1,
+		onModifyAccuracy(accuracy) {
+			if (typeof accuracy !== 'number') return;
+			return this.chainModify(0.8);
+		},
+		onFieldStart(field, source, effect) {
+			if (effect?.effectType === 'Ability') {
+				if (this.gen <= 5) this.effectState.duration = 0;
+				this.add('-weather', 'Fog', '[from] ability: ' + effect.name, `[of] ${source}`);
+			} else {
+				this.add('-weather', 'Fog');
+			}
+		},
+		onFieldResidualOrder: 1,
+		onFieldResidual() {
+			this.add('-weather', 'Fog', '[upkeep]');
+		},
+		onFieldEnd() {
+			this.add('-weather', 'none');
+		},
+	},
+
+	// Clear Skies — the neutral named field state. No mechanical effects, no turn limit (no
+	// `duration`, so the residual decrement at sim/battle.ts never expires it). Persists until
+	// another weather replaces it. Settable explicitly (e.g. a weather-clearing move); the
+	// default empty-weather state is mechanically identical.
+	clearskies: {
+		name: 'Clear Skies',
+		effectType: 'Weather',
+		onFieldStart(field, source, effect) {
+			if (effect?.effectType === 'Ability') {
+				this.add('-weather', 'Clear Skies', '[from] ability: ' + effect.name, `[of] ${source}`);
+			} else {
+				this.add('-weather', 'Clear Skies');
+			}
 		},
 		onFieldEnd() {
 			this.add('-weather', 'none');
