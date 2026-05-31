@@ -1962,9 +1962,9 @@ export const AbilitiesText: { [id: IDEntry]: AbilityText } = {
 		name: "Tangled Feet",
 		shortDesc: "This Pokemon's evasiveness is doubled as long as it is confused.",
 	},
-	tanglinghair: {
-		name: "Tangling Hair",
-		shortDesc: "Pokemon making contact with this Pokemon have their Speed lowered by 1 stage.",
+	tanglingvines: {
+		name: "Tangling Vines",
+		shortDesc: "On contact: lowers the attacker's Speed by 1 stage and Interlocks it with this Pokemon.",
 	},
 	technician: {
 		name: "Technician",

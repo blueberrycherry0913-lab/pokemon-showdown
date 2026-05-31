@@ -7180,7 +7180,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			workup: ["8M", "7M"],
 		},
 		eventData: [
-			{generation: 7, level: 10, abilities: ["tanglinghair"], moves: ["mudslap", "astonish", "growl", "metalclaw"], pokeball: "cherishball"},
+			{generation: 7, level: 10, abilities: ["tanglingvines"], moves: ["mudslap", "astonish", "growl", "metalclaw"], pokeball: "cherishball"},
 		],
 	},
 	dugtrio: {

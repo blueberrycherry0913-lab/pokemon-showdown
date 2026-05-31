@@ -891,7 +891,7 @@ export const Rulesets: import('../sim/dex-formats').FormatDataTable = {
 				dazzling: 'queenlymajesty',
 				emergencyexit: 'wimpout',
 				filter: 'solidrock',
-				gooey: 'tanglinghair',
+				gooey: 'tanglingvines',
 				insomnia: 'vitalspirit',
 				ironbarbs: 'roughskin',
 				keeneye: 'illuminate',

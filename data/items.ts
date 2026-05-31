@@ -3405,8 +3405,10 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
 		onModifyDamage(damage, source, target, move) {
 			return this.chainModify([5324, 4096]);
 		},
-		onAfterMoveSecondarySelf(source, target, move) {
-			if (source && source !== target && move && move.category !== 'Status' && !source.forceSwitchFlag) {
+		// Recoil lives on AfterMove (not AfterMoveSecondarySelf) so Sheer Force no longer suppresses it.
+		// move.totalDamage gates it to connecting damaging moves, mirroring the old pipeline position.
+		onAfterMove(source, target, move) {
+			if (source && source !== target && move && move.category !== 'Status' && move.totalDamage && !source.forceSwitchFlag) {
 				this.damage(source.baseMaxhp / 10, source, source, this.dex.items.get('lifeorb'));
 			}
 		},

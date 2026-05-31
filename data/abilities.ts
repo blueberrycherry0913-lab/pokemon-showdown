@@ -4991,6 +4991,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onBasePower(basePower, pokemon, target, move) {
 			if (move.hasSheerForce || move.hasSheerForceBoost) return this.chainModify([5325, 4096]);
 		},
+		shortDesc: "Removes secondary effects to boost move power by 30%; no longer suppresses Life Orb recoil.",
+		origin: 'Nerfed',
 		flags: {},
 		name: "Sheer Force",
 		rating: 3.5,
@@ -4999,6 +5001,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	shellarmor: {
 		onCriticalHit: false,
 		flags: { breakable: 1 },
+		shortDesc: "This Pokémon is protected against critical hits.",
+		origin: 'Unchanged',
 		name: "Shell Armor",
 		rating: 1,
 		num: 75,
@@ -5009,6 +5013,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			return secondaries.filter(effect => !!effect.self);
 		},
 		flags: { breakable: 1 },
+		shortDesc: "Blocks the secondary effects of attacks taken.",
+		origin: 'Unchanged',
 		name: "Shield Dust",
 		rating: 2,
 		num: 19,
@@ -5067,6 +5073,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		flags: { breakable: 1 },
+		shortDesc: "Doubles all of this Pokémon's stat changes.",
+		origin: 'Unchanged',
 		name: "Simple",
 		rating: 4,
 		num: 86,
@@ -5081,6 +5089,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		flags: {},
+		shortDesc: "Multi-strike moves always hit the maximum number of times.",
+		origin: 'Unchanged',
 		name: "Skill Link",
 		rating: 3,
 		num: 92,
@@ -5140,6 +5150,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		flags: {},
+		shortDesc: "This Pokémon's critical hits deal 2.25x damage instead of 1.5x.",
+		origin: 'Unchanged',
 		name: "Sniper",
 		rating: 2,
 		num: 97,
@@ -5196,6 +5208,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		flags: { breakable: 1 },
+		shortDesc: "Reduces damage from super-effective attacks by 25%.",
+		origin: 'Unchanged',
 		name: "Solid Rock",
 		rating: 3,
 		num: 116,
@@ -5223,6 +5237,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		flags: { breakable: 1 },
+		shortDesc: "Gives immunity to sound-based moves.",
+		origin: 'Unchanged',
 		name: "Soundproof",
 		rating: 2,
 		num: 43,
@@ -5268,6 +5284,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		flags: {},
+		shortDesc: "Deals double damage to Pokémon switching in.",
+		origin: 'Unchanged',
 		name: "Stakeout",
 		rating: 4.5,
 		num: 198,
@@ -5275,6 +5293,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	stall: {
 		onFractionalPriority: -0.1,
 		flags: {},
+		shortDesc: "This Pokémon moves after all other Pokémon do.",
+		origin: 'Unchanged',
 		name: "Stall",
 		rating: -1,
 		num: 100,
@@ -5286,6 +5306,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			move.tracksTarget = move.target !== 'scripted';
 		},
 		flags: {},
+		shortDesc: "Ignores moves and abilities that draw in moves.",
+		origin: 'Unchanged',
 		name: "Stalwart",
 		rating: 0,
 		num: 242,
@@ -5295,6 +5317,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			this.boost({ def: 1 });
 		},
 		flags: {},
+		shortDesc: "Raises Defense by 1 stage when hit by an attack.",
+		origin: 'Unchanged',
 		name: "Stamina",
 		rating: 4,
 		num: 192,
@@ -5308,6 +5332,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			if (attacker.species.name !== targetForme) attacker.formeChange(targetForme);
 		},
 		flags: { failroleplay: 1, noreceiver: 1, noentrain: 1, notrace: 1, failskillswap: 1, cantsuppress: 1 },
+		shortDesc: "Changes form depending on the moves used.",
+		origin: 'Unchanged',
 		name: "Stance Change",
 		rating: 4,
 		num: 176,
@@ -5315,20 +5341,34 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	static: {
 		onDamagingHit(damage, target, source, move) {
 			if (this.checkMoveMakesContact(move, source, target)) {
-				if (this.randomChance(3, 10)) {
+				if (this.randomChance(1, 2)) {
 					source.trySetStatus('stun', target);
 				}
 			}
 		},
+		shortDesc: "Contact with this Pokémon has a 50% chance to Stun the attacker.",
+		origin: 'Altered',
 		flags: {},
 		name: "Static",
 		rating: 2,
 		num: 9,
 	},
 	steadfast: {
-		onFlinch(pokemon) {
-			this.boost({ spe: 1 });
+		onTryBoost(boost, target, source, effect) {
+			// Reworked: the user's stats cannot change by any means (self- or foe-inflicted, raise or drop).
+			// Unlike Clear Body / Full Metal Body, there is no self-boost exemption.
+			let blockedDrop = false;
+			let i: BoostID;
+			for (i in boost) {
+				if (boost[i]! < 0) blockedDrop = true;
+				delete boost[i];
+			}
+			if (blockedDrop && source && source !== target && !(effect as ActiveMove).secondaries && effect.id !== 'octolock') {
+				this.add('-fail', target, 'unboost', '[from] ability: Steadfast', `[of] ${target}`);
+			}
 		},
+		shortDesc: "This Pokémon's stats cannot be changed by any means.",
+		origin: 'Reworked',
 		flags: {},
 		name: "Steadfast",
 		rating: 1,
@@ -5341,6 +5381,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		flags: {},
+		shortDesc: "Drastically raises Speed when hit by a Fire- or Water-type move.",
+		origin: 'Unchanged',
 		name: "Steam Engine",
 		rating: 2,
 		num: 243,
@@ -5361,6 +5403,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		flags: {},
+		shortDesc: "Powers up this Pokémon's Steel-type moves.",
+		origin: 'Unchanged',
 		name: "Steelworker",
 		rating: 3.5,
 		num: 200,
@@ -5388,11 +5432,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 					if (secondary.volatileStatus === 'flinch') return;
 				}
 				move.secondaries.push({
-					chance: 10,
+					chance: 25,
 					volatileStatus: 'flinch',
 				});
 			}
 		},
+		shortDesc: "This Pokémon's attacks have a 25% chance to make the target flinch.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Stench",
 		rating: 0.5,
@@ -5404,9 +5450,15 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			if (!pokemon.hp || pokemon.item === 'stickybarb') return;
 			if ((source && source !== pokemon) || this.activeMove.id === 'knockoff') {
 				this.add('-activate', pokemon, 'ability: Sticky Hold');
+				// Buffed: a foe that tries to remove the item has its Speed lowered by 2 stages.
+				if (source && source !== pokemon) {
+					this.boost({ spe: -2 }, source, pokemon, null, true);
+				}
 				return false;
 			}
 		},
+		shortDesc: "Item can't be removed; a foe that tries lowers its own Speed by 2 stages.",
+		origin: 'Buffed',
 		flags: { breakable: 1 },
 		name: "Sticky Hold",
 		rating: 1.5,
@@ -5457,6 +5509,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		flags: {},
+		shortDesc: "Boosts the power of biting moves by 50%.",
+		origin: 'Unchanged',
 		name: "Strong Jaw",
 		rating: 3.5,
 		num: 173,
@@ -5476,6 +5530,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		flags: { breakable: 1 },
+		shortDesc: "Cannot be knocked out with one hit from full HP; blocks OHKO moves.",
+		origin: 'Unchanged',
 		name: "Sturdy",
 		rating: 3,
 		num: 5,
@@ -5487,6 +5543,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			return null;
 		},
 		flags: { breakable: 1 },
+		shortDesc: "Negates all moves that force this Pokémon to switch out.",
+		origin: 'Unchanged',
 		name: "Suction Cups",
 		rating: 1,
 		num: 21,
@@ -5496,14 +5554,14 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			return critRatio + 1;
 		},
 		flags: {},
+		shortDesc: "Heightens the critical-hit ratios of this Pokémon's moves.",
+		origin: 'Unchanged',
 		name: "Super Luck",
 		rating: 1.5,
 		num: 105,
 	},
 	supersweetsyrup: {
 		onStart(pokemon) {
-			if (pokemon.syrupTriggered) return;
-			pokemon.syrupTriggered = true;
 			this.add('-ability', pokemon, 'Supersweet Syrup');
 			for (const target of pokemon.adjacentFoes()) {
 				if (target.volatiles['substitute']) {
@@ -5513,6 +5571,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				}
 			}
 		},
+		shortDesc: "On switch-in, lowers adjacent foes' evasiveness by 1 stage (every time).",
+		origin: 'Buffed',
 		flags: {},
 		name: "Supersweet Syrup",
 		rating: 1.5,
@@ -5570,6 +5630,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		flags: {},
+		shortDesc: "Powers up Bug-type moves by x1.5 when below 1/3 max HP.",
+		origin: 'Unchanged',
 		name: "Swarm",
 		rating: 2,
 		num: 68,
@@ -5621,6 +5683,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			return this.chainModify(0.75);
 		},
 		flags: {},
+		shortDesc: "Lowers the Defense of all other Pokémon by 25%.",
+		origin: 'Unchanged',
 		name: "Sword of Ruin",
 		rating: 4.5,
 		num: 285,
@@ -5674,6 +5738,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			return this.chainModify(0.75);
 		},
 		flags: {},
+		shortDesc: "Lowers the Attack of all other Pokémon by 25%.",
+		origin: 'Unchanged',
 		name: "Tablets of Ruin",
 		rating: 4.5,
 		num: 284,
@@ -5688,21 +5754,29 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		flags: { breakable: 1 },
+		shortDesc: "Raises evasion by 2 stages while this Pokémon is confused.",
+		origin: 'Unchanged',
 		name: "Tangled Feet",
 		rating: 1,
 		num: 77,
 	},
-	tanglinghair: {
+	tanglingvines: {
 		onDamagingHit(damage, target, source, move) {
 			if (this.checkMoveMakesContact(move, source, target, true)) {
-				this.add('-ability', target, 'Tangling Hair');
+				this.add('-ability', target, 'Tangling Vines');
 				this.boost({ spe: -1 }, source, target, null, true);
+				if (!source.volatiles['interlocked'] && !target.volatiles['interlocked']) {
+					source.addVolatile('interlocked', target);
+					target.addVolatile('interlocked', source);
+				}
 			}
 		},
+		shortDesc: "On contact: lowers the attacker's Speed by 1 stage and Interlocks it with this Pokémon.",
+		origin: 'Custom',
 		flags: {},
-		name: "Tangling Hair",
+		name: "Tangling Vines",
 		rating: 2,
-		num: 221,
+		num: 10007,
 	},
 	technician: {
 		onBasePowerPriority: 30,
@@ -5715,6 +5789,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		flags: {},
+		shortDesc: "Powers up this Pokémon's moves of 60 base power or less by 50%.",
+		origin: 'Unchanged',
 		name: "Technician",
 		rating: 3.5,
 		num: 101,
@@ -5805,18 +5881,20 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	thickfat: {
 		onSourceModifyAtkPriority: 6,
 		onSourceModifyAtk(atk, attacker, defender, move) {
-			if (move.type === 'Ice' || move.type === 'Fire') {
+			if (move.type === 'Ice' || move.type === 'Fire' || move.type === 'Electric') {
 				this.debug('Thick Fat weaken');
 				return this.chainModify(0.5);
 			}
 		},
 		onSourceModifySpAPriority: 5,
 		onSourceModifySpA(atk, attacker, defender, move) {
-			if (move.type === 'Ice' || move.type === 'Fire') {
+			if (move.type === 'Ice' || move.type === 'Fire' || move.type === 'Electric') {
 				this.debug('Thick Fat weaken');
 				return this.chainModify(0.5);
 			}
 		},
+		shortDesc: "Halves the damage taken from Fire-, Ice-, and Electric-type moves.",
+		origin: 'Buffed',
 		flags: { breakable: 1 },
 		name: "Thick Fat",
 		rating: 3.5,
@@ -5830,6 +5908,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		flags: {},
+		shortDesc: "Doubles the power of not-very-effective moves.",
+		origin: 'Unchanged',
 		name: "Tinted Lens",
 		rating: 4,
 		num: 110,
@@ -5850,6 +5930,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		flags: {},
+		shortDesc: "Powers up Water-type moves by x1.5 when below 1/3 max HP.",
+		origin: 'Unchanged',
 		name: "Torrent",
 		rating: 2,
 		num: 67,
@@ -5862,6 +5944,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		flags: {},
+		shortDesc: "Boosts the power of contact moves by 30%.",
+		origin: 'Unchanged',
 		name: "Tough Claws",
 		rating: 3.5,
 		num: 181,
@@ -5869,10 +5953,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	toxicboost: {
 		onBasePowerPriority: 19,
 		onBasePower(basePower, attacker, defender, move) {
-			if ((attacker.status === 'psn' || attacker.status === 'tox') && move.category === 'Physical') {
-				return this.chainModify(1.5);
-			}
+			if (move.category !== 'Physical') return;
+			// Escalating: +50% physical Atk when badly poisoned, +30% when regular poisoned.
+			if (attacker.status === 'tox') return this.chainModify(1.5);
+			if (attacker.status === 'psn') return this.chainModify(1.3);
 		},
+		shortDesc: "Ignores poison's SpD drop & chip; physical Atk x1.3 when poisoned, x1.5 when badly poisoned.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Toxic Boost",
 		rating: 3,
@@ -5902,6 +5989,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		flags: {},
+		shortDesc: "Sets a layer of Toxic Spikes when hit by a physical move.",
+		origin: 'Unchanged',
 		name: "Toxic Debris",
 		rating: 3.5,
 		num: 295,
@@ -5935,6 +6024,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			const ability = target.getAbility();
 			pokemon.setAbility(ability, target);
 		},
+		shortDesc: "On switch-in, this Pokémon copies a foe's Basic Ability.",
+		origin: 'Altered',
 		flags: { failroleplay: 1, noreceiver: 1, noentrain: 1, notrace: 1 },
 		name: "Trace",
 		rating: 2.5,
@@ -5974,6 +6065,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			if (move?.flags['heal']) return priority + 3;
 		},
 		flags: {},
+		shortDesc: "Gives +3 priority to healing moves.",
+		origin: 'Unchanged',
 		name: "Triage",
 		rating: 3.5,
 		num: 205,
@@ -5995,6 +6088,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		},
 		condition: {},
 		flags: {},
+		shortDesc: "This Pokémon cannot attack on consecutive turns.",
+		origin: 'Unchanged',
 		name: "Truant",
 		rating: -1,
 		num: 54,
@@ -6028,6 +6123,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		flags: { breakable: 1 },
+		shortDesc: "Ignores other Pokémon's stat changes when dealing or taking damage.",
+		origin: 'Unchanged',
 		name: "Unaware",
 		rating: 4,
 		num: 109,
@@ -6051,6 +6148,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			},
 		},
 		flags: {},
+		shortDesc: "Doubles this Pokémon's Speed if its held item is used or lost.",
+		origin: 'Unchanged',
 		name: "Unburden",
 		rating: 3.5,
 		num: 84,
@@ -6065,9 +6164,12 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onEnd() {
 			this.effectState.unnerved = false;
 		},
-		onFoeTryEatItem() {
+		onFoeUseItem() {
+			// Buffed: blocks all consumable items (berries and others), not just berries.
 			return !this.effectState.unnerved;
 		},
+		shortDesc: "While this Pokémon is active, foes cannot use any consumable held items.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Unnerve",
 		rating: 1,
@@ -6096,6 +6198,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			return this.chainModify(0.75);
 		},
 		flags: {},
+		shortDesc: "Lowers the Special Attack of all other Pokémon by 25%.",
+		origin: 'Unchanged',
 		name: "Vessel of Ruin",
 		rating: 4.5,
 		num: 284,
@@ -6149,19 +6253,31 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		flags: { breakable: 1 },
+		shortDesc: "Prevents this Pokémon from falling asleep.",
+		origin: 'Unchanged',
 		name: "Vital Spirit",
 		rating: 1.5,
 		num: 72,
 	},
 	voltabsorb: {
 		onTryHit(target, source, move) {
-			if (target !== source && move.type === 'Electric') {
-				if (!this.heal(target.baseMaxhp / 4)) {
+			// Special/Status Electric moves are absorbed and heal 1/3 max HP.
+			if (target !== source && move.type === 'Electric' && move.category !== 'Physical') {
+				if (!this.heal(target.baseMaxhp / 3)) {
 					this.add('-immune', target, '[from] ability: Volt Absorb');
 				}
 				return null;
 			}
 		},
+		onSourceModifyDamage(damage, source, target, move) {
+			// Physical Electric moves still hit, but for 50% damage.
+			if (move.type === 'Electric' && move.category === 'Physical') {
+				this.debug('Volt Absorb damage reduction');
+				return this.chainModify(0.5);
+			}
+		},
+		shortDesc: "Special/Status Electric moves heal 1/3 max HP; Physical Electric moves deal 50% damage.",
+		origin: 'Altered',
 		flags: { breakable: 1 },
 		name: "Volt Absorb",
 		rating: 3.5,
@@ -6178,13 +6294,23 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	waterabsorb: {
 		onTryHit(target, source, move) {
-			if (target !== source && move.type === 'Water') {
-				if (!this.heal(target.baseMaxhp / 4)) {
+			// Special/Status Water moves are absorbed and heal 1/3 max HP.
+			if (target !== source && move.type === 'Water' && move.category !== 'Physical') {
+				if (!this.heal(target.baseMaxhp / 3)) {
 					this.add('-immune', target, '[from] ability: Water Absorb');
 				}
 				return null;
 			}
 		},
+		onSourceModifyDamage(damage, source, target, move) {
+			// Physical Water moves still hit, but for 50% damage.
+			if (move.type === 'Water' && move.category === 'Physical') {
+				this.debug('Water Absorb damage reduction');
+				return this.chainModify(0.5);
+			}
+		},
+		shortDesc: "Special/Status Water moves heal 1/3 max HP; Physical Water moves deal 50% damage.",
+		origin: 'Altered',
 		flags: { breakable: 1 },
 		name: "Water Absorb",
 		rating: 3.5,
@@ -6203,16 +6329,6 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify(0.5);
 			}
 		},
-		onModifyAtk(atk, attacker, defender, move) {
-			if (move.type === 'Water') {
-				return this.chainModify(2);
-			}
-		},
-		onModifySpA(atk, attacker, defender, move) {
-			if (move.type === 'Water') {
-				return this.chainModify(2);
-			}
-		},
 		onUpdate(pokemon) {
 			if (pokemon.status === 'brn') {
 				this.add('-activate', pokemon, 'ability: Water Bubble');
@@ -6226,6 +6342,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 			return false;
 		},
+		shortDesc: "Halves damage taken from Fire-type moves and prevents burns.",
+		origin: 'Nerfed',
 		flags: { breakable: 1 },
 		name: "Water Bubble",
 		rating: 4.5,

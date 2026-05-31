@@ -1253,13 +1253,17 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onResidualOrder: 9,
 		onResidual(pokemon) {
+			// Toxic Boost ignores poison chip damage.
+			if (pokemon.hasAbility('toxicboost')) return;
 			// 1/16 per turn (halved from canon's 1/8)
 			this.damage(pokemon.baseMaxhp / 16);
 		},
 		// -33% SpDef while Poisoned. Fires at -101 priority so it applies after all other
 		// modifiers (domain boosts, stat stages, etc.) have already been chained in.
 		onModifySpDPriority: -101,
-		onModifySpD(spd) {
+		onModifySpD(spd, target) {
+			// Toxic Boost ignores poison's SpD drop.
+			if (target.hasAbility('toxicboost')) return;
 			spd = this.finalModify(spd);
 			return Math.floor(spd * 2 / 3);
 		},
@@ -1287,11 +1291,15 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			if (this.effectState.stage < 15) {
 				this.effectState.stage++;
 			}
+			// Toxic Boost ignores toxic chip damage (stage still advances).
+			if (pokemon.hasAbility('toxicboost')) return;
 			this.damage(this.clampIntRange(pokemon.baseMaxhp / 16, 1) * this.effectState.stage);
 		},
 		// -50% SpDef while Toxicked. Same late-priority pattern as psn.
 		onModifySpDPriority: -101,
-		onModifySpD(spd) {
+		onModifySpD(spd, target) {
+			// Toxic Boost ignores toxic's SpD drop.
+			if (target.hasAbility('toxicboost')) return;
 			spd = this.finalModify(spd);
 			return Math.floor(spd * 1 / 2);
 		},
