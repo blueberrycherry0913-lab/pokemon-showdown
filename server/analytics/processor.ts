@@ -27,7 +27,9 @@ interface DmgEvent {
 	ipl: string | null;   // inflictor player slot (p1/p2)
 	tp: string;           // target species
 	tpl: string;          // target player slot
-	d: number;            // actual damage
+	d: number;            // actual damage (HP removed, clamped)
+	c: number;            // calculated damage (pre-clamp, for True/overkill)
+	mhp: number;          // target's max HP (for % normalization)
 	b: number;            // neutral baseline
 	tm: number;           // typeMod
 	src: string | null;   // source move/status/hazard name
@@ -36,9 +38,13 @@ interface DmgEvent {
 
 interface HealEvent {
 	t: number;
-	tp: string;
-	tpl: string;
-	amt: number;
+	tp: string;           // causer species (attributed)
+	tpl: string;          // causer player slot
+	recip: string;        // recipient species
+	recipl: string;       // recipient player slot
+	amt: number;          // actual HP restored (clamped)
+	calc: number;         // calculated heal (pre-clamp, for True)
+	mhp: number;          // recipient's max HP (for % normalization)
 }
 
 interface PokeEnd {
@@ -162,7 +168,7 @@ function flushGame(
 				buf.gameId, ev.t, ev.type,
 				ev.ip, inflictorPlayerId,
 				ev.tp, targetPlayerId,
-				ev.d, ev.b,
+				ev.d, ev.c ?? ev.d, ev.mhp ?? 0, ev.b,
 				ev.type === 'direct' ? ev.src : null,
 				ev.type === 'residual' ? ev.src : null,
 				ev.type === 'hazard' ? ev.src : null,
@@ -184,57 +190,62 @@ function flushGame(
 			const outcome: 'win' | 'loss' | 'dnp' =
 				!participated ? 'dnp' : isWinnerSide ? 'win' : 'loss';
 
-			// Damage dealt
-			let dealtTotal = 0, dealtDirect = 0, dealtResidual = 0, dealtHazard = 0;
-			// Damage taken
-			let takenTotal = 0, takenDirect = 0, takenResidual = 0, takenHazard = 0;
-			// Type modifiers on taken damage
+			// All damage/healing accumulated as % of max HP.
+			//   Total = actual HP removed / maxHP (capped 100% per hit)
+			//   True  = calculated damage / maxHP (uncapped — includes overkill)
+			let dealtTotal = 0, dealtDirect = 0, dealtResidual = 0, dealtHazard = 0, dealtTrue = 0;
+			let takenTotal = 0, takenDirect = 0, takenResidual = 0, takenHazard = 0, takenTrue = 0;
 			let reducedTyping = 0, amplifiedTyping = 0, reducedModifiers = 0;
 			let kills = 0, deaths = 0;
 
 			for (const ev of buf.dmg) {
+				const mhp = ev.mhp || 0;
+				if (mhp <= 0) continue; // can't normalize without max HP
+				const pctTotal = Math.min((ev.d / mhp) * 100, 100); // actual removed, capped
+				const pctTrue = ((ev.c ?? ev.d) / mhp) * 100;        // calculated, uncapped
 				const isInflictor = ev.ip === pk.sp && ev.ipl === pk.pl;
 				const isTarget = ev.tp === pk.sp && ev.tpl === pk.pl;
 
 				if (isInflictor) {
-					dealtTotal += ev.d;
-					if (ev.type === 'direct') dealtDirect += ev.d;
-					else if (ev.type === 'residual') dealtResidual += ev.d;
-					else if (ev.type === 'hazard') dealtHazard += ev.d;
+					dealtTotal += pctTotal;
+					dealtTrue += pctTrue;
+					if (ev.type === 'direct') dealtDirect += pctTotal;
+					else if (ev.type === 'residual') dealtResidual += pctTotal;
+					else if (ev.type === 'hazard') dealtHazard += pctTotal;
 					if (ev.lethal) kills++;
 				}
 				if (isTarget) {
-					takenTotal += ev.d;
-					if (ev.type === 'direct') takenDirect += ev.d;
-					else if (ev.type === 'residual') takenResidual += ev.d;
-					else if (ev.type === 'hazard') takenHazard += ev.d;
+					takenTotal += pctTotal;
+					takenTrue += pctTrue;
+					if (ev.type === 'direct') takenDirect += pctTotal;
+					else if (ev.type === 'residual') takenResidual += pctTotal;
+					else if (ev.type === 'hazard') takenHazard += pctTotal;
 					if (ev.lethal) deaths++;
 
-					// Typing reduction columns — only meaningful for direct damage with typeMod
+					// Typing / modifier reduction, as % of max HP. Only direct hits with
+					// a neutral baseline carry meaningful type/modifier deltas.
 					if (ev.type === 'direct' && ev.b > 0) {
-						// expectedAfterType = baseline * 2^typeMod
-						const typeMultiplier = Math.pow(2, ev.tm);
-						const expectedAfterType = Math.round(ev.b * typeMultiplier);
-						if (ev.tm < 0) {
-							// type reduced damage
-							reducedTyping += Math.max(0, ev.b - expectedAfterType);
-						}
-						if (ev.tm > 0) {
-							// type amplified damage
-							amplifiedTyping += Math.max(0, expectedAfterType - ev.b);
-						}
-						// modifier reduction = expected (after type) minus actual
-						if (ev.d < expectedAfterType) {
-							reducedModifiers += Math.max(0, expectedAfterType - ev.d);
+						const expectedAfterType = ev.b * Math.pow(2, ev.tm); // type applied to neutral
+						const calc = ev.c ?? ev.d;
+						if (ev.tm < 0) reducedTyping += Math.max(0, (ev.b - expectedAfterType) / mhp * 100);
+						if (ev.tm > 0) amplifiedTyping += Math.max(0, (expectedAfterType - ev.b) / mhp * 100);
+						// modifiers reduced it below the type-only expectation
+						if (calc < expectedAfterType) {
+							reducedModifiers += Math.max(0, (expectedAfterType - calc) / mhp * 100);
 						}
 					}
 				}
 			}
 
-			// Healing received
-			let healingReceived = 0;
+			// Healing CAUSED by this Pokémon, as % of recipient max HP.
+			let healingReceived = 0, healingTrue = 0;
 			for (const ev of buf.heal) {
-				if (ev.tp === pk.sp && ev.tpl === pk.pl) healingReceived += ev.amt;
+				if (ev.tp === pk.sp && ev.tpl === pk.pl) {
+					const mhp = ev.mhp || 0;
+					if (mhp <= 0) continue;
+					healingReceived += Math.min((ev.amt / mhp) * 100, 100);
+					healingTrue += ((ev.calc ?? ev.amt) / mhp) * 100;
+				}
 			}
 
 			// Assists (§2.4): within 3 turns before each lethal, count non-killer inflictors
@@ -244,10 +255,10 @@ function flushGame(
 				db,
 				buf.gameId, playerId, pk.sp,
 				true, pk.lead, outcome,
-				dealtTotal, dealtDirect, dealtResidual, dealtHazard,
-				takenTotal, takenDirect, takenResidual, takenHazard,
+				dealtTotal, dealtDirect, dealtResidual, dealtHazard, dealtTrue,
+				takenTotal, takenDirect, takenResidual, takenHazard, takenTrue,
 				reducedTyping, amplifiedTyping, reducedModifiers,
-				healingReceived, kills, deaths, assists, pk.activeTurns
+				healingReceived, healingTrue, kills, deaths, assists, pk.activeTurns
 			);
 		}
 	})();

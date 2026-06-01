@@ -29,7 +29,8 @@ export function getDB(): Database.Database | null {
 	const dir = path.join(__dirname, '../../../logs/analytics');
 	fs.mkdirSync(dir, {recursive: true});
 
-	db = new BetterSqlite3(path.join(dir, 'battle_analytics.db'));
+	// v2: damage/healing stored as % of max HP (was raw HP in v1) + True/overkill columns
+	db = new BetterSqlite3(path.join(dir, 'battle_analytics_v2.db'));
 	db.pragma('journal_mode = WAL');
 	db.pragma('foreign_keys = ON');
 	initSchema(db);
@@ -66,18 +67,23 @@ function initSchema(database: Database.Database): void {
 			was_lead              INTEGER NOT NULL DEFAULT 0,
 			outcome               TEXT NOT NULL DEFAULT 'dnp'
 			                        CHECK (outcome IN ('win','loss','dnp')),
-			dmg_dealt_total       INTEGER NOT NULL DEFAULT 0,
-			dmg_dealt_direct      INTEGER NOT NULL DEFAULT 0,
-			dmg_dealt_residual    INTEGER NOT NULL DEFAULT 0,
-			dmg_dealt_hazard      INTEGER NOT NULL DEFAULT 0,
-			dmg_taken_total       INTEGER NOT NULL DEFAULT 0,
-			dmg_taken_direct      INTEGER NOT NULL DEFAULT 0,
-			dmg_taken_residual    INTEGER NOT NULL DEFAULT 0,
-			dmg_taken_hazard      INTEGER NOT NULL DEFAULT 0,
-			dmg_reduced_typing    INTEGER NOT NULL DEFAULT 0,
-			dmg_amplified_typing  INTEGER NOT NULL DEFAULT 0,
-			dmg_reduced_modifiers INTEGER NOT NULL DEFAULT 0,
-			healing_received      INTEGER NOT NULL DEFAULT 0,
+			-- All damage/healing values are % of max HP (REAL), summed across the game.
+			-- *_total / splits are capped at 100% per hit; *_true is uncapped (overkill).
+			dmg_dealt_total       REAL NOT NULL DEFAULT 0,
+			dmg_dealt_direct      REAL NOT NULL DEFAULT 0,
+			dmg_dealt_residual    REAL NOT NULL DEFAULT 0,
+			dmg_dealt_hazard      REAL NOT NULL DEFAULT 0,
+			dmg_dealt_true        REAL NOT NULL DEFAULT 0,
+			dmg_taken_total       REAL NOT NULL DEFAULT 0,
+			dmg_taken_direct      REAL NOT NULL DEFAULT 0,
+			dmg_taken_residual    REAL NOT NULL DEFAULT 0,
+			dmg_taken_hazard      REAL NOT NULL DEFAULT 0,
+			dmg_taken_true        REAL NOT NULL DEFAULT 0,
+			dmg_reduced_typing    REAL NOT NULL DEFAULT 0,
+			dmg_amplified_typing  REAL NOT NULL DEFAULT 0,
+			dmg_reduced_modifiers REAL NOT NULL DEFAULT 0,
+			healing_received      REAL NOT NULL DEFAULT 0,
+			healing_true          REAL NOT NULL DEFAULT 0,
 			kills                 INTEGER NOT NULL DEFAULT 0,
 			deaths                INTEGER NOT NULL DEFAULT 0,
 			assists               INTEGER NOT NULL DEFAULT 0,
@@ -96,6 +102,8 @@ function initSchema(database: Database.Database): void {
 			target_pokemon      TEXT NOT NULL,
 			target_player       TEXT NOT NULL,
 			damage_amount       INTEGER NOT NULL,
+			calculated_damage   INTEGER NOT NULL DEFAULT 0,
+			target_maxhp        INTEGER NOT NULL DEFAULT 0,
 			neutral_baseline_dmg INTEGER NOT NULL DEFAULT 0,
 			source_move         TEXT,
 			source_status       TEXT,
@@ -161,19 +169,19 @@ export function insertDamageEvent(
 	gameId: string, turn: number, eventType: string,
 	inflictorPokemon: string | null, inflictorPlayer: string | null,
 	targetPokemon: string, targetPlayer: string,
-	damageAmount: number, neutralBaseline: number,
+	damageAmount: number, calculatedDamage: number, targetMaxhp: number, neutralBaseline: number,
 	sourceMove: string | null, sourceStatus: string | null, sourceHazard: string | null,
 	statusInflicted: string | null, isLethal: boolean
 ): void {
 	stmt(database, 'ins_damage',
 		`INSERT INTO damage_event
 		 (game_id,turn,event_type,inflictor_pokemon,inflictor_player,
-		  target_pokemon,target_player,damage_amount,neutral_baseline_dmg,
+		  target_pokemon,target_player,damage_amount,calculated_damage,target_maxhp,neutral_baseline_dmg,
 		  source_move,source_status,source_hazard,status_inflicted,is_lethal)
-		 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 	).run(
 		gameId, turn, eventType, inflictorPokemon, inflictorPlayer,
-		targetPokemon, targetPlayer, damageAmount, neutralBaseline,
+		targetPokemon, targetPlayer, damageAmount, calculatedDamage, targetMaxhp, neutralBaseline,
 		sourceMove, sourceStatus, sourceHazard, statusInflicted, isLethal ? 1 : 0
 	);
 }
@@ -183,24 +191,27 @@ export function insertPokemonGameStats(
 	gameId: string, playerId: string, species: string,
 	brought: boolean, wasLead: boolean, outcome: 'win' | 'loss' | 'dnp',
 	dmgDealtTotal: number, dmgDealtDirect: number, dmgDealtResidual: number, dmgDealtHazard: number,
+	dmgDealtTrue: number,
 	dmgTakenTotal: number, dmgTakenDirect: number, dmgTakenResidual: number, dmgTakenHazard: number,
+	dmgTakenTrue: number,
 	dmgReducedTyping: number, dmgAmplifiedTyping: number, dmgReducedModifiers: number,
-	healingReceived: number, kills: number, deaths: number, assists: number, turnsSurvived: number
+	healingReceived: number, healingTrue: number,
+	kills: number, deaths: number, assists: number, turnsSurvived: number
 ): void {
 	database.prepare(
 		`INSERT INTO pokemon_game_stats
 		 (game_id,player_id,pokemon_species,brought,was_lead,outcome,
-		  dmg_dealt_total,dmg_dealt_direct,dmg_dealt_residual,dmg_dealt_hazard,
-		  dmg_taken_total,dmg_taken_direct,dmg_taken_residual,dmg_taken_hazard,
+		  dmg_dealt_total,dmg_dealt_direct,dmg_dealt_residual,dmg_dealt_hazard,dmg_dealt_true,
+		  dmg_taken_total,dmg_taken_direct,dmg_taken_residual,dmg_taken_hazard,dmg_taken_true,
 		  dmg_reduced_typing,dmg_amplified_typing,dmg_reduced_modifiers,
-		  healing_received,kills,deaths,assists,turns_survived)
-		 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		  healing_received,healing_true,kills,deaths,assists,turns_survived)
+		 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 	).run(
 		gameId, playerId, species,
 		brought ? 1 : 0, wasLead ? 1 : 0, outcome,
-		dmgDealtTotal, dmgDealtDirect, dmgDealtResidual, dmgDealtHazard,
-		dmgTakenTotal, dmgTakenDirect, dmgTakenResidual, dmgTakenHazard,
+		dmgDealtTotal, dmgDealtDirect, dmgDealtResidual, dmgDealtHazard, dmgDealtTrue,
+		dmgTakenTotal, dmgTakenDirect, dmgTakenResidual, dmgTakenHazard, dmgTakenTrue,
 		dmgReducedTyping, dmgAmplifiedTyping, dmgReducedModifiers,
-		healingReceived, kills, deaths, assists, turnsSurvived
+		healingReceived, healingTrue, kills, deaths, assists, turnsSurvived
 	);
 }

@@ -34,10 +34,12 @@ interface PokemonRow {
 	win_rate_when_brought: number;
 	avg_turns_survived: number;
 	dmg_dealt_per_game: number;
+	dmg_dealt_true_per_game: number;
 	dmg_dealt_direct_per_game: number;
 	dmg_dealt_residual_per_game: number;
 	dmg_dealt_hazard_per_game: number;
 	dmg_taken_per_game: number;
+	dmg_taken_true_per_game: number;
 	dmg_reduced_typing_per_game: number;
 	dmg_amplified_typing_per_game: number;
 	dmg_reduced_modifiers_per_game: number;
@@ -172,16 +174,19 @@ function buildPlayers(players: PlayerRow[]): string {
 	return buf + '</table>';
 }
 
+// All damage/healing stats are % of max HP (averaged per game brought).
+const pctOf = (v: number) => v.toFixed(1) + '%';
 const STAT_LABELS: {[k: string]: {label: string; fmt: (v: number) => string; desc: string}} = {
 	win_rate_when_brought: {label: 'Win Rate', fmt: pct, desc: 'Win % when this species is on the team'},
-	dmg_dealt_per_game: {label: 'Damage Dealt / Game', fmt: v => v.toFixed(1), desc: 'Avg total damage output per game brought'},
-	dmg_taken_per_game: {label: 'Damage Taken / Game', fmt: v => v.toFixed(1), desc: 'Avg total damage received per game brought'},
+	dmg_dealt_per_game: {label: 'Damage Dealt / Game', fmt: pctOf, desc: 'Avg % of targets’ max HP dealt per game (capped at 100% per hit)'},
+	dmg_dealt_true_per_game: {label: 'True Damage Dealt / Game', fmt: pctOf, desc: 'Like Damage Dealt but uncapped — counts overkill / >100% nukes'},
+	dmg_taken_per_game: {label: 'Damage Taken / Game', fmt: pctOf, desc: 'Avg % of own max HP lost per game (capped at 100% per hit)'},
 	kda_ratio: {label: 'KDA', fmt: v => v.toFixed(2), desc: '(Kills + Assists) / max(Deaths, 1)'},
-	healing_per_game: {label: 'Healing Caused / Game', fmt: v => v.toFixed(1), desc: 'Avg HP of healing this Pokémon caused per game brought (Wish credits the wisher, etc.)'},
+	healing_per_game: {label: 'Healing Caused / Game', fmt: pctOf, desc: 'Avg % of HP this Pokémon caused to be healed per game (Wish credits the wisher, etc.)'},
 	avg_turns_survived: {label: 'Turns Survived', fmt: v => v.toFixed(1), desc: 'Avg turns active on field per game brought'},
-	dmg_reduced_typing_per_game: {label: 'Dmg Avoided (Typing)', fmt: v => v.toFixed(1), desc: 'Avg damage blocked by type resistances per game'},
-	dmg_amplified_typing_per_game: {label: 'Dmg Amplified (Typing)', fmt: v => v.toFixed(1), desc: 'Avg extra damage taken from type weaknesses per game'},
-	dmg_reduced_modifiers_per_game: {label: 'Dmg Avoided (Modifiers)', fmt: v => v.toFixed(1), desc: 'Avg damage blocked by screens/buffs/abilities per game'},
+	dmg_reduced_typing_per_game: {label: 'Dmg Avoided (Typing)', fmt: pctOf, desc: 'Avg % max HP of damage blocked by type resistances per game'},
+	dmg_amplified_typing_per_game: {label: 'Dmg Amplified (Typing)', fmt: pctOf, desc: 'Avg % max HP of extra damage taken from type weaknesses per game'},
+	dmg_reduced_modifiers_per_game: {label: 'Dmg Avoided (Modifiers)', fmt: pctOf, desc: 'Avg % max HP of damage blocked by screens/buffs/abilities per game'},
 	games_brought: {label: 'Times Brought', fmt: v => String(v), desc: 'Total number of times this species was brought to a battle (counts each player separately)'},
 };
 
@@ -237,7 +242,7 @@ function buildSpeciesTable(pokemon: PokemonRow[]): string {
 	<table class="ladder" style="width:100%;font-size:.9em">
 		<tr>
 			<th>Species</th><th>Brought</th><th>Win%</th>
-			<th>Dealt/g</th><th>Taken/g</th><th>HealCaused/g</th>
+			<th>Dealt%/g</th><th>True%/g</th><th>Taken%/g</th><th>Heal%/g</th>
 			<th>K</th><th>D</th><th>A</th><th>KDA</th><th>Turns</th>
 		</tr>`;
 	for (const p of sorted) {
@@ -247,9 +252,10 @@ function buildSpeciesTable(pokemon: PokemonRow[]): string {
 			<td><strong>${h(p.species)}</strong></td>
 			<td>${h(p.games_brought)}</td>
 			<td>${pct(p.win_rate_when_brought)}</td>
-			<td>${h(p.dmg_dealt_per_game.toFixed(0))}</td>
-			<td>${h(p.dmg_taken_per_game.toFixed(0))}</td>
-			<td>${h(p.healing_per_game.toFixed(0))}</td>
+			<td>${h(p.dmg_dealt_per_game.toFixed(1))}%</td>
+			<td>${h(p.dmg_dealt_true_per_game.toFixed(1))}%</td>
+			<td>${h(p.dmg_taken_per_game.toFixed(1))}%</td>
+			<td>${h(p.healing_per_game.toFixed(1))}%</td>
 			<td>${h(p.kills_total)}</td>
 			<td>${h(p.deaths_total)}</td>
 			<td>${h(p.assists_total)}</td>
@@ -265,24 +271,34 @@ function buildSpeciesTable(pokemon: PokemonRow[]): string {
 // ---------------------------------------------------------------------------
 
 // Every numeric column on pokemon_game_stats, in display order.
-const PGS_NUMERIC_COLUMNS: [string, string][] = [
-	['dmg_dealt_total', 'Dealt'],
-	['dmg_dealt_direct', 'Dealt(dir)'],
-	['dmg_dealt_residual', 'Dealt(res)'],
-	['dmg_dealt_hazard', 'Dealt(haz)'],
-	['dmg_taken_total', 'Taken'],
-	['dmg_taken_direct', 'Taken(dir)'],
-	['dmg_taken_residual', 'Taken(res)'],
-	['dmg_taken_hazard', 'Taken(haz)'],
-	['dmg_reduced_typing', 'Red(type)'],
-	['dmg_amplified_typing', 'Amp(type)'],
-	['dmg_reduced_modifiers', 'Red(mod)'],
-	['healing_received', 'HealCaused'],
-	['kills', 'K'],
-	['deaths', 'D'],
-	['assists', 'A'],
-	['turns_survived', 'Turns'],
+// `pctCol` marks values that are % of max HP (shown with 1 decimal + %).
+const PGS_NUMERIC_COLUMNS: [string, string, boolean][] = [
+	['dmg_dealt_total', 'Dealt', true],
+	['dmg_dealt_direct', 'Dealt(dir)', true],
+	['dmg_dealt_residual', 'Dealt(res)', true],
+	['dmg_dealt_hazard', 'Dealt(haz)', true],
+	['dmg_dealt_true', 'Dealt(true)', true],
+	['dmg_taken_total', 'Taken', true],
+	['dmg_taken_direct', 'Taken(dir)', true],
+	['dmg_taken_residual', 'Taken(res)', true],
+	['dmg_taken_hazard', 'Taken(haz)', true],
+	['dmg_taken_true', 'Taken(true)', true],
+	['dmg_reduced_typing', 'Red(type)', true],
+	['dmg_amplified_typing', 'Amp(type)', true],
+	['dmg_reduced_modifiers', 'Red(mod)', true],
+	['healing_received', 'Heal', true],
+	['healing_true', 'Heal(true)', true],
+	['kills', 'K', false],
+	['deaths', 'D', false],
+	['assists', 'A', false],
+	['turns_survived', 'Turns', false],
 ];
+
+// Format a stored stat value for the full-data tables.
+function fmtCell(val: number, isPct: boolean): string {
+	if (val === null || val === undefined) val = 0;
+	return isPct ? val.toFixed(1) + '%' : String(val);
+}
 
 function buildFullDataPage(): string {
 	const db = getDB();
@@ -337,12 +353,14 @@ function buildFullDataPage(): string {
 	buf += `</tr>`;
 	for (const r of speciesRows) {
 		buf += `<tr><td><strong>${h(r.species)}</strong></td><td>${h(r.brought)}</td>`;
-		for (const [c] of PGS_NUMERIC_COLUMNS) {
+		for (const [c, , isPct] of PGS_NUMERIC_COLUMNS) {
 			const sum = r[`${c}_sum`] || 0;
-			const perGame = r.brought > 0 ? (sum / r.brought).toFixed(1) : '0';
-			buf += `<td title="min ${h(r[`${c}_min`] ?? 0)} / max ${h(r[`${c}_max`] ?? 0)}">` +
-				`${h(sum)}<br/><small style="color:#888">${h(perGame)}/g</small><br/>` +
-				`<small style="color:#aaa">${h(r[`${c}_min`] ?? 0)}–${h(r[`${c}_max`] ?? 0)}</small></td>`;
+			const perGame = r.brought > 0 ? sum / r.brought : 0;
+			const mn = r[`${c}_min`] ?? 0;
+			const mx = r[`${c}_max`] ?? 0;
+			buf += `<td title="min ${h(fmtCell(mn, isPct))} / max ${h(fmtCell(mx, isPct))}">` +
+				`${h(fmtCell(sum, isPct))}<br/><small style="color:#888">${h(fmtCell(perGame, isPct))}/g</small><br/>` +
+				`<small style="color:#aaa">${h(fmtCell(mn, isPct))}–${h(fmtCell(mx, isPct))}</small></td>`;
 		}
 		buf += `</tr>`;
 	}
@@ -366,7 +384,7 @@ function buildFullDataPage(): string {
 			`<td><strong>${h(r.pokemon_species)}</strong></td>` +
 			`<td>${r.was_lead ? '✓' : ''}</td>` +
 			`<td>${h(r.outcome)}</td>`;
-		for (const [c] of PGS_NUMERIC_COLUMNS) buf += `<td>${h(r[c] ?? 0)}</td>`;
+		for (const [c, , isPct] of PGS_NUMERIC_COLUMNS) buf += `<td>${h(fmtCell(r[c] ?? 0, isPct))}</td>`;
 		buf += `</tr>`;
 	}
 	buf += `</table></div></div>`;
@@ -411,6 +429,7 @@ export const pages: Chat.PageTable = {
 		const statOrder = [
 			'win_rate_when_brought',
 			'dmg_dealt_per_game',
+			'dmg_dealt_true_per_game',
 			'kda_ratio',
 			'dmg_taken_per_game',
 			'healing_per_game',

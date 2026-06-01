@@ -48,10 +48,12 @@ export function generateReports(db: Database.Database): void {
 		['win_rate_when_brought', p => p.win_rate_when_brought],
 		['games_brought', p => p.games_brought],
 		['dmg_dealt_per_game', p => p.dmg_dealt_per_game],
+		['dmg_dealt_true_per_game', p => p.dmg_dealt_true_per_game],
 		['dmg_dealt_direct_per_game', p => p.dmg_dealt_direct_per_game],
 		['dmg_dealt_residual_per_game', p => p.dmg_dealt_residual_per_game],
 		['dmg_dealt_hazard_per_game', p => p.dmg_dealt_hazard_per_game],
 		['dmg_taken_per_game', p => p.dmg_taken_per_game],
+		['dmg_taken_true_per_game', p => p.dmg_taken_true_per_game],
 		['dmg_reduced_typing_per_game', p => p.dmg_reduced_typing_per_game],
 		['dmg_amplified_typing_per_game', p => p.dmg_amplified_typing_per_game],
 		['dmg_reduced_modifiers_per_game', p => p.dmg_reduced_modifiers_per_game],
@@ -144,6 +146,8 @@ interface PokemonRow {
 	dmg_dealt_direct_per_game: number;
 	dmg_dealt_residual_per_game: number;
 	dmg_dealt_hazard_per_game: number;
+	dmg_dealt_true_total: number;
+	dmg_dealt_true_per_game: number;
 	dmg_taken_total: number;
 	dmg_taken_direct_total: number;
 	dmg_taken_residual_total: number;
@@ -152,6 +156,8 @@ interface PokemonRow {
 	dmg_taken_direct_per_game: number;
 	dmg_taken_residual_per_game: number;
 	dmg_taken_hazard_per_game: number;
+	dmg_taken_true_total: number;
+	dmg_taken_true_per_game: number;
 	dmg_reduced_typing_total: number;
 	dmg_reduced_typing_per_game: number;
 	dmg_amplified_typing_total: number;
@@ -160,6 +166,8 @@ interface PokemonRow {
 	dmg_reduced_modifiers_per_game: number;
 	healing_total: number;
 	healing_per_game: number;
+	healing_true_total: number;
+	healing_true_per_game: number;
 	kills_total: number;
 	kills_per_game: number;
 	deaths_total: number;
@@ -185,14 +193,17 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 			SUM(pgs.dmg_dealt_direct)                     AS dmg_dealt_direct_total,
 			SUM(pgs.dmg_dealt_residual)                   AS dmg_dealt_residual_total,
 			SUM(pgs.dmg_dealt_hazard)                     AS dmg_dealt_hazard_total,
+			SUM(pgs.dmg_dealt_true)                       AS dmg_dealt_true_total,
 			SUM(pgs.dmg_taken_total)                      AS dmg_taken_total,
 			SUM(pgs.dmg_taken_direct)                     AS dmg_taken_direct_total,
 			SUM(pgs.dmg_taken_residual)                   AS dmg_taken_residual_total,
 			SUM(pgs.dmg_taken_hazard)                     AS dmg_taken_hazard_total,
+			SUM(pgs.dmg_taken_true)                       AS dmg_taken_true_total,
 			SUM(pgs.dmg_reduced_typing)                   AS dmg_reduced_typing_total,
 			SUM(pgs.dmg_amplified_typing)                 AS dmg_amplified_typing_total,
 			SUM(pgs.dmg_reduced_modifiers)                AS dmg_reduced_modifiers_total,
 			SUM(pgs.healing_received)                     AS healing_total,
+			SUM(pgs.healing_true)                         AS healing_true_total,
 			SUM(pgs.kills)                                AS kills_total,
 			SUM(pgs.deaths)                               AS deaths_total,
 			SUM(pgs.assists)                              AS assists_total
@@ -212,14 +223,17 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 		dmg_dealt_direct_total: number;
 		dmg_dealt_residual_total: number;
 		dmg_dealt_hazard_total: number;
+		dmg_dealt_true_total: number;
 		dmg_taken_total: number;
 		dmg_taken_direct_total: number;
 		dmg_taken_residual_total: number;
 		dmg_taken_hazard_total: number;
+		dmg_taken_true_total: number;
 		dmg_reduced_typing_total: number;
 		dmg_amplified_typing_total: number;
 		dmg_reduced_modifiers_total: number;
 		healing_total: number;
+		healing_true_total: number;
 		kills_total: number;
 		deaths_total: number;
 		assists_total: number;
@@ -237,33 +251,39 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 			win_rate_as_lead: r.lead_count > 0 ? round2(r.wins_lead / r.lead_count) : 0,
 			avg_turns_survived: pg(r.turns_survived_total),
 
-			dmg_dealt_total: r.dmg_dealt_total,
-			dmg_dealt_direct_total: r.dmg_dealt_direct_total,
-			dmg_dealt_residual_total: r.dmg_dealt_residual_total,
-			dmg_dealt_hazard_total: r.dmg_dealt_hazard_total,
+			dmg_dealt_total: round2(r.dmg_dealt_total),
+			dmg_dealt_direct_total: round2(r.dmg_dealt_direct_total),
+			dmg_dealt_residual_total: round2(r.dmg_dealt_residual_total),
+			dmg_dealt_hazard_total: round2(r.dmg_dealt_hazard_total),
 			dmg_dealt_per_game: pg(r.dmg_dealt_total),
 			dmg_dealt_direct_per_game: pg(r.dmg_dealt_direct_total),
 			dmg_dealt_residual_per_game: pg(r.dmg_dealt_residual_total),
 			dmg_dealt_hazard_per_game: pg(r.dmg_dealt_hazard_total),
+			dmg_dealt_true_total: round2(r.dmg_dealt_true_total),
+			dmg_dealt_true_per_game: pg(r.dmg_dealt_true_total),
 
-			dmg_taken_total: r.dmg_taken_total,
-			dmg_taken_direct_total: r.dmg_taken_direct_total,
-			dmg_taken_residual_total: r.dmg_taken_residual_total,
-			dmg_taken_hazard_total: r.dmg_taken_hazard_total,
+			dmg_taken_total: round2(r.dmg_taken_total),
+			dmg_taken_direct_total: round2(r.dmg_taken_direct_total),
+			dmg_taken_residual_total: round2(r.dmg_taken_residual_total),
+			dmg_taken_hazard_total: round2(r.dmg_taken_hazard_total),
 			dmg_taken_per_game: pg(r.dmg_taken_total),
 			dmg_taken_direct_per_game: pg(r.dmg_taken_direct_total),
 			dmg_taken_residual_per_game: pg(r.dmg_taken_residual_total),
 			dmg_taken_hazard_per_game: pg(r.dmg_taken_hazard_total),
+			dmg_taken_true_total: round2(r.dmg_taken_true_total),
+			dmg_taken_true_per_game: pg(r.dmg_taken_true_total),
 
-			dmg_reduced_typing_total: r.dmg_reduced_typing_total,
+			dmg_reduced_typing_total: round2(r.dmg_reduced_typing_total),
 			dmg_reduced_typing_per_game: pg(r.dmg_reduced_typing_total),
-			dmg_amplified_typing_total: r.dmg_amplified_typing_total,
+			dmg_amplified_typing_total: round2(r.dmg_amplified_typing_total),
 			dmg_amplified_typing_per_game: pg(r.dmg_amplified_typing_total),
-			dmg_reduced_modifiers_total: r.dmg_reduced_modifiers_total,
+			dmg_reduced_modifiers_total: round2(r.dmg_reduced_modifiers_total),
 			dmg_reduced_modifiers_per_game: pg(r.dmg_reduced_modifiers_total),
 
-			healing_total: r.healing_total,
+			healing_total: round2(r.healing_total),
 			healing_per_game: pg(r.healing_total),
+			healing_true_total: round2(r.healing_true_total),
+			healing_true_per_game: pg(r.healing_true_total),
 
 			kills_total: r.kills_total,
 			kills_per_game: pg(r.kills_total),

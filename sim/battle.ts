@@ -2230,12 +2230,19 @@ export class Battle {
 				}
 			}
 
+			// Analytics: capture the calculated (pre-HP-clamp) damage and the
+			// target's max HP before target.damage() clamps to remaining HP.
+			const analyticsCalculated = targetDamage;
+			const analyticsMaxHp = target.maxhp;
+
 			retVals[i] = targetDamage = target.damage(targetDamage, source, effect);
 			if (targetDamage !== 0) target.hurtThisTurn = target.hp;
 			if (source && effect.effectType === 'Move') source.lastDamage = targetDamage;
 
-			// Analytics: emit a damage event for server/analytics to capture
-			if (targetDamage > 0) this.analyticsLogDamage(targetDamage, target, source, effect);
+			// Analytics: emit a damage event (actual removed + calculated + maxhp)
+			if (targetDamage > 0) {
+				this.analyticsLogDamage(targetDamage, analyticsCalculated, analyticsMaxHp, target, source, effect);
+			}
 
 			const name = effect.fullname === 'tox' ? 'psn' : effect.fullname;
 			switch (effect.id) {
@@ -2423,7 +2430,9 @@ export class Battle {
 
 		// Analytics: attribute healing to the CAUSER (originator of the effect),
 		// not the Pokémon whose HP increased. Falls back to the recipient when
-		// there is no distinct originator (self-heals, items, etc.).
+		// there is no distinct originator (self-heals, items, etc.). Healing is
+		// recorded as % of the recipient's max HP: actual restored (Total) and
+		// calculated (True, uncapped).
 		if (finalDamage > 0 && target) {
 			const causer = healCauser || target;
 			this.add('analytic', 'heal', JSON.stringify({
@@ -2432,7 +2441,9 @@ export class Battle {
 				tpl: causer.side.id,
 				recip: target.species.name,
 				recipl: target.side.id,
-				amt: finalDamage,
+				amt: finalDamage,      // actual HP restored (clamped to missing HP)
+				calc: damage,          // calculated heal before clamp (for True)
+				mhp: target.maxhp,     // recipient's max HP (for % normalization)
 			}));
 		}
 
@@ -2442,6 +2453,8 @@ export class Battle {
 	/** Emit |analytic|dmg| protocol line for server/analytics. Intercepted in room-battle.ts. */
 	analyticsLogDamage(
 		damage: number,
+		calculated: number,
+		maxHp: number,
 		target: Pokemon,
 		source: Pokemon | null,
 		effect: 'drain' | 'recoil' | Effect
@@ -2531,7 +2544,9 @@ export class Battle {
 			ipl: inflictorPlayer,
 			tp: target.species.name,
 			tpl: target.side.id,
-			d: damage,
+			d: damage,             // actual HP removed (clamped to remaining HP)
+			c: calculated,         // calculated damage before HP-clamp (for True/overkill)
+			mhp: maxHp,            // target's max HP (for % normalization)
 			b: neutralBaseline,
 			tm: typeMod,
 			src: srcLabel,
