@@ -2439,36 +2439,43 @@ export class Battle {
 
 		let eventType: 'direct' | 'residual' | 'hazard' = 'direct';
 		let srcLabel: string | null = null;
+		// Start with the current active source, but may be overridden below by the
+		// stored condition source (spec §2.2: credit the original inflictor, not whoever
+		// is currently on field when the residual fires).
 		let inflictorSpecies: string | null = source?.species?.name ?? null;
 		let inflictorPlayer: string | null = source?.side?.id ?? null;
+
+		// Helper: override inflictor from a stored EffectState source (the original inflictor)
+		const useStoredSource = (storedSrc: unknown): void => {
+			const p = storedSrc as Pokemon | undefined;
+			if (p?.species) { inflictorSpecies = p.species.name; inflictorPlayer = p.side?.id ?? null; }
+		};
 
 		if (effect.effectType === 'SideCondition') {
 			eventType = 'hazard';
 			srcLabel = effect.name || effect.id;
-			// look up hazard setter if source not already known
-			if (!inflictorSpecies) {
-				const hazardState = (target.side.sideConditions as any)[effect.id];
-				const setter = hazardState?.source as Pokemon | undefined;
-				if (setter) { inflictorSpecies = setter.species?.name ?? null; inflictorPlayer = setter.side?.id ?? null; }
-			}
+			// Hazard setter stored in the side condition state (set when hazard was placed)
+			const hazardState = (target.side.sideConditions as any)[effect.id];
+			if (hazardState?.source) useStoredSource(hazardState.source);
 		} else if (effect.effectType === 'Status') {
 			eventType = 'residual';
-			srcLabel = effect.id;
-			if (!inflictorSpecies) {
-				const statusSrc = (target.statusState as any)?.source as Pokemon | undefined;
-				if (statusSrc) { inflictorSpecies = statusSrc.species?.name ?? null; inflictorPlayer = statusSrc.side?.id ?? null; }
-			}
+			srcLabel = effect.name || effect.id;
+			// Status source stored in statusState — use it regardless of who is currently active
+			useStoredSource((target.statusState as any)?.source);
 		} else if (effect.effectType === 'Weather') {
 			eventType = 'residual';
-			srcLabel = effect.id;
-			if (!inflictorSpecies) {
-				const weatherSrc = (this.field.weatherState as any)?.source as Pokemon | undefined;
-				if (weatherSrc) { inflictorSpecies = weatherSrc.species?.name ?? null; inflictorPlayer = weatherSrc.side?.id ?? null; }
-			}
+			srcLabel = effect.name || effect.id;
+			useStoredSource((this.field.weatherState as any)?.source);
 		} else if (effect.effectType === 'Move') {
 			if (['partiallytrapped', 'confused'].includes(effect.id)) {
 				eventType = 'residual';
 				srcLabel = (target.volatiles['partiallytrapped']?.sourceEffect as any)?.name ?? effect.name;
+			} else if (target.volatiles[effect.id as ID]) {
+				// Volatile condition (Leech Seed, etc.): credit the original inflicting Pokémon,
+				// not whoever is currently active on that side (spec §2.2)
+				eventType = 'residual';
+				srcLabel = effect.name;
+				useStoredSource(target.volatiles[effect.id as ID]?.source);
 			} else {
 				eventType = 'direct';
 				srcLabel = effect.name;
