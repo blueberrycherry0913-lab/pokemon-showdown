@@ -58,6 +58,7 @@ export function generateReports(db: Database.Database): void {
 		['dmg_amplified_typing_per_game', p => p.dmg_amplified_typing_per_game],
 		['dmg_reduced_modifiers_per_game', p => p.dmg_reduced_modifiers_per_game],
 		['dmg_avoided_per_game', p => p.dmg_avoided_per_game],
+		['immune_hits_per_game', p => p.immune_hits_per_game],
 		['healing_per_game', p => p.healing_per_game],
 		['avg_turns_survived', p => p.avg_turns_survived],
 		['kda_ratio', p => p.kda_ratio],
@@ -178,6 +179,8 @@ interface PokemonRow {
 	assists_total: number;
 	assists_per_game: number;
 	kda_ratio: number;
+	immune_hits_total: number;
+	immune_hits_per_game: number;
 }
 
 function getPokemon(db: Database.Database): PokemonRow[] {
@@ -210,7 +213,8 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 			SUM(pgs.healing_true)                         AS healing_true_total,
 			SUM(pgs.kills)                                AS kills_total,
 			SUM(pgs.deaths)                               AS deaths_total,
-			SUM(pgs.assists)                              AS assists_total
+			SUM(pgs.assists)                              AS assists_total,
+			SUM(pgs.immune_hits)                          AS immune_hits_total
 		FROM pokemon_game_stats pgs
 		JOIN player_record pr ON pgs.player_id = pr.player_id
 		WHERE pr.is_excluded = 0 AND pgs.brought = 1
@@ -242,6 +246,7 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 		kills_total: number;
 		deaths_total: number;
 		assists_total: number;
+		immune_hits_total: number;
 	}>;
 
 	return rows.map(r => {
@@ -299,6 +304,8 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 			assists_total: r.assists_total,
 			assists_per_game: pg(r.assists_total),
 			kda_ratio: kda,
+			immune_hits_total: r.immune_hits_total,
+			immune_hits_per_game: pg(r.immune_hits_total),
 		};
 	});
 }

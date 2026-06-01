@@ -3466,6 +3466,14 @@ export class Battle {
 	}
 
 	add(...parts: (Part | (() => { side: SideID, secret: string, shared: string }))[]) {
+		// Analytics: count immune hits (type- or ability-based) that occur during a
+		// move. The recursive this.add('analytic', ...) call has parts[0]='analytic'
+		// so it does not re-trigger this branch.
+		if (parts[0] === '-immune' && this.activeMove && parts[1] instanceof Pokemon) {
+			const t = parts[1];
+			this.add('analytic', 'immune', JSON.stringify({ t: this.turn, tp: t.species.name, tpl: t.side.id }));
+		}
+
 		if (!parts.some(part => typeof part === 'function')) {
 			this.log.push(`|${parts.join('|')}`);
 			return;

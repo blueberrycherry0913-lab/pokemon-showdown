@@ -89,6 +89,7 @@ function initSchema(database: Database.Database): void {
 			deaths                INTEGER NOT NULL DEFAULT 0,
 			assists               INTEGER NOT NULL DEFAULT 0,
 			turns_survived        INTEGER NOT NULL DEFAULT 0,
+			immune_hits           INTEGER NOT NULL DEFAULT 0,
 			FOREIGN KEY (game_id)   REFERENCES game_record(game_id),
 			FOREIGN KEY (player_id) REFERENCES player_record(player_id)
 		);
@@ -197,7 +198,7 @@ export function insertPokemonGameStats(
 	dmgTakenTrue: number,
 	dmgReducedTyping: number, dmgAmplifiedTyping: number, dmgReducedModifiers: number, dmgAvoided: number,
 	healingReceived: number, healingTrue: number,
-	kills: number, deaths: number, assists: number, turnsSurvived: number
+	kills: number, deaths: number, assists: number, turnsSurvived: number, immuneHits: number
 ): void {
 	database.prepare(
 		`INSERT INTO pokemon_game_stats
@@ -205,14 +206,14 @@ export function insertPokemonGameStats(
 		  dmg_dealt_total,dmg_dealt_direct,dmg_dealt_residual,dmg_dealt_hazard,dmg_dealt_true,
 		  dmg_taken_total,dmg_taken_direct,dmg_taken_residual,dmg_taken_hazard,dmg_taken_true,
 		  dmg_reduced_typing,dmg_amplified_typing,dmg_reduced_modifiers,dmg_avoided,
-		  healing_received,healing_true,kills,deaths,assists,turns_survived)
-		 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		  healing_received,healing_true,kills,deaths,assists,turns_survived,immune_hits)
+		 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 	).run(
 		gameId, playerId, species,
 		brought ? 1 : 0, wasLead ? 1 : 0, outcome,
 		dmgDealtTotal, dmgDealtDirect, dmgDealtResidual, dmgDealtHazard, dmgDealtTrue,
 		dmgTakenTotal, dmgTakenDirect, dmgTakenResidual, dmgTakenHazard, dmgTakenTrue,
 		dmgReducedTyping, dmgAmplifiedTyping, dmgReducedModifiers, dmgAvoided,
-		healingReceived, healingTrue, kills, deaths, assists, turnsSurvived
+		healingReceived, healingTrue, kills, deaths, assists, turnsSurvived, immuneHits
 	);
 }

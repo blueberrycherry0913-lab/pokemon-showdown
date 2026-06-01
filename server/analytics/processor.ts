@@ -75,11 +75,18 @@ interface SubAvoidEvent {
 	mhp: number;          // owner max HP
 }
 
+interface ImmuneEvent {
+	t: number;
+	tp: string;   // species that was immune
+	tpl: string;  // player slot
+}
+
 interface GameBuffer {
 	gameId: string;
 	dmg: DmgEvent[];
 	heal: HealEvent[];
 	sub: SubAvoidEvent[];
+	immune: ImmuneEvent[];
 	// player slot → {userId, username}
 	playerMap: {[slot: string]: {id: string; name: string}};
 }
@@ -110,36 +117,47 @@ export function process(
 	const type = parts[2];
 	const json = parts.slice(3).join('|');
 
+	// Get the per-game buffer, creating it on demand. Any event type may be the
+	// first one seen in a game (e.g. an immune hit or heal on turn 1 before any
+	// damage), so all of them must be able to create the buffer.
+	const getBuf = (): GameBuffer => {
+		let buf = buffers.get(roomId);
+		if (!buf) {
+			buf = {gameId: roomId, dmg: [], heal: [], sub: [], immune: [], playerMap: {}};
+			buffers.set(roomId, buf);
+		}
+		return buf;
+	};
+
 	switch (type) {
 	case 'dmg': {
 		let ev: DmgEvent;
 		try { ev = JSON.parse(json); } catch { return; }
-		let buf = buffers.get(roomId);
-		if (!buf) {
-			buf = {gameId: roomId, dmg: [], heal: [], sub: [], playerMap: {}};
-			buffers.set(roomId, buf);
-		}
-		buf.dmg.push(ev);
+		getBuf().dmg.push(ev);
 		break;
 	}
 	case 'heal': {
 		let ev: HealEvent;
 		try { ev = JSON.parse(json); } catch { return; }
-		const buf = buffers.get(roomId);
-		if (buf) buf.heal.push(ev);
+		getBuf().heal.push(ev);
 		break;
 	}
 	case 'subavoid': {
 		let ev: SubAvoidEvent;
 		try { ev = JSON.parse(json); } catch { return; }
-		const buf = buffers.get(roomId);
-		if (buf) buf.sub.push(ev);
+		getBuf().sub.push(ev);
+		break;
+	}
+	case 'immune': {
+		let ev: ImmuneEvent;
+		try { ev = JSON.parse(json); } catch { return; }
+		getBuf().immune.push(ev);
 		break;
 	}
 	case 'end': {
 		let payload: EndPayload;
 		try { payload = JSON.parse(json); } catch { return; }
-		const buf = buffers.get(roomId) || {gameId: roomId, dmg: [], heal: [], sub: [], playerMap: {}};
+		const buf = getBuf();
 		if (playerMap) buf.playerMap = playerMap;
 		buffers.delete(roomId);
 		flushGame(db, buf, payload);
@@ -287,6 +305,12 @@ function flushGame(
 				}
 			}
 
+			// Immune hits absorbed (type- or ability-based) by this Pokémon.
+			let immuneHits = 0;
+			for (const ev of buf.immune) {
+				if (ev.tp === pk.sp && ev.tpl === pk.pl) immuneHits++;
+			}
+
 			// Assists (§2.4): within 3 turns before each lethal, count non-killer inflictors
 			const assists = computeAssists(buf.dmg, pk.sp, pk.pl);
 
@@ -297,7 +321,7 @@ function flushGame(
 				dealtTotal, dealtDirect, dealtResidual, dealtHazard, dealtTrue,
 				takenTotal, takenDirect, takenResidual, takenHazard, takenTrue,
 				reducedTyping, amplifiedTyping, reducedModifiers, dmgAvoided,
-				healingReceived, healingTrue, kills, deaths, assists, pk.activeTurns
+				healingReceived, healingTrue, kills, deaths, assists, pk.activeTurns, immuneHits
 			);
 		}
 	})();
