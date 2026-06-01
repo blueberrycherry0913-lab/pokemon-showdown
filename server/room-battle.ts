@@ -778,7 +778,7 @@ export class RoomBattle extends RoomGame<RoomBattlePlayer> {
 					try {
 						const {process: analyticsProcess} = require('./analytics/processor');
 						const playerMap: {[slot: string]: {id: string; name: string}} = {};
-						for (const p of this.players) playerMap[p.slot] = {id: p.userid, name: p.name};
+						for (const p of this.players) playerMap[p.slot] = {id: p.id, name: p.name};
 						analyticsProcess(this.room.roomid, line, playerMap);
 					} catch { /* analytics must not crash the battle room */ }
 					continue;
