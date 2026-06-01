@@ -1610,6 +1610,26 @@ export class Battle {
 		} else {
 			this.add('tie');
 		}
+
+		// Analytics end event — picked up by room-battle.ts, not sent to clients
+		try {
+			const winnerSlot = side?.id ?? null;
+			const pokes = this.sides.flatMap(s => s.pokemon.map(p => ({
+				pl: s.id,
+				sp: p.species.name,
+				fainted: p.fainted,
+				lead: s.pokemon[0] === p,
+				activeTurns: p.activeTurns,
+			})));
+			this.add('analytic', 'end', JSON.stringify({
+				format: this.format.id,
+				winner: winnerSlot,
+				turns: this.turn,
+				players: this.sides.map(s => ({id: s.id, name: s.name})),
+				pokes,
+			}));
+		} catch { /* analytics failure must not abort battle */ }
+
 		this.ended = true;
 		this.requestState = '';
 		for (const s of this.sides) {
@@ -2214,6 +2234,9 @@ export class Battle {
 			if (targetDamage !== 0) target.hurtThisTurn = target.hp;
 			if (source && effect.effectType === 'Move') source.lastDamage = targetDamage;
 
+			// Analytics: emit a damage event for server/analytics to capture
+			if (targetDamage > 0) this.analyticsLogDamage(targetDamage, target, source, effect);
+
 			const name = effect.fullname === 'tox' ? 'psn' : effect.fullname;
 			switch (effect.id) {
 			case 'partiallytrapped':
@@ -2391,7 +2414,94 @@ export class Battle {
 			break;
 		}
 		this.runEvent('Heal', target, source, effect, finalDamage);
+
+		// Analytics: emit heal event
+		if (finalDamage > 0 && target) {
+			this.add('analytic', 'heal', JSON.stringify({
+				t: this.turn,
+				tp: target.species.name,
+				tpl: target.side.id,
+				amt: finalDamage,
+			}));
+		}
+
 		return finalDamage;
+	}
+
+	/** Emit |analytic|dmg| protocol line for server/analytics. Intercepted in room-battle.ts. */
+	analyticsLogDamage(
+		damage: number,
+		target: Pokemon,
+		source: Pokemon | null,
+		effect: 'drain' | 'recoil' | Effect
+	): void {
+		if (typeof effect === 'string') return; // 'drain'/'recoil' strings — skip
+
+		let eventType: 'direct' | 'residual' | 'hazard' = 'direct';
+		let srcLabel: string | null = null;
+		let inflictorSpecies: string | null = source?.species?.name ?? null;
+		let inflictorPlayer: string | null = source?.side?.id ?? null;
+
+		if (effect.effectType === 'SideCondition') {
+			eventType = 'hazard';
+			srcLabel = effect.name || effect.id;
+			// look up hazard setter if source not already known
+			if (!inflictorSpecies) {
+				const hazardState = (target.side.sideConditions as any)[effect.id];
+				const setter = hazardState?.source as Pokemon | undefined;
+				if (setter) { inflictorSpecies = setter.species?.name ?? null; inflictorPlayer = setter.side?.id ?? null; }
+			}
+		} else if (effect.effectType === 'Status') {
+			eventType = 'residual';
+			srcLabel = effect.id;
+			if (!inflictorSpecies) {
+				const statusSrc = (target.statusState as any)?.source as Pokemon | undefined;
+				if (statusSrc) { inflictorSpecies = statusSrc.species?.name ?? null; inflictorPlayer = statusSrc.side?.id ?? null; }
+			}
+		} else if (effect.effectType === 'Weather') {
+			eventType = 'residual';
+			srcLabel = effect.id;
+			if (!inflictorSpecies) {
+				const weatherSrc = (this.field.weatherState as any)?.source as Pokemon | undefined;
+				if (weatherSrc) { inflictorSpecies = weatherSrc.species?.name ?? null; inflictorPlayer = weatherSrc.side?.id ?? null; }
+			}
+		} else if (effect.effectType === 'Move') {
+			if (['partiallytrapped', 'confused'].includes(effect.id)) {
+				eventType = 'residual';
+				srcLabel = (target.volatiles['partiallytrapped']?.sourceEffect as any)?.name ?? effect.name;
+			} else {
+				eventType = 'direct';
+				srcLabel = effect.name;
+			}
+		} else {
+			eventType = 'residual';
+			srcLabel = effect.name || effect.id || null;
+		}
+
+		// For direct move damage, read neutralBaseline and typeMod from MoveHitData
+		let neutralBaseline = damage;
+		let typeMod = 0;
+		if (eventType === 'direct' && effect.effectType === 'Move') {
+			const hitData = target.getMoveHitData(effect as ActiveMove);
+			neutralBaseline = hitData.neutralBaseline ?? damage;
+			typeMod = hitData.typeMod ?? 0;
+		}
+
+		const isLethal = target.hp === 0;
+
+		this.add('analytic', 'dmg', JSON.stringify({
+			t: this.turn,
+			type: eventType,
+			ip: inflictorSpecies,
+			ipl: inflictorPlayer,
+			tp: target.species.name,
+			tpl: target.side.id,
+			d: damage,
+			b: neutralBaseline,
+			tm: typeMod,
+			src: srcLabel,
+			lethal: isLethal,
+		}));
 	}
 
 	chain(previousMod: number | number[], nextMod: number | number[]) {

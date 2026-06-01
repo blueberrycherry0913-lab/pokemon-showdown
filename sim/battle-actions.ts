@@ -1813,6 +1813,10 @@ export class BattleActions {
 			baseDamage = this.battle.modify(baseDamage, stab);
 		}
 
+		// Store analytics neutral baseline: damage before type effectiveness and
+		// final chain modifiers. See server/analytics for use.
+		target.getMoveHitData(move).neutralBaseline = baseDamage;
+
 		// types
 		let typeMod = target.runEffectiveness(move);
 		typeMod = this.battle.clampIntRange(typeMod, -6, 6);

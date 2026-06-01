@@ -327,6 +327,12 @@ interface MoveHitData {
 		 * (does 0.5x regular damage; set in checkMoveBypassesProtect)
 		 */
 		piercingHit?: boolean,
+		/**
+		 * Damage the move would deal at 1× type effectiveness, before chain
+		 * modifiers (Reflect, abilities, items). Captured in modifyDamage for
+		 * analytics neutral_baseline_dmg computation.
+		 */
+		neutralBaseline?: number,
 	};
 }
 
