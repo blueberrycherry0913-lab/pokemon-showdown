@@ -15,7 +15,7 @@ import * as fs from 'fs';
 
 import type Database from 'better-sqlite3';
 
-const ANALYTICS_DIR = path.join(__dirname, '../../logs/analytics');
+const ANALYTICS_DIR = path.join(__dirname, '../../../logs/analytics');
 const FULL_PATH = path.join(ANALYTICS_DIR, 'battle_report_full.json');
 const SUMMARY_PATH = path.join(ANALYTICS_DIR, 'battle_report_summary.json');
 const MIN_GAMES_FOR_LEADERBOARD = 3;

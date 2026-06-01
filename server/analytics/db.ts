@@ -26,7 +26,7 @@ export function getDB(): Database.Database | null {
 	if (!BetterSqlite3) return null;
 	if (db) return db;
 
-	const dir = path.join(__dirname, '../../logs/analytics');
+	const dir = path.join(__dirname, '../../../logs/analytics');
 	fs.mkdirSync(dir, {recursive: true});
 
 	db = new BetterSqlite3(path.join(dir, 'battle_analytics.db'));
