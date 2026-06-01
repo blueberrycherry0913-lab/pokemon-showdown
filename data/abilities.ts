@@ -938,8 +938,16 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		// Pokémon's Poison-type moves combine Corrosive effectiveness (SE vs Steel)
 		// with regular Poison effectiveness (SE vs Grass and Fairy). The mod's
 		// trySetStatus override already allows poisoning all types without Corrosion.
-		onEffectiveness(typeMod, target, type, move) {
-			if (move.type === 'Poison' && type === 'Steel') return 1;
+		// onEffectiveness fires for the DEFENDER, so the SE-vs-Steel override is done
+		// attacker-side: bypass Steel's Poison immunity, then ×2 the damage (base
+		// typeMod is 0 neutral after the immunity bypass, so ×2 = super effective).
+		onModifyMove(move) {
+			if (move.type === 'Poison') move.ignoreImmunity = true;
+		},
+		onModifyDamage(damage, source, target, move) {
+			if (move.type === 'Poison' && target.hasType('Steel')) {
+				return this.chainModify(2);
+			}
 		},
 		shortDesc: "Pokémon's Poison-type moves share characteristics of both Corrosive and Regular Poison moves.",
 		origin: 'Custom',
