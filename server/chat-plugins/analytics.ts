@@ -280,13 +280,10 @@ export const pages: Chat.PageTable = {
 		const summary = loadSummary();
 
 		if (!full || !summary) {
-			return `<div class="pad">
-				<h2>Battle Analytics</h2>
-				<div class="infobox">
-					<p>No data yet — play a battle to generate analytics.</p>
-					<p><small>Data appears in <code>logs/analytics/</code> after the first completed game.</small></p>
-				</div>
-			</div>`;
+			return `<div class="pad"><h2>Battle Analytics</h2>` +
+				`<div class="infobox"><p>No data yet — play a battle to generate analytics.</p>` +
+				`<p><small>Data appears in <code>logs/analytics/</code> after the first completed game.</small></p>` +
+				`</div></div>`;
 		}
 
 		const statOrder = [
@@ -317,6 +314,9 @@ export const pages: Chat.PageTable = {
 		buf += '<hr/>';
 		buf += buildSpeciesTable(full.pokemon);
 		buf += '</div>';
-		return buf;
+		// The legacy client splits room messages on '\n' (HTMLRoom.add), so a
+		// |pagehtml| payload MUST be a single line — collapse all newlines/indent
+		// introduced by template literals into single spaces.
+		return buf.replace(/\n\s*/g, ' ');
 	},
 };
