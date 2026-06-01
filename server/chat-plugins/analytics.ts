@@ -245,22 +245,24 @@ function buildSpeciesTable(pokemon: PokemonRow[]): string {
 			<th>Dealt%/g</th><th>True%/g</th><th>Taken%/g</th><th>Heal%/g</th>
 			<th>K</th><th>D</th><th>A</th><th>KDA</th><th>Turns</th>
 		</tr>`;
+	// Defensive against stale report files that predate newer fields.
+	const num = (v: number | undefined) => (typeof v === 'number' ? v : 0);
 	for (const p of sorted) {
-		const bg = winRateColor(p.win_rate_when_brought);
+		const bg = winRateColor(num(p.win_rate_when_brought));
 		buf += `
 		<tr style="background:${bg}">
 			<td><strong>${h(p.species)}</strong></td>
-			<td>${h(p.games_brought)}</td>
-			<td>${pct(p.win_rate_when_brought)}</td>
-			<td>${h(p.dmg_dealt_per_game.toFixed(1))}%</td>
-			<td>${h(p.dmg_dealt_true_per_game.toFixed(1))}%</td>
-			<td>${h(p.dmg_taken_per_game.toFixed(1))}%</td>
-			<td>${h(p.healing_per_game.toFixed(1))}%</td>
-			<td>${h(p.kills_total)}</td>
-			<td>${h(p.deaths_total)}</td>
-			<td>${h(p.assists_total)}</td>
-			<td>${h(p.kda_ratio.toFixed(2))}</td>
-			<td>${h(p.avg_turns_survived.toFixed(1))}</td>
+			<td>${h(num(p.games_brought))}</td>
+			<td>${pct(num(p.win_rate_when_brought))}</td>
+			<td>${h(num(p.dmg_dealt_per_game).toFixed(1))}%</td>
+			<td>${h(num(p.dmg_dealt_true_per_game).toFixed(1))}%</td>
+			<td>${h(num(p.dmg_taken_per_game).toFixed(1))}%</td>
+			<td>${h(num(p.healing_per_game).toFixed(1))}%</td>
+			<td>${h(num(p.kills_total))}</td>
+			<td>${h(num(p.deaths_total))}</td>
+			<td>${h(num(p.assists_total))}</td>
+			<td>${h(num(p.kda_ratio).toFixed(2))}</td>
+			<td>${h(num(p.avg_turns_survived).toFixed(1))}</td>
 		</tr>`;
 	}
 	return buf + '</table></div>';
