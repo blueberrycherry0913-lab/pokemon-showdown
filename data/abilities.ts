@@ -934,7 +934,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		rating: 2.5,
 		num: 212,
 	},
-	venomouscorrosion: {
+	corrosivevenom: {
 		// Pokémon's Poison-type moves combine Corrosive effectiveness (SE vs Steel)
 		// with regular Poison effectiveness (SE vs Grass and Fairy). The mod's
 		// trySetStatus override already allows poisoning all types without Corrosion.
@@ -952,7 +952,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		shortDesc: "Pokémon's Poison-type moves share characteristics of both Corrosive and Regular Poison moves.",
 		origin: 'Custom',
 		flags: {},
-		name: "Venomous Corrosion",
+		name: "Corrosive Venom",
 		rating: 3,
 		num: 10006,
 	},
