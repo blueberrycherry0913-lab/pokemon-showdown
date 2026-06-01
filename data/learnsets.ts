@@ -100719,7 +100719,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			domainfairy: ["9L1"],
 			domainfighting: ["9L1"],
 			domainfire: ["9L1"],
-			domainflying: ["9L1"],
+			domainair: ["9L1"],
 			domainghost: ["9L1"],
 			domaingrass: ["9L1"],
 			domainground: ["9L1"],

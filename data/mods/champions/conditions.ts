@@ -409,20 +409,20 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 	},
 
 	flyingdomain: {
-		name: "Flying Domain",
+		name: "Air Domain",
 
 		duration: 5,
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
-				this.add('-fieldstart', 'move: Flying Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
+				this.add('-fieldstart', 'move: Air Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
 			} else {
-				this.add('-fieldstart', 'move: Flying Domain');
+				this.add('-fieldstart', 'move: Air Domain');
 			}
 		},
 		onFieldResidualOrder: 27,
 		onFieldResidualSubOrder: 10,
 		onFieldEnd() {
-			this.add('-fieldend', 'move: Flying Domain');
+			this.add('-fieldend', 'move: Air Domain');
 		},
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker) {

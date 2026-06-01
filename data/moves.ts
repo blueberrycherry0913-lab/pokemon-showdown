@@ -21380,12 +21380,12 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		target: "all",
 		type: "Fire",
 	},
-	domainflying: {
+	domainair: {
 		num: -109,
 		accuracy: true,
 		basePower: 0,
 		category: "Status",
-		name: "Domain: Flying",
+		name: "Domain: Air",
 		pp: 10,
 		priority: 0,
 		flags: {},
