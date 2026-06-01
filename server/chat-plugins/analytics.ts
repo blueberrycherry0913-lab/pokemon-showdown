@@ -8,6 +8,7 @@
 
 import * as path from 'path';
 import * as fs from 'fs';
+import {getDB} from '../analytics/db';
 
 const ANALYTICS_DIR = path.join(__dirname, '../../../logs/analytics');
 const FULL_PATH = path.join(ANALYTICS_DIR, 'battle_report_full.json');
@@ -172,7 +173,7 @@ function buildPlayers(players: PlayerRow[]): string {
 }
 
 const STAT_LABELS: {[k: string]: {label: string; fmt: (v: number) => string; desc: string}} = {
-	win_rate_when_brought: {label: 'Win Rate', fmt: pct, desc: 'Win % when this species is on the team (≥3 games)'},
+	win_rate_when_brought: {label: 'Win Rate', fmt: pct, desc: 'Win % when this species is on the team'},
 	dmg_dealt_per_game: {label: 'Damage Dealt / Game', fmt: v => v.toFixed(1), desc: 'Avg total damage output per game brought'},
 	dmg_taken_per_game: {label: 'Damage Taken / Game', fmt: v => v.toFixed(1), desc: 'Avg total damage received per game brought'},
 	kda_ratio: {label: 'KDA', fmt: v => v.toFixed(2), desc: '(Kills + Assists) / max(Deaths, 1)'},
@@ -181,7 +182,7 @@ const STAT_LABELS: {[k: string]: {label: string; fmt: (v: number) => string; des
 	dmg_reduced_typing_per_game: {label: 'Dmg Avoided (Typing)', fmt: v => v.toFixed(1), desc: 'Avg damage blocked by type resistances per game'},
 	dmg_amplified_typing_per_game: {label: 'Dmg Amplified (Typing)', fmt: v => v.toFixed(1), desc: 'Avg extra damage taken from type weaknesses per game'},
 	dmg_reduced_modifiers_per_game: {label: 'Dmg Avoided (Modifiers)', fmt: v => v.toFixed(1), desc: 'Avg damage blocked by screens/buffs/abilities per game'},
-	games_brought: {label: 'Appearances', fmt: v => String(v), desc: 'Number of games where this species was on a team'},
+	games_brought: {label: 'Times Brought', fmt: v => String(v), desc: 'Total number of times this species was brought to a battle (counts each player separately)'},
 };
 
 function buildLeaderboard(statKey: string, board: {top_10: LeaderEntry[]; bottom_10: LeaderEntry[]}): string {
@@ -212,14 +213,14 @@ function buildLeaderboard(statKey: string, board: {top_10: LeaderEntry[]; bottom
 			<div>
 				<p style="margin:0 0 4px;font-weight:bold;color:#27ae60">▲ Top 10</p>
 				<table class="ladder">
-					<tr><th></th><th>Species</th><th>${h(meta.label)}</th><th>Games</th></tr>
+					<tr><th></th><th>Species</th><th>${h(meta.label)}</th><th>Brought</th></tr>
 					${topRows || '<tr><td colspan="4"><em>Not enough data</em></td></tr>'}
 				</table>
 			</div>
 			<div>
 				<p style="margin:0 0 4px;font-weight:bold;color:#c0392b">▼ Bottom 10</p>
 				<table class="ladder">
-					<tr><th></th><th>Species</th><th>${h(meta.label)}</th><th>Games</th></tr>
+					<tr><th></th><th>Species</th><th>${h(meta.label)}</th><th>Brought</th></tr>
 					${botRows || '<tr><td colspan="4"><em>Not enough data</em></td></tr>'}
 				</table>
 			</div>
@@ -231,11 +232,11 @@ function buildSpeciesTable(pokemon: PokemonRow[]): string {
 	if (!pokemon.length) return '';
 	const sorted = [...pokemon].sort((a, b) => b.games_brought - a.games_brought);
 	let buf = `
-	<h3>All Species (by appearances)</h3>
+	<h3>All Species (by times brought)</h3>
 	<div style="overflow-x:auto">
 	<table class="ladder" style="width:100%;font-size:.9em">
 		<tr>
-			<th>Species</th><th>Games</th><th>Win%</th>
+			<th>Species</th><th>Brought</th><th>Win%</th>
 			<th>Dealt/g</th><th>Taken/g</th><th>Healed/g</th>
 			<th>K</th><th>D</th><th>A</th><th>KDA</th><th>Turns</th>
 		</tr>`;
@@ -260,6 +261,121 @@ function buildSpeciesTable(pokemon: PokemonRow[]): string {
 }
 
 // ---------------------------------------------------------------------------
+// Full raw-data breakdown (queries the SQLite DB directly)
+// ---------------------------------------------------------------------------
+
+// Every numeric column on pokemon_game_stats, in display order.
+const PGS_NUMERIC_COLUMNS: [string, string][] = [
+	['dmg_dealt_total', 'Dealt'],
+	['dmg_dealt_direct', 'Dealt(dir)'],
+	['dmg_dealt_residual', 'Dealt(res)'],
+	['dmg_dealt_hazard', 'Dealt(haz)'],
+	['dmg_taken_total', 'Taken'],
+	['dmg_taken_direct', 'Taken(dir)'],
+	['dmg_taken_residual', 'Taken(res)'],
+	['dmg_taken_hazard', 'Taken(haz)'],
+	['dmg_reduced_typing', 'Red(type)'],
+	['dmg_amplified_typing', 'Amp(type)'],
+	['dmg_reduced_modifiers', 'Red(mod)'],
+	['healing_received', 'Healing'],
+	['kills', 'K'],
+	['deaths', 'D'],
+	['assists', 'A'],
+	['turns_survived', 'Turns'],
+];
+
+function buildFullDataPage(): string {
+	const db = getDB();
+	if (!db) {
+		return `<div class="pad"><h2>Full Battle Data</h2>` +
+			`<div class="infobox"><p>Database unavailable (better-sqlite3 not installed).</p></div></div>`;
+	}
+
+	let buf = `<div class="pad"><h2><i class="fa fa-database"></i> Full Battle Data</h2>`;
+	buf += `<p style="color:#888;font-size:.85em">Raw per-game and per-Pokémon data straight from the database. ` +
+		`<button class="button" name="send" value="/join view-analyticsfull"><i class="fa fa-refresh"></i> Refresh</button></p>`;
+
+	// ----- 1. Games log -----
+	const games = db.prepare(
+		`SELECT g.*, pa.username AS a_name, pb.username AS b_name, pw.username AS w_name
+		 FROM game_record g
+		 LEFT JOIN player_record pa ON g.player_a_id = pa.player_id
+		 LEFT JOIN player_record pb ON g.player_b_id = pb.player_id
+		 LEFT JOIN player_record pw ON g.winner_id  = pw.player_id
+		 ORDER BY g.timestamp DESC`
+	).all() as any[];
+
+	buf += `<hr/><h3>Games (${games.length})</h3><div style="overflow-x:auto"><table class="ladder" style="font-size:.85em">`;
+	buf += `<tr><th>Game ID</th><th>When</th><th>Format</th><th>Player A</th><th>Player B</th><th>Winner</th><th>Turns</th></tr>`;
+	for (const g of games) {
+		buf += `<tr><td><small>${h(g.game_id)}</small></td>` +
+			`<td><small>${h(new Date(g.timestamp).toLocaleString())}</small></td>` +
+			`<td>${h(g.format)}</td>` +
+			`<td>${h(g.a_name || g.player_a_id)}</td>` +
+			`<td>${h(g.b_name || g.player_b_id)}</td>` +
+			`<td>${h(g.w_name || (g.winner_id ? g.winner_id : 'Draw'))}</td>` +
+			`<td>${h(g.turns_total)}</td></tr>`;
+	}
+	buf += `</table></div>`;
+
+	// ----- 2. Per-species totals + per-game + min + max for every numeric stat -----
+	const speciesRows = db.prepare(
+		`SELECT pokemon_species AS species, COUNT(*) AS brought,
+			${PGS_NUMERIC_COLUMNS.map(([c]) =>
+				`SUM(${c}) AS ${c}_sum, MIN(${c}) AS ${c}_min, MAX(${c}) AS ${c}_max`).join(', ')}
+		 FROM pokemon_game_stats
+		 WHERE brought = 1
+		 GROUP BY pokemon_species
+		 ORDER BY brought DESC, species ASC`
+	).all() as any[];
+
+	buf += `<hr/><h3>Per-Species Totals (${speciesRows.length} species)</h3>`;
+	buf += `<p style="color:#888;font-size:.8em">Each stat shows <b>total</b> (sum), <b>/g</b> (per time brought), ` +
+		`min and max across individual games.</p>`;
+	buf += `<div style="overflow-x:auto"><table class="ladder" style="font-size:.8em"><tr><th>Species</th><th>Brought</th>`;
+	for (const [, label] of PGS_NUMERIC_COLUMNS) buf += `<th>${h(label)}</th>`;
+	buf += `</tr>`;
+	for (const r of speciesRows) {
+		buf += `<tr><td><strong>${h(r.species)}</strong></td><td>${h(r.brought)}</td>`;
+		for (const [c] of PGS_NUMERIC_COLUMNS) {
+			const sum = r[`${c}_sum`] || 0;
+			const perGame = r.brought > 0 ? (sum / r.brought).toFixed(1) : '0';
+			buf += `<td title="min ${h(r[`${c}_min`] ?? 0)} / max ${h(r[`${c}_max`] ?? 0)}">` +
+				`${h(sum)}<br/><small style="color:#888">${h(perGame)}/g</small><br/>` +
+				`<small style="color:#aaa">${h(r[`${c}_min`] ?? 0)}–${h(r[`${c}_max`] ?? 0)}</small></td>`;
+		}
+		buf += `</tr>`;
+	}
+	buf += `</table></div>`;
+
+	// ----- 3. Raw per-(game, player, Pokémon) rows -----
+	const rawRows = db.prepare(
+		`SELECT s.*, pr.username
+		 FROM pokemon_game_stats s
+		 LEFT JOIN player_record pr ON s.player_id = pr.player_id
+		 ORDER BY s.game_id DESC, s.player_id ASC, s.was_lead DESC, s.dmg_dealt_total DESC`
+	).all() as any[];
+
+	buf += `<hr/><h3>Raw Rows (${rawRows.length})</h3><div style="overflow-x:auto"><table class="ladder" style="font-size:.78em">`;
+	buf += `<tr><th>Game</th><th>Player</th><th>Species</th><th>Lead</th><th>Outcome</th>`;
+	for (const [, label] of PGS_NUMERIC_COLUMNS) buf += `<th>${h(label)}</th>`;
+	buf += `</tr>`;
+	for (const r of rawRows) {
+		buf += `<tr><td><small>${h(String(r.game_id).replace('battle-', ''))}</small></td>` +
+			`<td>${h(r.username || r.player_id)}</td>` +
+			`<td><strong>${h(r.pokemon_species)}</strong></td>` +
+			`<td>${r.was_lead ? '✓' : ''}</td>` +
+			`<td>${h(r.outcome)}</td>`;
+		for (const [c] of PGS_NUMERIC_COLUMNS) buf += `<td>${h(r[c] ?? 0)}</td>`;
+		buf += `</tr>`;
+	}
+	buf += `</table></div></div>`;
+
+	// Collapse newlines — the legacy client splits |pagehtml| on '\n'.
+	return buf.replace(/\n\s*/g, ' ');
+}
+
+// ---------------------------------------------------------------------------
 // Chat commands + page export
 // ---------------------------------------------------------------------------
 
@@ -269,6 +385,12 @@ export const commands: Chat.Commands = {
 	},
 	battlestats(target, room, user) {
 		return this.parse('/join view-analytics');
+	},
+	analyticsfull(target, room, user) {
+		return this.parse('/join view-analyticsfull');
+	},
+	analyticsraw(target, room, user) {
+		return this.parse('/join view-analyticsfull');
 	},
 };
 
@@ -313,10 +435,22 @@ export const pages: Chat.PageTable = {
 		}
 		buf += '<hr/>';
 		buf += buildSpeciesTable(full.pokemon);
+		buf += `<hr/><p><button class="button" name="send" value="/join view-analyticsfull">` +
+			`<i class="fa fa-database"></i> View Full Raw Data</button></p>`;
 		buf += '</div>';
 		// The legacy client splits room messages on '\n' (HTMLRoom.add), so a
 		// |pagehtml| payload MUST be a single line — collapse all newlines/indent
 		// introduced by template literals into single spaces.
 		return buf.replace(/\n\s*/g, ' ');
+	},
+
+	analyticsfull(args, user) {
+		this.title = '[Full Battle Data]';
+		// --- Access gate ---
+		// To restrict this page later, uncomment the line below; only users with
+		// the given global permission (e.g. console/admin access) will be able to
+		// open it. Left open for now during testing.
+		// this.checkCan('rangeban');
+		return buildFullDataPage();
 	},
 };

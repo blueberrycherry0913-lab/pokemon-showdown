@@ -2445,38 +2445,55 @@ export class Battle {
 		let inflictorSpecies: string | null = source?.species?.name ?? null;
 		let inflictorPlayer: string | null = source?.side?.id ?? null;
 
-		// Helper: override inflictor from a stored EffectState source (the original inflictor)
-		const useStoredSource = (storedSrc: unknown): void => {
+		// Authoritatively set inflictor from a stored EffectState source (the
+		// original inflictor — §2.2). If no source is stored, null it out rather
+		// than crediting whoever is currently active / the victim itself.
+		const setInflictor = (storedSrc: unknown): void => {
 			const p = storedSrc as Pokemon | undefined;
-			if (p?.species) { inflictorSpecies = p.species.name; inflictorPlayer = p.side?.id ?? null; }
+			if (p?.species) {
+				inflictorSpecies = p.species.name;
+				inflictorPlayer = p.side?.id ?? null;
+			} else {
+				inflictorSpecies = null;
+				inflictorPlayer = null;
+			}
 		};
 
 		if (effect.effectType === 'SideCondition') {
+			// Hazard — credit the Pokémon that set it (stored at placement, §2.3)
 			eventType = 'hazard';
 			srcLabel = effect.name || effect.id;
-			// Hazard setter stored in the side condition state (set when hazard was placed)
-			const hazardState = (target.side.sideConditions as any)[effect.id];
-			if (hazardState?.source) useStoredSource(hazardState.source);
+			setInflictor((target.side.sideConditions as any)[effect.id]?.source);
 		} else if (effect.effectType === 'Status') {
+			// Burn/poison/etc — credit the Pokémon that inflicted the status (§2.2)
 			eventType = 'residual';
 			srcLabel = effect.name || effect.id;
-			// Status source stored in statusState — use it regardless of who is currently active
-			useStoredSource((target.statusState as any)?.source);
+			setInflictor((target.statusState as any)?.source);
 		} else if (effect.effectType === 'Weather') {
+			// Weather chip — credit the weather setter, or null for field-default (§2.2)
 			eventType = 'residual';
 			srcLabel = effect.name || effect.id;
-			useStoredSource((this.field.weatherState as any)?.source);
+			setInflictor((this.field.weatherState as any)?.source);
 		} else if (effect.effectType === 'Move') {
-			if (['partiallytrapped', 'confused'].includes(effect.id)) {
+			if (effect.id === 'partiallytrapped') {
+				// Binding moves (Wrap/Fire Spin/etc) — credit the binder (§2.2)
 				eventType = 'residual';
-				srcLabel = (target.volatiles['partiallytrapped']?.sourceEffect as any)?.name ?? effect.name;
+				const vol = target.volatiles['partiallytrapped'];
+				srcLabel = (vol?.sourceEffect as any)?.name ?? effect.name;
+				setInflictor(vol?.source);
+			} else if (effect.id === 'confused') {
+				// Confusion self-hit — credit the Pokémon that caused confusion if known
+				eventType = 'residual';
+				srcLabel = 'confusion';
+				setInflictor(target.volatiles['confusion']?.source);
 			} else if (target.volatiles[effect.id as ID]) {
-				// Volatile condition (Leech Seed, etc.): credit the original inflicting Pokémon,
-				// not whoever is currently active on that side (spec §2.2)
+				// Other volatile residual (Leech Seed, Death Grip, etc.) — credit the
+				// original inflicting Pokémon, not whoever is currently active (§2.2)
 				eventType = 'residual';
 				srcLabel = effect.name;
-				useStoredSource(target.volatiles[effect.id as ID]?.source);
+				setInflictor(target.volatiles[effect.id as ID]?.source);
 			} else {
+				// Genuine direct move damage — keep the attacker as inflictor
 				eventType = 'direct';
 				srcLabel = effect.name;
 			}
