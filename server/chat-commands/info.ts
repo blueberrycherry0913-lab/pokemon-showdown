@@ -16,6 +16,14 @@ import { RoomSections } from './room-settings';
 const ONLINE_SYMBOL = ` \u25C9 `;
 const OFFLINE_SYMBOL = ` \u25CC `;
 
+// Display-only type renames (the internal type ID/data is unchanged). Applied at chat-command
+// output points only \u2014 never feed these into the engine (getEffectiveness/getImmunity/etc.).
+const TYPE_DISPLAY_NAMES: { [name: string]: string } = { Flying: 'Air' };
+function displayTypeName(name: string): string {
+	// Handle plain type names and '/'-joined combos (e.g. "Flying/Water").
+	return name.split('/').map(part => TYPE_DISPLAY_NAMES[part] || part).join('/');
+}
+
 interface DexResources {
 	url: string;
 	resources: { resource_name: string, url: string }[];
@@ -1010,28 +1018,29 @@ export const commands: Chat.ChatCommands = {
 			if (notImmune || isInverse) {
 				let typeMod = !notImmune && isInverse ? 1 : 0;
 				typeMod += (isInverse ? -1 : 1) * dex.getEffectiveness(type, types);
+				const typeLabel = displayTypeName(type);
 				switch (typeMod) {
 				case 1:
-					weaknesses.push(type);
+					weaknesses.push(typeLabel);
 					break;
 				case 2:
-					weaknesses.push(`<b>${type}</b>`);
+					weaknesses.push(`<b>${typeLabel}</b>`);
 					break;
 				case 3:
-					weaknesses.push(`<b><i>${type}</i></b>`);
+					weaknesses.push(`<b><i>${typeLabel}</i></b>`);
 					break;
 				case -1:
-					resistances.push(type);
+					resistances.push(typeLabel);
 					break;
 				case -2:
-					resistances.push(`<b>${type}</b>`);
+					resistances.push(`<b>${typeLabel}</b>`);
 					break;
 				case -3:
-					resistances.push(`<b><i>${type}</i></b>`);
+					resistances.push(`<b><i>${typeLabel}</i></b>`);
 					break;
 				}
 			} else {
-				immunities.push(type);
+				immunities.push(displayTypeName(type));
 			}
 		}
 
@@ -1053,7 +1062,7 @@ export const commands: Chat.ChatCommands = {
 		}
 
 		const buffer = [];
-		buffer.push(`${species.exists ? `${target} (ignoring abilities):` : `${target}:`}`);
+		buffer.push(`${species.exists ? `${target} (ignoring abilities):` : `${displayTypeName(target)}:`}`);
 		buffer.push(`<span class="message-effect-weak">Weaknesses</span>: ${weaknesses.join(', ') || '<span class="gray">None</span>'}`);
 		buffer.push(`<span class="message-effect-resist">Resistances</span>: ${resistances.join(', ') || '<span class="gray">None</span>'}`);
 		buffer.push(`<span class="message-effect-immune">Immunities</span>: ${immunities.join(', ') || '<span class="gray">None</span>'}`);
@@ -1134,7 +1143,7 @@ export const commands: Chat.ChatCommands = {
 		const hasThousandArrows = source.id === 'thousandarrows' && defender.types.includes('Flying');
 		const additionalInfo = hasThousandArrows ? "<br />However, Thousand Arrows will be 1x effective on the first hit." : "";
 
-		this.sendReplyBox(`${atkName} is ${factor}x effective against ${defName}.${additionalInfo}`);
+		this.sendReplyBox(`${displayTypeName(atkName)} is ${factor}x effective against ${displayTypeName(defName)}.${additionalInfo}`);
 	},
 	effectivenesshelp: [
 		`/effectiveness [attack], [defender] - Provides the effectiveness of a move or type on another type or a Pok\u00e9mon.`,
@@ -1239,10 +1248,10 @@ export const commands: Chat.ChatCommands = {
 				}
 			}
 			buffer.push(`Coverage for ${sources.join(' + ')}:`);
-			buffer.push(`<b><font color=#559955>Super Effective</font></b>: ${superEff.join(', ') || '<span class="gray">None</span>'}`);
-			buffer.push(`<span class="message-effect-resist">Neutral</span>: ${neutral.join(', ') || '<span class="gray">None</span>'}`);
-			buffer.push(`<span class="message-effect-weak">Resists</span>: ${resists.join(', ') || '<span class="gray">None</span>'}`);
-			buffer.push(`<span class="message-effect-immune">Immunities</span>: ${immune.join(', ') || '<span class="gray">None</span>'}`);
+			buffer.push(`<b><font color=#559955>Super Effective</font></b>: ${superEff.map(displayTypeName).join(', ') || '<span class="gray">None</span>'}`);
+			buffer.push(`<span class="message-effect-resist">Neutral</span>: ${neutral.map(displayTypeName).join(', ') || '<span class="gray">None</span>'}`);
+			buffer.push(`<span class="message-effect-weak">Resists</span>: ${resists.map(displayTypeName).join(', ') || '<span class="gray">None</span>'}`);
+			buffer.push(`<span class="message-effect-immune">Immunities</span>: ${immune.map(displayTypeName).join(', ') || '<span class="gray">None</span>'}`);
 			return this.sendReplyBox(buffer.join('<br />'));
 		} else {
 			let buffer = '<div class="scrollable"><table cellpadding="1" width="100%"><tr><th></th>';
@@ -1312,7 +1321,7 @@ export const commands: Chat.ChatCommands = {
 			buffer += '</table></div>';
 
 			if (hasThousandArrows) {
-				buffer += "<br /><b>Thousand Arrows has neutral type effectiveness on Flying-type Pok\u00e9mon if not already smacked down.";
+				buffer += "<br /><b>Thousand Arrows has neutral type effectiveness on Air-type Pok\u00e9mon if not already smacked down.";
 			}
 
 			this.sendReplyBox(`Coverage for ${sources.join(' + ')}:<br />${buffer}`);
