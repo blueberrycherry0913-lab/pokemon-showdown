@@ -32,6 +32,10 @@ interface DmgEvent {
 	mhp: number;          // target's max HP (for % normalization)
 	b: number;            // neutral baseline
 	tm: number;           // typeMod
+	fstage?: number;      // base-damage factor from favorable stat stages (≤1)
+	fscreen?: number;     // screen reduction multiplier (≤1)
+	ssp?: string | null;  // screen setter species (avoidance credited here)
+	sspl?: string | null; // screen setter player slot
 	src: string | null;   // source move/status/hazard name
 	lethal: boolean;
 }
@@ -63,10 +67,19 @@ interface EndPayload {
 	pokes: PokeEnd[];
 }
 
+interface SubAvoidEvent {
+	t: number;
+	tp: string;           // substitute owner species (credited the avoidance)
+	tpl: string;          // owner player slot
+	av: number;           // would-be damage the sub absorbed
+	mhp: number;          // owner max HP
+}
+
 interface GameBuffer {
 	gameId: string;
 	dmg: DmgEvent[];
 	heal: HealEvent[];
+	sub: SubAvoidEvent[];
 	// player slot → {userId, username}
 	playerMap: {[slot: string]: {id: string; name: string}};
 }
@@ -103,7 +116,7 @@ export function process(
 		try { ev = JSON.parse(json); } catch { return; }
 		let buf = buffers.get(roomId);
 		if (!buf) {
-			buf = {gameId: roomId, dmg: [], heal: [], playerMap: {}};
+			buf = {gameId: roomId, dmg: [], heal: [], sub: [], playerMap: {}};
 			buffers.set(roomId, buf);
 		}
 		buf.dmg.push(ev);
@@ -116,10 +129,17 @@ export function process(
 		if (buf) buf.heal.push(ev);
 		break;
 	}
+	case 'subavoid': {
+		let ev: SubAvoidEvent;
+		try { ev = JSON.parse(json); } catch { return; }
+		const buf = buffers.get(roomId);
+		if (buf) buf.sub.push(ev);
+		break;
+	}
 	case 'end': {
 		let payload: EndPayload;
 		try { payload = JSON.parse(json); } catch { return; }
-		const buf = buffers.get(roomId) || {gameId: roomId, dmg: [], heal: [], playerMap: {}};
+		const buf = buffers.get(roomId) || {gameId: roomId, dmg: [], heal: [], sub: [], playerMap: {}};
 		if (playerMap) buf.playerMap = playerMap;
 		buffers.delete(roomId);
 		flushGame(db, buf, payload);
@@ -196,6 +216,9 @@ function flushGame(
 			let dealtTotal = 0, dealtDirect = 0, dealtResidual = 0, dealtHazard = 0, dealtTrue = 0;
 			let takenTotal = 0, takenDirect = 0, takenResidual = 0, takenHazard = 0, takenTrue = 0;
 			let reducedTyping = 0, amplifiedTyping = 0, reducedModifiers = 0;
+			// Combined "damage avoided" (% max HP): typing + stat stages + defensive
+			// modifiers, plus the screen portion of any hit THIS Pokémon set a screen for.
+			let dmgAvoided = 0;
 			let kills = 0, deaths = 0;
 
 			for (const ev of buf.dmg) {
@@ -205,6 +228,7 @@ function flushGame(
 				const pctTrue = ((ev.c ?? ev.d) / mhp) * 100;        // calculated, uncapped
 				const isInflictor = ev.ip === pk.sp && ev.ipl === pk.pl;
 				const isTarget = ev.tp === pk.sp && ev.tpl === pk.pl;
+				const isScreenSetter = !!ev.ssp && ev.ssp === pk.sp && ev.sspl === pk.pl;
 
 				if (isInflictor) {
 					dealtTotal += pctTotal;
@@ -222,18 +246,24 @@ function flushGame(
 					else if (ev.type === 'hazard') takenHazard += pctTotal;
 					if (ev.lethal) deaths++;
 
-					// Typing / modifier reduction, as % of max HP. Only direct hits with
-					// a neutral baseline carry meaningful type/modifier deltas.
+					// Typing / modifier reduction, as % of max HP (full-data breakdown).
 					if (ev.type === 'direct' && ev.b > 0) {
 						const expectedAfterType = ev.b * Math.pow(2, ev.tm); // type applied to neutral
 						const calc = ev.c ?? ev.d;
 						if (ev.tm < 0) reducedTyping += Math.max(0, (ev.b - expectedAfterType) / mhp * 100);
 						if (ev.tm > 0) amplifiedTyping += Math.max(0, (expectedAfterType - ev.b) / mhp * 100);
-						// modifiers reduced it below the type-only expectation
 						if (calc < expectedAfterType) {
 							reducedModifiers += Math.max(0, (expectedAfterType - calc) / mhp * 100);
 						}
 					}
+				}
+
+				// Combined avoidance — only direct hits, only when this Pokémon is the
+				// target (gets type+stage+other) or the screen setter (gets screen).
+				if (ev.type === 'direct' && (isTarget || isScreenSetter)) {
+					const a = avoidanceComponents(ev);
+					if (isTarget) dmgAvoided += (a.targetHp / mhp) * 100;
+					if (isScreenSetter) dmgAvoided += (a.screenHp / mhp) * 100;
 				}
 			}
 
@@ -248,6 +278,15 @@ function flushGame(
 				}
 			}
 
+			// Substitute absorption — the sub owner avoided the full would-be hit.
+			for (const ev of buf.sub) {
+				if (ev.tp === pk.sp && ev.tpl === pk.pl) {
+					const mhp = ev.mhp || 0;
+					if (mhp <= 0) continue;
+					dmgAvoided += Math.min((ev.av / mhp) * 100, 100);
+				}
+			}
+
 			// Assists (§2.4): within 3 turns before each lethal, count non-killer inflictors
 			const assists = computeAssists(buf.dmg, pk.sp, pk.pl);
 
@@ -257,7 +296,7 @@ function flushGame(
 				true, pk.lead, outcome,
 				dealtTotal, dealtDirect, dealtResidual, dealtHazard, dealtTrue,
 				takenTotal, takenDirect, takenResidual, takenHazard, takenTrue,
-				reducedTyping, amplifiedTyping, reducedModifiers,
+				reducedTyping, amplifiedTyping, reducedModifiers, dmgAvoided,
 				healingReceived, healingTrue, kills, deaths, assists, pk.activeTurns
 			);
 		}
@@ -274,6 +313,43 @@ function flushGame(
 // ---------------------------------------------------------------------------
 // Assist derivation (§2.4)
 // ---------------------------------------------------------------------------
+
+/**
+ * Decompose a direct hit's avoided damage (in HP) into the portion credited to
+ * the defender (typing resist + favorable stat stages + non-screen defensive
+ * modifiers) and the portion credited to the screen setter. Uses a multiplicative
+ * model so the components compose correctly (no double counting).
+ */
+function avoidanceComponents(ev: DmgEvent): {targetHp: number; screenHp: number} {
+	const c = ev.c ?? ev.d;
+	if (c <= 0 || ev.type !== 'direct') return {targetHp: 0, screenHp: 0};
+
+	const fType = ev.tm < 0 ? Math.pow(2, ev.tm) : 1;       // resist factor (≤1)
+	let fStage = ev.fstage ?? 1;                            // favorable stat stages (≤1)
+	if (!(fStage > 0) || fStage > 1) fStage = 1;
+	let fScreen = ev.fscreen ?? 1;                          // screen multiplier (≤1)
+
+	// Net final-chain modifier factor, derived from neutral baseline vs calculated.
+	const afterType = (ev.b || 0) * Math.pow(2, ev.tm);
+	let modChain = afterType > 0 ? c / afterType : 1;
+	if (modChain > 1) modChain = 1;                          // count reductions only
+	// If there was effectively no chain reduction, don't credit a screen (it was
+	// likely bypassed — crit/infiltrator/etc. — despite being present).
+	if (modChain > 0.999) fScreen = 1;
+	const fOther = fScreen > 0 ? Math.min(modChain / fScreen, 1) : 1; // non-screen mods
+
+	const denom = fType * fStage * fScreen * fOther;
+	if (!(denom > 0)) return {targetHp: 0, screenHp: 0};
+
+	const baseline = c / denom; // what the hit would have done with no defender advantages
+	let rem = baseline;
+	const typeAv = rem * (1 - fType); rem *= fType;
+	const stageAv = rem * (1 - fStage); rem *= fStage;
+	const screenAv = rem * (1 - fScreen); rem *= fScreen;
+	const otherAv = rem * (1 - fOther);
+
+	return {targetHp: typeAv + stageAv + otherAv, screenHp: screenAv};
+}
 
 function computeAssists(dmg: DmgEvent[], species: string, playerSlot: string): number {
 	let assists = 0;

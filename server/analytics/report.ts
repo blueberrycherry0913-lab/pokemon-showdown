@@ -57,6 +57,7 @@ export function generateReports(db: Database.Database): void {
 		['dmg_reduced_typing_per_game', p => p.dmg_reduced_typing_per_game],
 		['dmg_amplified_typing_per_game', p => p.dmg_amplified_typing_per_game],
 		['dmg_reduced_modifiers_per_game', p => p.dmg_reduced_modifiers_per_game],
+		['dmg_avoided_per_game', p => p.dmg_avoided_per_game],
 		['healing_per_game', p => p.healing_per_game],
 		['avg_turns_survived', p => p.avg_turns_survived],
 		['kda_ratio', p => p.kda_ratio],
@@ -164,6 +165,8 @@ interface PokemonRow {
 	dmg_amplified_typing_per_game: number;
 	dmg_reduced_modifiers_total: number;
 	dmg_reduced_modifiers_per_game: number;
+	dmg_avoided_total: number;
+	dmg_avoided_per_game: number;
 	healing_total: number;
 	healing_per_game: number;
 	healing_true_total: number;
@@ -202,6 +205,7 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 			SUM(pgs.dmg_reduced_typing)                   AS dmg_reduced_typing_total,
 			SUM(pgs.dmg_amplified_typing)                 AS dmg_amplified_typing_total,
 			SUM(pgs.dmg_reduced_modifiers)                AS dmg_reduced_modifiers_total,
+			SUM(pgs.dmg_avoided)                          AS dmg_avoided_total,
 			SUM(pgs.healing_received)                     AS healing_total,
 			SUM(pgs.healing_true)                         AS healing_true_total,
 			SUM(pgs.kills)                                AS kills_total,
@@ -232,6 +236,7 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 		dmg_reduced_typing_total: number;
 		dmg_amplified_typing_total: number;
 		dmg_reduced_modifiers_total: number;
+		dmg_avoided_total: number;
 		healing_total: number;
 		healing_true_total: number;
 		kills_total: number;
@@ -279,6 +284,8 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 			dmg_amplified_typing_per_game: pg(r.dmg_amplified_typing_total),
 			dmg_reduced_modifiers_total: round2(r.dmg_reduced_modifiers_total),
 			dmg_reduced_modifiers_per_game: pg(r.dmg_reduced_modifiers_total),
+			dmg_avoided_total: round2(r.dmg_avoided_total),
+			dmg_avoided_per_game: pg(r.dmg_avoided_total),
 
 			healing_total: round2(r.healing_total),
 			healing_per_game: pg(r.healing_total),

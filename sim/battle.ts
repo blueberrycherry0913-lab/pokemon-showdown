@@ -2526,13 +2526,31 @@ export class Battle {
 			srcLabel = effect.name || effect.id || null;
 		}
 
-		// For direct move damage, read neutralBaseline and typeMod from MoveHitData
+		// For direct move damage, read avoidance factors from MoveHitData.
 		let neutralBaseline = damage;
 		let typeMod = 0;
+		let stageFactor = 1;
+		let screenMult = 1;
+		let screenSetterSpecies: string | null = null;
+		let screenSetterPlayer: string | null = null;
 		if (eventType === 'direct' && effect.effectType === 'Move') {
 			const hitData = target.getMoveHitData(effect as ActiveMove);
 			neutralBaseline = hitData.neutralBaseline ?? damage;
 			typeMod = hitData.typeMod ?? 0;
+			stageFactor = hitData.avoidStageFactor ?? 1;
+			screenMult = hitData.avoidScreenMult ?? 1;
+			if (screenMult < 1) {
+				// Identify the screen + its setter to credit the avoidance
+				const conds = target.side.sideConditions as any;
+				const moveCat = (effect as ActiveMove).category;
+				const screenId = conds['auroraveil'] ? 'auroraveil' :
+					(moveCat === 'Physical' ? 'reflect' : 'lightscreen');
+				const setter = conds[screenId]?.source as Pokemon | undefined;
+				if (setter?.species) {
+					screenSetterSpecies = setter.species.name;
+					screenSetterPlayer = setter.side?.id ?? null;
+				}
+			}
 		}
 
 		const isLethal = target.hp === 0;
@@ -2549,6 +2567,10 @@ export class Battle {
 			mhp: maxHp,            // target's max HP (for % normalization)
 			b: neutralBaseline,
 			tm: typeMod,
+			fstage: stageFactor,   // base-damage factor from favorable stat stages (≤1)
+			fscreen: screenMult,   // screen reduction multiplier (≤1)
+			ssp: screenSetterSpecies, // screen setter species (avoidance credited here)
+			sspl: screenSetterPlayer,
 			src: srcLabel,
 			lethal: isLethal,
 		}));

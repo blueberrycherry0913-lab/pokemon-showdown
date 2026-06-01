@@ -82,6 +82,7 @@ function initSchema(database: Database.Database): void {
 			dmg_reduced_typing    REAL NOT NULL DEFAULT 0,
 			dmg_amplified_typing  REAL NOT NULL DEFAULT 0,
 			dmg_reduced_modifiers REAL NOT NULL DEFAULT 0,
+			dmg_avoided           REAL NOT NULL DEFAULT 0,
 			healing_received      REAL NOT NULL DEFAULT 0,
 			healing_true          REAL NOT NULL DEFAULT 0,
 			kills                 INTEGER NOT NULL DEFAULT 0,
@@ -194,7 +195,7 @@ export function insertPokemonGameStats(
 	dmgDealtTrue: number,
 	dmgTakenTotal: number, dmgTakenDirect: number, dmgTakenResidual: number, dmgTakenHazard: number,
 	dmgTakenTrue: number,
-	dmgReducedTyping: number, dmgAmplifiedTyping: number, dmgReducedModifiers: number,
+	dmgReducedTyping: number, dmgAmplifiedTyping: number, dmgReducedModifiers: number, dmgAvoided: number,
 	healingReceived: number, healingTrue: number,
 	kills: number, deaths: number, assists: number, turnsSurvived: number
 ): void {
@@ -203,15 +204,15 @@ export function insertPokemonGameStats(
 		 (game_id,player_id,pokemon_species,brought,was_lead,outcome,
 		  dmg_dealt_total,dmg_dealt_direct,dmg_dealt_residual,dmg_dealt_hazard,dmg_dealt_true,
 		  dmg_taken_total,dmg_taken_direct,dmg_taken_residual,dmg_taken_hazard,dmg_taken_true,
-		  dmg_reduced_typing,dmg_amplified_typing,dmg_reduced_modifiers,
+		  dmg_reduced_typing,dmg_amplified_typing,dmg_reduced_modifiers,dmg_avoided,
 		  healing_received,healing_true,kills,deaths,assists,turns_survived)
-		 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 	).run(
 		gameId, playerId, species,
 		brought ? 1 : 0, wasLead ? 1 : 0, outcome,
 		dmgDealtTotal, dmgDealtDirect, dmgDealtResidual, dmgDealtHazard, dmgDealtTrue,
 		dmgTakenTotal, dmgTakenDirect, dmgTakenResidual, dmgTakenHazard, dmgTakenTrue,
-		dmgReducedTyping, dmgAmplifiedTyping, dmgReducedModifiers,
+		dmgReducedTyping, dmgAmplifiedTyping, dmgReducedModifiers, dmgAvoided,
 		healingReceived, healingTrue, kills, deaths, assists, turnsSurvived
 	);
 }

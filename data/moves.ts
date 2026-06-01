@@ -18341,6 +18341,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 					this.attrLastMove('[still]');
 					return null;
 				}
+				// Analytics: the Substitute prevented this hit from reaching its owner —
+				// credit the owner with the full would-be damage as avoided.
+				if (typeof damage === 'number' && damage > 0) {
+					this.add('analytic', 'subavoid', JSON.stringify({
+						t: this.turn, tp: target.species.name, tpl: target.side.id,
+						av: damage, mhp: target.maxhp,
+					}));
+				}
 				if (damage > target.volatiles['substitute'].hp) {
 					damage = target.volatiles['substitute'].hp as number;
 				}

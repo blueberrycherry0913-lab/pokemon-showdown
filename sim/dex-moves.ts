@@ -333,6 +333,17 @@ interface MoveHitData {
 		 * analytics neutral_baseline_dmg computation.
 		 */
 		neutralBaseline?: number,
+		/**
+		 * Analytics: base-damage factor (≤1) from defender-favorable stat stages
+		 * (own Def/SpD boosts, attacker Atk/SpA drops). 1 = no favorable stages.
+		 */
+		avoidStageFactor?: number,
+		/**
+		 * Analytics: the damage-reducing screen multiplier applied to this hit
+		 * (0.5 / doubles 2732⁄4096), or 1 if no screen reduced it. Used to credit
+		 * screen avoidance to the screen setter.
+		 */
+		avoidScreenMult?: number,
 	};
 }
 

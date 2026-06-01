@@ -43,6 +43,7 @@ interface PokemonRow {
 	dmg_reduced_typing_per_game: number;
 	dmg_amplified_typing_per_game: number;
 	dmg_reduced_modifiers_per_game: number;
+	dmg_avoided_per_game: number;
 	healing_per_game: number;
 	kills_total: number;
 	deaths_total: number;
@@ -184,6 +185,7 @@ const STAT_LABELS: {[k: string]: {label: string; fmt: (v: number) => string; des
 	kda_ratio: {label: 'KDA', fmt: v => v.toFixed(2), desc: '(Kills + Assists) / max(Deaths, 1)'},
 	healing_per_game: {label: 'Healing Caused / Game', fmt: pctOf, desc: 'Avg % of HP this Pokémon caused to be healed per game (Wish credits the wisher, etc.)'},
 	avg_turns_survived: {label: 'Turns Survived', fmt: v => v.toFixed(1), desc: 'Avg turns active on field per game brought'},
+	dmg_avoided_per_game: {label: 'Damage Avoided / Game', fmt: pctOf, desc: 'Avg % max HP of damage prevented per game — typing (resists+immunities), stat stages, abilities/items, Substitute, and screens (screens credited to the setter)'},
 	dmg_reduced_typing_per_game: {label: 'Dmg Avoided (Typing)', fmt: pctOf, desc: 'Avg % max HP of damage blocked by type resistances per game'},
 	dmg_amplified_typing_per_game: {label: 'Dmg Amplified (Typing)', fmt: pctOf, desc: 'Avg % max HP of extra damage taken from type weaknesses per game'},
 	dmg_reduced_modifiers_per_game: {label: 'Dmg Avoided (Modifiers)', fmt: pctOf, desc: 'Avg % max HP of damage blocked by screens/buffs/abilities per game'},
@@ -285,6 +287,7 @@ const PGS_NUMERIC_COLUMNS: [string, string, boolean][] = [
 	['dmg_taken_residual', 'Taken(res)', true],
 	['dmg_taken_hazard', 'Taken(haz)', true],
 	['dmg_taken_true', 'Taken(true)', true],
+	['dmg_avoided', 'Avoided', true],
 	['dmg_reduced_typing', 'Red(type)', true],
 	['dmg_amplified_typing', 'Amp(type)', true],
 	['dmg_reduced_modifiers', 'Red(mod)', true],
@@ -434,6 +437,7 @@ export const pages: Chat.PageTable = {
 			'dmg_dealt_true_per_game',
 			'kda_ratio',
 			'dmg_taken_per_game',
+			'dmg_avoided_per_game',
 			'healing_per_game',
 			'avg_turns_survived',
 			'dmg_reduced_typing_per_game',

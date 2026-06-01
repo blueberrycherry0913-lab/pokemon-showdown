@@ -1723,6 +1723,22 @@ export class BattleActions {
 		let attack = attacker.calculateStat(attackStat, atkBoosts, 1, source);
 		let defense = defender.calculateStat(defenseStat, defBoosts, 1, target);
 
+		// Analytics: how much of this hit was avoided by defender-favorable stat
+		// stages — attacker Atk/SpA *drops* and defender Def/SpD *boosts*. We
+		// recompute the stats with those favorable stages neutralized (pure
+		// calculateStat, no event re-firing) and take the ratio; stat-Modify
+		// multipliers cancel out. Capped ≤1 so amplification is never counted.
+		{
+			const atkNeutral = attacker.calculateStat(attackStat, Math.max(atkBoosts, 0), 1, source);
+			const defNeutral = defender.calculateStat(defenseStat, Math.min(defBoosts, 0), 1, target);
+			let stageFactor = 1;
+			if (atkNeutral > 0 && defNeutral > 0 && attack > 0 && defense > 0) {
+				stageFactor = (attack / atkNeutral) * (defNeutral / defense);
+				if (stageFactor > 1) stageFactor = 1;
+			}
+			target.getMoveHitData(move).avoidStageFactor = stageFactor;
+		}
+
 		attackStat = (category === 'Physical' ? 'atk' : 'spa');
 
 		// Apply Stat Modifiers
@@ -1816,6 +1832,22 @@ export class BattleActions {
 		// Store analytics neutral baseline: damage before type effectiveness and
 		// final chain modifiers. See server/analytics for use.
 		target.getMoveHitData(move).neutralBaseline = baseDamage;
+
+		// Analytics: detect a damage-reducing screen so its avoidance can be
+		// credited to the screen setter (not the protected Pokémon). Mirrors the
+		// screen conditions' applicability: category match, not a crit, and not
+		// bypassed by Bullet moves or Infiltrator.
+		{
+			const mh = target.getMoveHitData(move);
+			let screenMult = 1;
+			if (move.category !== 'Status' && !mh.crit && !move.flags['bullet'] && !move.infiltrates) {
+				const conds: any = target.side.sideConditions;
+				const hasScreen = conds['auroraveil'] ||
+					(move.category === 'Physical' ? conds['reflect'] : conds['lightscreen']);
+				if (hasScreen) screenMult = this.battle.gameType !== 'singles' ? 2732 / 4096 : 0.5;
+			}
+			mh.avoidScreenMult = screenMult;
+		}
 
 		// types
 		let typeMod = target.runEffectiveness(move);
