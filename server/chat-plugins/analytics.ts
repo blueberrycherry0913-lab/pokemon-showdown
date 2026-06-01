@@ -177,7 +177,7 @@ const STAT_LABELS: {[k: string]: {label: string; fmt: (v: number) => string; des
 	dmg_dealt_per_game: {label: 'Damage Dealt / Game', fmt: v => v.toFixed(1), desc: 'Avg total damage output per game brought'},
 	dmg_taken_per_game: {label: 'Damage Taken / Game', fmt: v => v.toFixed(1), desc: 'Avg total damage received per game brought'},
 	kda_ratio: {label: 'KDA', fmt: v => v.toFixed(2), desc: '(Kills + Assists) / max(Deaths, 1)'},
-	healing_per_game: {label: 'Healing / Game', fmt: v => v.toFixed(1), desc: 'Avg HP restored per game brought'},
+	healing_per_game: {label: 'Healing Caused / Game', fmt: v => v.toFixed(1), desc: 'Avg HP of healing this Pokémon caused per game brought (Wish credits the wisher, etc.)'},
 	avg_turns_survived: {label: 'Turns Survived', fmt: v => v.toFixed(1), desc: 'Avg turns active on field per game brought'},
 	dmg_reduced_typing_per_game: {label: 'Dmg Avoided (Typing)', fmt: v => v.toFixed(1), desc: 'Avg damage blocked by type resistances per game'},
 	dmg_amplified_typing_per_game: {label: 'Dmg Amplified (Typing)', fmt: v => v.toFixed(1), desc: 'Avg extra damage taken from type weaknesses per game'},
@@ -237,7 +237,7 @@ function buildSpeciesTable(pokemon: PokemonRow[]): string {
 	<table class="ladder" style="width:100%;font-size:.9em">
 		<tr>
 			<th>Species</th><th>Brought</th><th>Win%</th>
-			<th>Dealt/g</th><th>Taken/g</th><th>Healed/g</th>
+			<th>Dealt/g</th><th>Taken/g</th><th>HealCaused/g</th>
 			<th>K</th><th>D</th><th>A</th><th>KDA</th><th>Turns</th>
 		</tr>`;
 	for (const p of sorted) {
@@ -277,7 +277,7 @@ const PGS_NUMERIC_COLUMNS: [string, string][] = [
 	['dmg_reduced_typing', 'Red(type)'],
 	['dmg_amplified_typing', 'Amp(type)'],
 	['dmg_reduced_modifiers', 'Red(mod)'],
-	['healing_received', 'Healing'],
+	['healing_received', 'HealCaused'],
 	['kills', 'K'],
 	['deaths', 'D'],
 	['assists', 'A'],

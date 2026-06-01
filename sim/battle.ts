@@ -2380,6 +2380,12 @@ export class Battle {
 			effect ||= this.effect;
 		}
 		if (effect === 'drain') effect = this.dex.conditions.getByID(effect as ID);
+		// Analytics: the CAUSER of healing is the originator of the current effect
+		// (e.g. Wish credits the wisher, not the switched-in Pokémon that is healed;
+		// Leech Seed credits the seeder; Recover credits the user itself). Captured
+		// here at the top before runEvent() can swap this.effectState.
+		const healCauser = ((this.effectState as any)?.source?.species ?
+			(this.effectState as any).source as Pokemon : null);
 		if (damage && damage <= 1) damage = 1;
 		damage = this.trunc(damage);
 		// for things like Liquid Ooze, the Heal event still happens when nothing is healed.
@@ -2415,12 +2421,17 @@ export class Battle {
 		}
 		this.runEvent('Heal', target, source, effect, finalDamage);
 
-		// Analytics: emit heal event
+		// Analytics: attribute healing to the CAUSER (originator of the effect),
+		// not the Pokémon whose HP increased. Falls back to the recipient when
+		// there is no distinct originator (self-heals, items, etc.).
 		if (finalDamage > 0 && target) {
+			const causer = healCauser || target;
 			this.add('analytic', 'heal', JSON.stringify({
 				t: this.turn,
-				tp: target.species.name,
-				tpl: target.side.id,
+				tp: causer.species.name,
+				tpl: causer.side.id,
+				recip: target.species.name,
+				recipl: target.side.id,
 				amt: finalDamage,
 			}));
 		}
