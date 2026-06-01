@@ -773,6 +773,16 @@ export class RoomBattle extends RoomGame<RoomBattlePlayer> {
 				if (line.startsWith('|turn|')) {
 					this.turn = parseInt(line.slice(6));
 				}
+				// Analytics protocol lines are intercepted here and never forwarded to clients
+				if (line.startsWith('|analytic|')) {
+					try {
+						const {process: analyticsProcess} = require('./analytics/processor');
+						const playerMap: {[slot: string]: {id: string; name: string}} = {};
+						for (const p of this.players) playerMap[p.slot] = {id: p.userid, name: p.name};
+						analyticsProcess(this.room.roomid, line, playerMap);
+					} catch { /* analytics must not crash the battle room */ }
+					continue;
+				}
 				this.room.add(line);
 				if (line.startsWith(`|bigerror|You will auto-tie if `) && Config.allowrequestingties && !this.room.tour) {
 					this.room.add(`|-hint|If you want to tie earlier, consider using \`/offertie\`.`);
