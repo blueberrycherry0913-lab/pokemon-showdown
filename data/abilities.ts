@@ -6444,9 +6444,12 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return this.chainModify(1.5);
 			}
 		},
+		shortDesc: "Boosts the power of Vine moves by 50%.",
+		origin: 'Custom',
 		flags: {},
 		name: "Wild Vines",
 		rating: 3.5,
+		num: 10114,
 	},
 	wimpout: {
 		onEmergencyExit(target) {
@@ -8176,5 +8179,220 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		name: "Combative",
 		rating: 3,
 		num: 10105,
+	},
+
+	// --- Row 415: Empty Head ---
+	emptyhead: {
+		onUpdate(pokemon) {
+			if (pokemon.volatiles['confusion']) {
+				this.add('-activate', pokemon, 'ability: Empty Head');
+				pokemon.removeVolatile('confusion');
+			}
+			if (pokemon.volatiles['mindcontrolled']) {
+				this.add('-activate', pokemon, 'ability: Empty Head');
+				pokemon.removeVolatile('mindcontrolled');
+			}
+		},
+		onTryAddVolatile(status, pokemon) {
+			if (status.id === 'confusion' || status.id === 'mindcontrolled') return null;
+		},
+		onTryHit(target, source, move) {
+			if (target !== source && move.id === 'hypnosis') {
+				this.add('-immune', target, '[from] ability: Empty Head');
+				return null;
+			}
+		},
+		onHit(target, source, move) {
+			if (move?.volatileStatus === 'confusion') {
+				this.add('-immune', target, 'confusion', '[from] ability: Empty Head');
+			}
+			if (move?.volatileStatus === 'mindcontrolled') {
+				this.add('-immune', target, 'mindcontrolled', '[from] ability: Empty Head');
+			}
+		},
+		shortDesc: "Immune to Mind Control, confusion, and the move Hypnosis.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Empty Head",
+		rating: 2,
+		num: 10106,
+	},
+
+	// --- Row 416: Awe-Inspiring ---
+	aweinspiring: {
+		onStart(pokemon) {
+			let activated = false;
+			for (const target of pokemon.adjacentFoes()) {
+				if (!activated) {
+					this.add('-ability', pokemon, 'Awe-Inspiring', 'boost');
+					activated = true;
+				}
+				if (target.volatiles['substitute']) {
+					this.add('-immune', target);
+				} else {
+					this.boost({ spa: -1 }, target, pokemon, null, true);
+				}
+			}
+		},
+		shortDesc: "Lowers the foe's Sp. Atk by 1 stage on switch-in.",
+		origin: 'Custom',
+		flags: {},
+		name: "Awe-Inspiring",
+		rating: 3.5,
+		num: 10107,
+	},
+
+	// --- Row 417: Antiarmor ---
+	antiarmor: {
+		onAfterMoveSecondarySelf(source, target, move) {
+			if (!move || move.category === 'Status' || !target || target === source || target.fainted) return;
+			this.boost({ def: -1 }, target, source);
+		},
+		shortDesc: "The user's attacks lower the target's Defense by 1 stage.",
+		origin: 'Custom',
+		flags: {},
+		name: "Antiarmor",
+		rating: 3,
+		num: 10108,
+	},
+
+	// --- Row 418: Overwhelming ---
+	// NOTE: onEffectiveness fires for the DEFENDER's ability in this engine, so the
+	// attacker-side resist floor is done via onModifyDamage (reading typeMod), the same
+	// pattern as Best in Show. ignoreImmunity (onModifyMove) handles type/grounding immunities.
+	overwhelming: {
+		onModifyMove(move) {
+			if (move.category !== 'Status') move.ignoreImmunity = true;
+		},
+		onModifyDamage(damage, source, target, move) {
+			const typeMod = target.getMoveHitData(move).typeMod;
+			if (typeMod < 0) {
+				// Undo the resistance to floor at neutral; SE bonuses (typeMod >= 0) are kept.
+				return this.chainModify(Math.pow(2, -typeMod));
+			}
+		},
+		shortDesc: "This Pokémon's attacks ignore resistances and immunities (minimum neutral damage).",
+		origin: 'Custom',
+		flags: {},
+		name: "Overwhelming",
+		rating: 3.5,
+		num: 10109,
+	},
+
+	// --- Row 419: Champion ---
+	// onEffectiveness fires for the DEFENDER, so this attacker-side override uses
+	// onModifyDamage: ×2 when a Fighting move hits a Fighting target (flips the
+	// Fighting matchup component from neutral to super effective).
+	champion: {
+		onModifyDamage(damage, source, target, move) {
+			if (move.type === 'Fighting' && target.hasType('Fighting')) {
+				return this.chainModify(2);
+			}
+		},
+		shortDesc: "This Pokémon's Fighting-type moves are super effective against Fighting types.",
+		origin: 'Custom',
+		flags: {},
+		name: "Champion",
+		rating: 2,
+		num: 10110,
+	},
+
+	// --- Row 420: Paralyzing Tendrals ---
+	// Mechanic lives in the `interlocked` condition (data/mods/champions/conditions.ts):
+	// while Interlocked, the partner of a Paralyzing Tendrals holder flinches 30%/turn.
+	paralyzingtendrals: {
+		shortDesc: "While Interlocked, the interlock partner has a 30% chance to flinch each turn.",
+		origin: 'Custom',
+		flags: {},
+		name: "Paralyzing Tendrals",
+		rating: 2,
+		num: 10111,
+	},
+
+	// --- Row 422: Frustration Tolerance ---
+	frustrationtolerance: {
+		onSourceModifyDamage(damage, source, target, move) {
+			if (target.volatiles['confusion']) {
+				return this.chainModify(0.5);
+			}
+		},
+		shortDesc: "Takes half damage from attacks while confused.",
+		origin: 'Custom',
+		flags: {},
+		name: "Frustration Tolerance",
+		rating: 2,
+		num: 10112,
+	},
+
+	// --- Row 429: Pre-Loaded Shell ---
+	preloadedshell: {
+		onStart(pokemon) {
+			this.effectState.shellReady = true;
+		},
+		onModifyMove(move, pokemon) {
+			if (move.id === 'hydrocannon' && this.effectState.shellReady) {
+				this.effectState.shellReady = false;
+				delete move.self;
+				this.add('-ability', pokemon, 'Pre-Loaded Shell');
+			}
+		},
+		shortDesc: "Once per switch-in, Hydro Cannon is used without needing to recharge.",
+		origin: 'Custom',
+		flags: {},
+		name: "Pre-Loaded Shell",
+		rating: 2,
+		num: 10113,
+	},
+
+	// --- Row 435: Protective Resonance ---
+	// Side condition `protectiveresonance` defined in data/mods/champions/conditions.ts.
+	protectiveresonance: {
+		onAfterMove(source, target, move) {
+			if (move.flags['sound']) {
+				source.side.addSideCondition('protectiveresonance', source, move);
+			}
+		},
+		shortDesc: "This Pokémon's sound moves grant its side a 2-turn screen that halves incoming damage.",
+		origin: 'Custom',
+		flags: {},
+		name: "Protective Resonance",
+		rating: 3,
+		num: 10115,
+	},
+
+	// --- Row 436: Burning Engine ---
+	burningengine: {
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Fire') {
+				return this.chainModify(0.5);
+			}
+		},
+		onDamagingHit(damage, target, source, move) {
+			if (move.type === 'Fire') {
+				this.boost({ spe: 1 }, target);
+			}
+		},
+		shortDesc: "Reduces Fire-type damage by 50% and raises Speed by 1 stage when hit by a Fire move.",
+		origin: 'Custom',
+		flags: {},
+		name: "Burning Engine",
+		rating: 2.5,
+		num: 10116,
+	},
+
+	// --- Row 437: Iron Foot ---
+	ironfoot: {
+		onBasePowerPriority: 23,
+		onBasePower(basePower, attacker, defender, move) {
+			if (move.flags['kicking']) {
+				return this.chainModify(1.5);
+			}
+		},
+		shortDesc: "Boosts the power of Kicking moves by 50%.",
+		origin: 'Custom',
+		flags: {},
+		name: "Iron Foot",
+		rating: 3,
+		num: 10117,
 	},
 };

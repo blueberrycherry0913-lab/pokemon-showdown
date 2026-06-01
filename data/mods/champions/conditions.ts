@@ -997,6 +997,13 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onBeforeMove(pokemon, target, move) {
 			const partner = this.effectState.partner;
 			if (!partner || partner.fainted) return;
+			// Paralyzing Tendrals (ability): while Interlocked, the partner's holder makes
+			// this Pokémon flinch 30%/turn. Fighting types and Inner Focus are immune (§1.5).
+			if (partner.hasAbility('paralyzingtendrals') && !pokemon.hasType('Fighting') &&
+				!pokemon.hasAbility('innerfocus') && this.randomChance(3, 10)) {
+				this.add('cant', pokemon, 'flinch');
+				return false;
+			}
 			// Restrict single-target foe moves: must aim at the Interlocked partner only.
 			// Self-targeting and ally-targeting moves are unaffected.
 			// In singles this can never fail (only opponent IS the partner).
@@ -1706,6 +1713,29 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			(pokemon.volatiles as any)['substitute'] = {hp, id: 'substitute', target: pokemon, source: pokemon};
 			this.add('-start', pokemon, 'Substitute');
 			pokemon.side.removeSideCondition('protectivesoulbarrier');
+		},
+	},
+
+	// Side condition created by the Protective Resonance ability when the holder uses a
+	// sound move. A 2-turn screen that halves all incoming damage to the holder's side.
+	protectiveresonance: {
+		duration: 2,
+		onSideStart(side) {
+			this.add('-sidestart', side, 'ability: Protective Resonance');
+		},
+		onAnyModifyDamage(damage, source, target, move) {
+			if (target !== source && this.effectState.target.hasAlly(target)) {
+				if (!target.getMoveHitData(move).crit && !move.infiltrates) {
+					this.debug('Protective Resonance weaken');
+					if (this.activePerHalf > 1) return this.chainModify([2732, 4096]);
+					return this.chainModify(0.5);
+				}
+			}
+		},
+		onSideResidualOrder: 26,
+		onSideResidualSubOrder: 12,
+		onSideEnd(side) {
+			this.add('-sideend', side, 'ability: Protective Resonance');
 		},
 	},
 
