@@ -308,7 +308,7 @@ export const pages: Chat.PageTable = {
 		buf += '<hr/>';
 		buf += buildPlayers(full.players);
 		buf += '<hr/>';
-		buf += '<h2>Leaderboards <small style="font-weight:normal;font-size:.7em">(min 3 games to qualify)</small></h2>';
+		buf += '<h2>Leaderboards</h2>';
 		for (const key of statOrder) {
 			if (summary.leaderboards[key]) {
 				buf += buildLeaderboard(key, summary.leaderboards[key]);
