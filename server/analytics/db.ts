@@ -223,3 +223,46 @@ export function insertPokemonGameStats(
 		statusInflicted, hazardsSet, hazardsCleared
 	);
 }
+
+/**
+ * Remove a single game from the analytics DB: its damage events, its per-Pokémon
+ * rollup rows, and the game_record itself — and roll back the participating
+ * players' cumulative games_played / wins / losses counters. Returns false if the
+ * game id isn't found.
+ */
+export function deleteGame(database: Database.Database, gameId: string): boolean {
+	const g = database.prepare(
+		`SELECT player_a_id, player_b_id, winner_id FROM game_record WHERE game_id = ?`
+	).get(gameId) as {player_a_id: string; player_b_id: string; winner_id: string | null} | undefined;
+	if (!g) return false;
+
+	database.transaction(() => {
+		for (const pid of [g.player_a_id, g.player_b_id]) {
+			const won = g.winner_id === pid ? 1 : 0;
+			const lost = g.winner_id && g.winner_id !== pid ? 1 : 0;
+			database.prepare(
+				`UPDATE player_record
+				 SET games_played = MAX(0, games_played - 1),
+				     wins         = MAX(0, wins   - ?),
+				     losses       = MAX(0, losses - ?)
+				 WHERE player_id = ?`
+			).run(won, lost, pid);
+		}
+		database.prepare(`DELETE FROM damage_event WHERE game_id = ?`).run(gameId);
+		database.prepare(`DELETE FROM pokemon_game_stats WHERE game_id = ?`).run(gameId);
+		database.prepare(`DELETE FROM game_record WHERE game_id = ?`).run(gameId);
+	})();
+	return true;
+}
+
+/** Wipe ALL analytics data (every game). Returns the number of games removed. */
+export function deleteAllGames(database: Database.Database): number {
+	const n = (database.prepare(`SELECT COUNT(*) AS c FROM game_record`).get() as {c: number}).c;
+	database.transaction(() => {
+		database.prepare(`DELETE FROM damage_event`).run();
+		database.prepare(`DELETE FROM pokemon_game_stats`).run();
+		database.prepare(`DELETE FROM game_record`).run();
+		database.prepare(`DELETE FROM player_record`).run();
+	})();
+	return n;
+}

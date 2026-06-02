@@ -8,7 +8,8 @@
 
 import * as path from 'path';
 import * as fs from 'fs';
-import {getDB} from '../analytics/db';
+import {getDB, deleteGame, deleteAllGames} from '../analytics/db';
+import {generateReports} from '../analytics/report';
 
 const ANALYTICS_DIR = path.join(__dirname, '../../../logs/analytics');
 const FULL_PATH = path.join(ANALYTICS_DIR, 'battle_report_full.json');
@@ -341,10 +342,17 @@ function buildFullDataPage(): string {
 		 ORDER BY g.timestamp DESC`
 	).all() as any[];
 
-	buf += `<hr/><h3>Games (${games.length})</h3><div style="overflow-x:auto"><table class="ladder" style="font-size:.85em">`;
-	buf += `<tr><th>Game ID</th><th>When</th><th>Format</th><th>Player A</th><th>Player B</th><th>Winner</th><th>Turns</th></tr>`;
+	buf += `<hr/><h3>Games (${games.length})</h3>`;
+	buf += `<p style="color:#888;font-size:.8em">Use <b>Remove</b> to scrub a bugged match from all charts (staff only). ` +
+		`<button class="button" name="send" value="/analyticsclearall confirm" ` +
+		`style="color:#c0392b">Wipe ALL data</button></p>`;
+	buf += `<div style="overflow-x:auto"><table class="ladder" style="font-size:.85em">`;
+	buf += `<tr><th></th><th>Game ID</th><th>When</th><th>Format</th><th>Player A</th><th>Player B</th><th>Winner</th><th>Turns</th></tr>`;
 	for (const g of games) {
-		buf += `<tr><td><small>${h(g.game_id)}</small></td>` +
+		buf += `<tr>` +
+			`<td><button class="button" name="send" value="/analyticsremove ${h(g.game_id)}" ` +
+			`style="color:#c0392b"><i class="fa fa-trash"></i></button></td>` +
+			`<td><small>${h(g.game_id)}</small></td>` +
 			`<td><small>${h(new Date(g.timestamp).toLocaleString())}</small></td>` +
 			`<td>${h(g.format)}</td>` +
 			`<td>${h(g.a_name || g.player_a_id)}</td>` +
@@ -429,6 +437,35 @@ export const commands: Chat.Commands = {
 	},
 	analyticsraw(target, room, user) {
 		return this.parse('/join view-analyticsfull');
+	},
+
+	analyticsremove(target, room, user) {
+		this.checkCan('rangeban'); // staff/admin only
+		const gameId = target.trim();
+		if (!gameId) return this.errorReply(`Usage: /analyticsremove <game_id>  (find IDs on the Full Data page)`);
+		const db = getDB();
+		if (!db) return this.errorReply(`Analytics DB unavailable (better-sqlite3 not installed).`);
+		const ok = deleteGame(db, gameId);
+		if (!ok) return this.errorReply(`No analytics record found for game "${gameId}".`);
+		try { generateReports(db); } catch {}
+		this.globalModlog('ANALYTICSREMOVE', null, gameId);
+		this.sendReply(`Removed game "${gameId}" from analytics and regenerated the charts.`);
+		// refresh the full-data page for the user
+		return this.parse('/join view-analyticsfull');
+	},
+	analyticsremovehelp: [`/analyticsremove <game_id> - Deletes one battle's data from the analytics charts. Requires: &`],
+
+	analyticsclearall(target, room, user) {
+		this.checkCan('rangeban');
+		if (target !== 'confirm') {
+			return this.errorReply(`This wipes ALL analytics data. Type /analyticsclearall confirm to proceed.`);
+		}
+		const db = getDB();
+		if (!db) return this.errorReply(`Analytics DB unavailable.`);
+		const n = deleteAllGames(db);
+		try { generateReports(db); } catch {}
+		this.globalModlog('ANALYTICSCLEARALL', null, `${n} games`);
+		return this.sendReply(`Wiped all analytics data (${n} games removed).`);
 	},
 };
 
