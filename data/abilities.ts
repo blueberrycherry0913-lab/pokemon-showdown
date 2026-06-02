@@ -8154,7 +8154,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onSourceModifyDamage(damage, source, target, move) {
 			return this.chainModify(0.9);
 		},
-		shortDesc: "Ignores sleep's negative effects; 10% damage resistance; no damage-threshold wake.",
+		shortDesc: "While asleep: no +10% dmg taken, no damage-threshold wake; lockout still applies.",
 		origin: 'Custom',
 		flags: { breakable: 1 },
 		name: "Heavy Sleeper",
