@@ -2588,7 +2588,7 @@ export const Aliases: import('../sim/dex').AliasesTable = {
 	// custom renames
 	magolem: "Golem-Alola",
 	cocommander: "Exeggutor",
-	electronut: "Electrode-Hisui",
+	galvenut: "Electrode-Hisui",
 };
 
 /** This is what lets you type "tb"/"tbolt"/"bolt" to find "thunderbolt" in the
