@@ -25,6 +25,9 @@ import { Pokemon, type EffectState } from './pokemon';
 import { State } from './state';
 import { toID } from './dex';
 
+/** Entry-hazard side conditions tracked by the analytics system. */
+const ANALYTICS_HAZARD_IDS = new Set(['stealthrock', 'spikes', 'toxicspikes', 'stickyweb', 'gmaxsteelsurge']);
+
 /** A single action that can be chosen. Choices will have one Action for each pokemon. */
 export interface ChosenAction {
 	choice: 'move' | 'switch' | 'instaswitch' | 'revivalblessing' | 'team' | 'shift' | 'pass';// action type
@@ -429,6 +432,12 @@ export class Side {
 			return false;
 		}
 		this.battle.runEvent('SideConditionStart', this, source, status);
+		// Analytics: count entry-hazard placement.
+		if (ANALYTICS_HAZARD_IDS.has(status.id) && (source as Pokemon).species) {
+			this.battle.add('analytic', 'hazardset', JSON.stringify({
+				ip: (source as Pokemon).species.name, ipl: (source as Pokemon).side.id, hz: status.id,
+			}));
+		}
 		return true;
 	}
 
@@ -446,6 +455,15 @@ export class Side {
 	removeSideCondition(status: string | Effect): boolean {
 		status = this.battle.dex.conditions.get(status) as Effect;
 		if (!this.sideConditions[status.id]) return false;
+		// Analytics: credit the clearer (the Pokémon whose move/turn is executing).
+		if (ANALYTICS_HAZARD_IDS.has(status.id)) {
+			const clearer = this.battle.activePokemon;
+			if (clearer?.species) {
+				this.battle.add('analytic', 'hazardclear', JSON.stringify({
+					ip: clearer.species.name, ipl: clearer.side.id, hz: status.id,
+				}));
+			}
+		}
 		this.battle.singleEvent('SideEnd', status, this.sideConditions[status.id], this);
 		delete this.sideConditions[status.id];
 		return true;

@@ -81,12 +81,19 @@ interface ImmuneEvent {
 	tpl: string;  // player slot
 }
 
+// Inflictor-attributed count events (assist / status / hazard set / hazard clear).
+interface CreditEvent { ip: string; ipl: string }
+
 interface GameBuffer {
 	gameId: string;
 	dmg: DmgEvent[];
 	heal: HealEvent[];
 	sub: SubAvoidEvent[];
 	immune: ImmuneEvent[];
+	assist: CreditEvent[];
+	status: CreditEvent[];
+	hazardset: CreditEvent[];
+	hazardclear: CreditEvent[];
 	// player slot → {userId, username}
 	playerMap: {[slot: string]: {id: string; name: string}};
 }
@@ -123,7 +130,7 @@ export function process(
 	const getBuf = (): GameBuffer => {
 		let buf = buffers.get(roomId);
 		if (!buf) {
-			buf = {gameId: roomId, dmg: [], heal: [], sub: [], immune: [], playerMap: {}};
+			buf = {gameId: roomId, dmg: [], heal: [], sub: [], immune: [], assist: [], status: [], hazardset: [], hazardclear: [], playerMap: {}};
 			buffers.set(roomId, buf);
 		}
 		return buf;
@@ -152,6 +159,12 @@ export function process(
 		let ev: ImmuneEvent;
 		try { ev = JSON.parse(json); } catch { return; }
 		getBuf().immune.push(ev);
+		break;
+	}
+	case 'assist': case 'status': case 'hazardset': case 'hazardclear': {
+		let ev: CreditEvent;
+		try { ev = JSON.parse(json); } catch { return; }
+		getBuf()[type].push(ev);
 		break;
 	}
 	case 'end': {
@@ -311,8 +324,14 @@ function flushGame(
 				if (ev.tp === pk.sp && ev.tpl === pk.pl) immuneHits++;
 			}
 
-			// Assists (§2.4): within 3 turns before each lethal, count non-killer inflictors
-			const assists = computeAssists(buf.dmg, pk.sp, pk.pl);
+			// Assists / status / hazards — counted from inflictor-attributed events
+			// emitted live by the sim (assist logic lives in the battle engine now).
+			const countCredit = (arr: CreditEvent[]) =>
+				arr.reduce((n, e) => n + (e.ip === pk.sp && e.ipl === pk.pl ? 1 : 0), 0);
+			const assists = countCredit(buf.assist);
+			const statusInflicted = countCredit(buf.status);
+			const hazardsSet = countCredit(buf.hazardset);
+			const hazardsCleared = countCredit(buf.hazardclear);
 
 			insertPokemonGameStats(
 				db,
@@ -321,7 +340,8 @@ function flushGame(
 				dealtTotal, dealtDirect, dealtResidual, dealtHazard, dealtTrue,
 				takenTotal, takenDirect, takenResidual, takenHazard, takenTrue,
 				reducedTyping, amplifiedTyping, reducedModifiers, dmgAvoided,
-				healingReceived, healingTrue, kills, deaths, assists, pk.activeTurns, immuneHits
+				healingReceived, healingTrue, kills, deaths, assists, pk.activeTurns, immuneHits,
+				statusInflicted, hazardsSet, hazardsCleared
 			);
 		}
 	})();
@@ -335,7 +355,7 @@ function flushGame(
 }
 
 // ---------------------------------------------------------------------------
-// Assist derivation (§2.4)
+// Damage-avoidance decomposition
 // ---------------------------------------------------------------------------
 
 /**
@@ -373,23 +393,4 @@ function avoidanceComponents(ev: DmgEvent): {targetHp: number; screenHp: number}
 	const otherAv = rem * (1 - fOther);
 
 	return {targetHp: typeAv + stageAv + otherAv, screenHp: screenAv};
-}
-
-function computeAssists(dmg: DmgEvent[], species: string, playerSlot: string): number {
-	let assists = 0;
-	for (const lethal of dmg) {
-		if (!lethal.lethal) continue;
-		const lethalTurn = lethal.t;
-		// Find all inflictors who damaged this target in the 3 turns prior (inclusive)
-		const assisters = new Set<string>();
-		for (const ev of dmg) {
-			if (ev.tp !== lethal.tp || ev.tpl !== lethal.tpl) continue;
-			if (ev.t < lethalTurn - 3 || ev.t > lethalTurn) continue;
-			if (ev.d <= 0) continue;
-			if (ev.ip === lethal.ip && ev.ipl === lethal.ipl) continue; // skip killer
-			if (ev.ip && ev.ipl) assisters.add(`${ev.ipl}:${ev.ip}`);
-		}
-		if (assisters.has(`${playerSlot}:${species}`)) assists++;
-	}
-	return assists;
 }

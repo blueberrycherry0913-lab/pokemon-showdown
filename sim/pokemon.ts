@@ -1759,6 +1759,13 @@ export class Pokemon {
 		if (status.id && !this.battle.runEvent('AfterSetStatus', this, source, sourceEffect, status)) {
 			return false;
 		}
+		// Analytics: a foe-inflicted status counts toward "most status inflicted".
+		if (status.id && source && source !== this && !source.isAlly(this)) {
+			this.battle.add('analytic', 'status', JSON.stringify({
+				ip: source.species.name, ipl: source.side.id,
+				tp: this.species.name, tpl: this.side.id, st: status.id,
+			}));
+		}
 		return true;
 	}
 

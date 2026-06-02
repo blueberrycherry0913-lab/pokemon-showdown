@@ -162,6 +162,13 @@ export class Battle {
 	/** Captured log entries from the first speed-tied move, held until the second move runs */
 	speedTieFirstMoveLogs: string[] | null;
 
+	/** Analytics: per-victim assist contributors (damage/hazard) with field-turn windows */
+	analyticsContribs: Map<Pokemon, Map<string, { kind: 'damage' | 'hazard', turns: number }>>;
+	/** Analytics: per-victim set of "species|side" that applied a stat debuff (sticky while a debuff remains) */
+	analyticsDebuffers: Map<Pokemon, Set<string>>;
+	/** Analytics: per-victim "species|side" of the lethal-hit inflictor (excluded from assists) */
+	analyticsLastKiller: Map<Pokemon, string>;
+
 	effect: Effect;
 	effectState: EffectState;
 
@@ -254,6 +261,9 @@ export class Battle {
 		this.speedTieDoubleKO = false;
 		this.speedTieFirstMoveLogCheckpoint = null;
 		this.speedTieFirstMoveLogs = null;
+		this.analyticsContribs = new Map();
+		this.analyticsDebuffers = new Map();
+		this.analyticsLastKiller = new Map();
 
 		this.effect = { id: '' } as Effect;
 		this.effectState = this.initEffectState({ id: '' });
@@ -1719,6 +1729,7 @@ export class Battle {
 	endTurn() {
 		this.turn++;
 		this.lastSuccessfulMoveThisTurn = null;
+		this.analyticsTickContributions();
 
 		const dynamaxEnding: Pokemon[] = [];
 		for (const pokemon of this.getAllActive()) {
@@ -2143,6 +2154,11 @@ export class Battle {
 			}
 			if (boostBy) {
 				success = true;
+				// Analytics: a foe lowering this Pokémon's stat is a debuff contribution
+				// (sticky for assists while the negative boost remains).
+				if (boost[boostName]! < 0 && source && source !== target && !source.isAlly(target)) {
+					this.analyticsTrackDebuff(target, source);
+				}
 				switch (effect?.id) {
 				case 'bellydrum': case 'angerpoint':
 					this.add('-setboost', target, 'atk', target.boosts['atk'], '[from] ' + effect.fullname);
@@ -2574,6 +2590,83 @@ export class Battle {
 			src: srcLabel,
 			lethal: isLethal,
 		}));
+
+		// Assist tracking: a damaging contribution opens/refreshes a 5-field-turn
+		// window crediting the inflictor on this target (direct/residual = 'damage',
+		// hazards = 'hazard'). Self-damage doesn't count.
+		if (inflictorSpecies && damage > 0 &&
+			!(inflictorSpecies === target.species.name && inflictorPlayer === target.side.id)) {
+			this.analyticsTrackContribution(target, `${inflictorSpecies}|${inflictorPlayer}`,
+				eventType === 'hazard' ? 'hazard' : 'damage');
+		}
+		if (isLethal && inflictorSpecies) {
+			this.analyticsLastKiller.set(target, `${inflictorSpecies}|${inflictorPlayer}`);
+		}
+	}
+
+	/** Analytics: refresh a contributor's 5-field-turn assist window on a target. */
+	analyticsTrackContribution(target: Pokemon, key: string, kind: 'damage' | 'hazard') {
+		let m = this.analyticsContribs.get(target);
+		if (!m) { m = new Map(); this.analyticsContribs.set(target, m); }
+		m.set(key, { kind, turns: 5 });
+	}
+
+	/** Analytics: record that `source` applied a stat debuff to `target`. */
+	analyticsTrackDebuff(target: Pokemon, source: Pokemon) {
+		if (source === target) return;
+		let s = this.analyticsDebuffers.get(target);
+		if (!s) { s = new Set(); this.analyticsDebuffers.set(target, s); }
+		s.add(`${source.species.name}|${source.side.id}`);
+	}
+
+	/**
+	 * Analytics: end-of-turn tick. Field-turn windows only count down while the
+	 * victim is ON THE FIELD (active); a switched-out victim's timers are frozen.
+	 * Also self-cleans stale debuffer records once a victim has no negative boosts.
+	 */
+	analyticsTickContributions() {
+		for (const pokemon of this.getAllActive()) {
+			const m = this.analyticsContribs.get(pokemon);
+			if (m) {
+				for (const [key, c] of m) {
+					c.turns--;
+					if (c.turns <= 0) m.delete(key);
+				}
+				if (!m.size) this.analyticsContribs.delete(pokemon);
+			}
+			// drop debuffer credit once no negative boost remains
+			const s = this.analyticsDebuffers.get(pokemon);
+			if (s && !Object.values(pokemon.boosts).some(b => b < 0)) {
+				this.analyticsDebuffers.delete(pokemon);
+			}
+		}
+	}
+
+	/** Analytics: at faint, emit one assist per surviving contributor (minus the killer). */
+	analyticsEmitAssists(target: Pokemon, killerKey: string | null) {
+		const credited = new Set<string>();
+		const consider = (key: string) => {
+			if (!key || key === killerKey || credited.has(key)) return;
+			credited.add(key);
+			const [sp, pl] = key.split('|');
+			this.add('analytic', 'assist', JSON.stringify({ ip: sp, ipl: pl }));
+		};
+		// damage / hazard windows still open
+		const m = this.analyticsContribs.get(target);
+		if (m) for (const key of m.keys()) consider(key);
+		// status still active at death → its inflictor, no matter how long ago
+		if (target.status) {
+			const ss = (target.statusState as any)?.source as Pokemon | undefined;
+			if (ss?.species) consider(`${ss.species.name}|${ss.side.id}`);
+		}
+		// stat debuff still active at death → whoever applied it
+		if (Object.values(target.boosts).some(b => b < 0)) {
+			const s = this.analyticsDebuffers.get(target);
+			if (s) for (const key of s) consider(key);
+		}
+		this.analyticsContribs.delete(target);
+		this.analyticsDebuffers.delete(target);
+		this.analyticsLastKiller.delete(target);
 	}
 
 	chain(previousMod: number | number[], nextMod: number | number[]) {
@@ -2825,6 +2918,12 @@ export class Battle {
 			const pokemon: Pokemon = faintData.target;
 			if (!pokemon.fainted && this.runEvent('BeforeFaint', pokemon, faintData.source, faintData.effect)) {
 				this.add('faint', pokemon);
+				// Analytics: emit assists before volatiles/status/boosts are cleared.
+				let killerKey = this.analyticsLastKiller.get(pokemon) || null;
+				if (!killerKey && faintData.source?.species) {
+					killerKey = `${faintData.source.species.name}|${faintData.source.side.id}`;
+				}
+				this.analyticsEmitAssists(pokemon, killerKey);
 				if (pokemon.side.pokemonLeft) pokemon.side.pokemonLeft--;
 				if (pokemon.side.totalFainted < 100) pokemon.side.totalFainted++;
 				this.runEvent('Faint', pokemon, faintData.source, faintData.effect);

@@ -54,6 +54,10 @@ interface PokemonRow {
 	kda_ratio: number;
 	immune_hits_total: number;
 	immune_hits_per_game: number;
+	turns_survived_total: number;
+	status_inflicted_total: number;
+	hazards_set_total: number;
+	hazards_cleared_total: number;
 }
 
 interface FullReport {
@@ -193,6 +197,10 @@ const STAT_LABELS: {[k: string]: {label: string; fmt: (v: number) => string; des
 	dmg_amplified_typing_per_game: {label: 'Dmg Amplified (Typing)', fmt: pctOf, desc: 'Avg % max HP of extra damage taken from type weaknesses per game'},
 	dmg_reduced_modifiers_per_game: {label: 'Dmg Avoided (Modifiers)', fmt: pctOf, desc: 'Avg % max HP of damage blocked by screens/buffs/abilities per game'},
 	games_brought: {label: 'Times Brought', fmt: v => String(v), desc: 'Total number of times this species was brought to a battle (counts each player separately)'},
+	turns_survived_total: {label: 'Most Turns Survived', fmt: v => String(v), desc: 'Total turns spent active on the field across all games'},
+	status_inflicted_total: {label: 'Most Status Inflicted', fmt: v => String(v), desc: 'Total non-volatile statuses (burn/poison/sleep/etc.) this species inflicted on foes'},
+	hazards_set_total: {label: 'Most Hazards Set', fmt: v => String(v), desc: 'Total entry hazards set (Stealth Rock, Spikes, Toxic Spikes, Sticky Web)'},
+	hazards_cleared_total: {label: 'Most Hazards Cleared', fmt: v => String(v), desc: 'Total entry hazards removed (Rapid Spin, Defog, etc.)'},
 };
 
 function buildLeaderboard(statKey: string, board: {top_10: LeaderEntry[]; bottom_10: LeaderEntry[]}): string {
@@ -301,6 +309,9 @@ const PGS_NUMERIC_COLUMNS: [string, string, boolean][] = [
 	['assists', 'A', false],
 	['turns_survived', 'Turns', false],
 	['immune_hits', 'Immune', false],
+	['status_inflicted', 'Status', false],
+	['hazards_set', 'HazSet', false],
+	['hazards_cleared', 'HazClr', false],
 ];
 
 // Format a stored stat value for the full-data tables.
@@ -449,6 +460,10 @@ export const pages: Chat.PageTable = {
 			'dmg_amplified_typing_per_game',
 			'dmg_reduced_modifiers_per_game',
 			'games_brought',
+			'turns_survived_total',
+			'status_inflicted_total',
+			'hazards_set_total',
+			'hazards_cleared_total',
 		];
 
 		let buf = '<div class="pad">';

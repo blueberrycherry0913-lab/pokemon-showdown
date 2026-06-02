@@ -62,6 +62,10 @@ export function generateReports(db: Database.Database): void {
 		['healing_per_game', p => p.healing_per_game],
 		['avg_turns_survived', p => p.avg_turns_survived],
 		['kda_ratio', p => p.kda_ratio],
+		['turns_survived_total', p => p.turns_survived_total],
+		['status_inflicted_total', p => p.status_inflicted_total],
+		['hazards_set_total', p => p.hazards_set_total],
+		['hazards_cleared_total', p => p.hazards_cleared_total],
 	];
 
 	const eligible = pokemon.filter(p => p.games_brought >= MIN_GAMES_FOR_LEADERBOARD);
@@ -181,6 +185,13 @@ interface PokemonRow {
 	kda_ratio: number;
 	immune_hits_total: number;
 	immune_hits_per_game: number;
+	turns_survived_total: number;
+	status_inflicted_total: number;
+	status_inflicted_per_game: number;
+	hazards_set_total: number;
+	hazards_set_per_game: number;
+	hazards_cleared_total: number;
+	hazards_cleared_per_game: number;
 }
 
 function getPokemon(db: Database.Database): PokemonRow[] {
@@ -214,7 +225,10 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 			SUM(pgs.kills)                                AS kills_total,
 			SUM(pgs.deaths)                               AS deaths_total,
 			SUM(pgs.assists)                              AS assists_total,
-			SUM(pgs.immune_hits)                          AS immune_hits_total
+			SUM(pgs.immune_hits)                          AS immune_hits_total,
+			SUM(pgs.status_inflicted)                     AS status_inflicted_total,
+			SUM(pgs.hazards_set)                          AS hazards_set_total,
+			SUM(pgs.hazards_cleared)                      AS hazards_cleared_total
 		FROM pokemon_game_stats pgs
 		JOIN player_record pr ON pgs.player_id = pr.player_id
 		WHERE pr.is_excluded = 0 AND pgs.brought = 1
@@ -247,6 +261,9 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 		deaths_total: number;
 		assists_total: number;
 		immune_hits_total: number;
+		status_inflicted_total: number;
+		hazards_set_total: number;
+		hazards_cleared_total: number;
 	}>;
 
 	return rows.map(r => {
@@ -306,6 +323,13 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 			kda_ratio: kda,
 			immune_hits_total: r.immune_hits_total,
 			immune_hits_per_game: pg(r.immune_hits_total),
+			turns_survived_total: r.turns_survived_total,
+			status_inflicted_total: r.status_inflicted_total,
+			status_inflicted_per_game: pg(r.status_inflicted_total),
+			hazards_set_total: r.hazards_set_total,
+			hazards_set_per_game: pg(r.hazards_set_total),
+			hazards_cleared_total: r.hazards_cleared_total,
+			hazards_cleared_per_game: pg(r.hazards_cleared_total),
 		};
 	});
 }
