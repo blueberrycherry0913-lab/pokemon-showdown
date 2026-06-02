@@ -1631,6 +1631,9 @@ export class Battle {
 				return {
 					pl: s.id,
 					sp: p.species.name,
+					// baseSpecies lets analytics credit pre-mega events (tagged with the
+					// base name) to this (permanent) Mega entry. Equals sp for non-megas.
+					base: p.species.baseSpecies,
 					fainted: p.fainted,
 					lead: s.pokemon[0] === p,
 					activeTurns: p.activeTurns,

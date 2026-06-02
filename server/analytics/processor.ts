@@ -53,7 +53,8 @@ interface HealEvent {
 
 interface PokeEnd {
 	pl: string;        // player slot
-	sp: string;        // species
+	sp: string;        // species (final forme — Mega if it evolved, since Mega is permanent)
+	base?: string;     // baseSpecies; pre-mega events (tagged with base name) credit this entry
 	fainted: boolean;
 	lead: boolean;     // was the team lead
 	activeTurns: number;
@@ -241,8 +242,14 @@ function flushGame(
 		for (const pk of end.pokes) {
 			const playerId = buf.playerMap[pk.pl]?.id || pk.pl;
 			const isWinnerSide = pk.pl === end.winner;
+			// Base-aware species match: an event credits this entry if its species is
+			// the final forme (pk.sp) OR the base species (pk.base). This folds a
+			// permanent Mega's pre-evolution events ("Gengar") into the Mega row
+			// ("Gengar-Mega"). For non-megas, base === sp so it's a plain match.
+			const baseName = pk.base || pk.sp;
+			const mon = (sp: string | null | undefined) => sp === pk.sp || sp === baseName;
 			const participated = buf.dmg.some(e =>
-				(e.ip === pk.sp && e.ipl === pk.pl) || (e.tp === pk.sp && e.tpl === pk.pl)
+				(mon(e.ip) && e.ipl === pk.pl) || (mon(e.tp) && e.tpl === pk.pl)
 			);
 			const outcome: 'win' | 'loss' | 'dnp' =
 				!participated ? 'dnp' : isWinnerSide ? 'win' : 'loss';
@@ -263,9 +270,9 @@ function flushGame(
 				if (mhp <= 0) continue; // can't normalize without max HP
 				const pctTotal = Math.min((ev.d / mhp) * 100, 100); // actual removed, capped
 				const pctTrue = ((ev.c ?? ev.d) / mhp) * 100;        // calculated, uncapped
-				const isInflictor = ev.ip === pk.sp && ev.ipl === pk.pl;
-				const isTarget = ev.tp === pk.sp && ev.tpl === pk.pl;
-				const isScreenSetter = !!ev.ssp && ev.ssp === pk.sp && ev.sspl === pk.pl;
+				const isInflictor = mon(ev.ip) && ev.ipl === pk.pl;
+				const isTarget = mon(ev.tp) && ev.tpl === pk.pl;
+				const isScreenSetter = !!ev.ssp && mon(ev.ssp) && ev.sspl === pk.pl;
 
 				if (isInflictor) {
 					dealtTotal += pctTotal;
@@ -307,7 +314,7 @@ function flushGame(
 			// Healing CAUSED by this Pokémon, as % of recipient max HP.
 			let healingReceived = 0, healingTrue = 0;
 			for (const ev of buf.heal) {
-				if (ev.tp === pk.sp && ev.tpl === pk.pl) {
+				if (mon(ev.tp) && ev.tpl === pk.pl) {
 					const mhp = ev.mhp || 0;
 					if (mhp <= 0) continue;
 					healingReceived += Math.min((ev.amt / mhp) * 100, 100);
@@ -317,7 +324,7 @@ function flushGame(
 
 			// Substitute absorption — the sub owner avoided the full would-be hit.
 			for (const ev of buf.sub) {
-				if (ev.tp === pk.sp && ev.tpl === pk.pl) {
+				if (mon(ev.tp) && ev.tpl === pk.pl) {
 					const mhp = ev.mhp || 0;
 					if (mhp <= 0) continue;
 					dmgAvoided += Math.min((ev.av / mhp) * 100, 100);
@@ -327,13 +334,13 @@ function flushGame(
 			// Immune hits absorbed (type- or ability-based) by this Pokémon.
 			let immuneHits = 0;
 			for (const ev of buf.immune) {
-				if (ev.tp === pk.sp && ev.tpl === pk.pl) immuneHits++;
+				if (mon(ev.tp) && ev.tpl === pk.pl) immuneHits++;
 			}
 
 			// Assists / status / hazards — counted from inflictor-attributed events
 			// emitted live by the sim (assist logic lives in the battle engine now).
 			const countCredit = (arr: CreditEvent[]) =>
-				arr.reduce((n, e) => n + (e.ip === pk.sp && e.ipl === pk.pl ? 1 : 0), 0);
+				arr.reduce((n, e) => n + (mon(e.ip) && e.ipl === pk.pl ? 1 : 0), 0);
 			const assists = countCredit(buf.assist);
 			const statusInflicted = countCredit(buf.status);
 			const hazardsSet = countCredit(buf.hazardset);
