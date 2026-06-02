@@ -1624,13 +1624,20 @@ export class Battle {
 		// Analytics end event — picked up by room-battle.ts, not sent to clients
 		try {
 			const winnerSlot = side?.id ?? null;
-			const pokes = this.sides.flatMap(s => s.pokemon.map(p => ({
-				pl: s.id,
-				sp: p.species.name,
-				fainted: p.fainted,
-				lead: s.pokemon[0] === p,
-				activeTurns: p.activeTurns,
-			})));
+			const pokes = this.sides.flatMap(s => s.pokemon.map(p => {
+				// The item the Pokémon was BROUGHT with (set.item), not its current
+				// item (which may have been knocked off / consumed).
+				const broughtItem = this.dex.items.get(p.set.item);
+				return {
+					pl: s.id,
+					sp: p.species.name,
+					fainted: p.fainted,
+					lead: s.pokemon[0] === p,
+					activeTurns: p.activeTurns,
+					item: broughtItem.exists ? broughtItem.name : '',
+					itemMega: !!(broughtItem.megaStone || broughtItem.zMove),
+				};
+			}));
 			this.add('analytic', 'end', JSON.stringify({
 				format: this.format.id,
 				winner: winnerSlot,

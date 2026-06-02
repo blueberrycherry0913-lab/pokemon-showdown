@@ -28,6 +28,7 @@ export function generateReports(db: Database.Database): void {
 	const {gamesTotal, avgTurns} = getGlobalStats(db);
 	const players = getPlayers(db);
 	const pokemon = getPokemon(db);
+	const items = getItems(db);
 
 	const generatedAt = new Date().toISOString();
 
@@ -38,6 +39,7 @@ export function generateReports(db: Database.Database): void {
 		avg_turns_per_game: avgTurns,
 		players,
 		pokemon,
+		items,
 	};
 	writeAtomic(FULL_PATH, full);
 
@@ -332,6 +334,20 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 			hazards_cleared_per_game: pg(r.hazards_cleared_total),
 		};
 	});
+}
+
+/** Most-brought items, excluding Mega Stones / Z-Crystals (item_is_mega = 1). */
+function getItems(db: Database.Database): Array<{item: string; count: number}> {
+	const rows = db.prepare(`
+		SELECT pgs.item AS item, COUNT(*) AS count
+		FROM pokemon_game_stats pgs
+		JOIN player_record pr ON pgs.player_id = pr.player_id
+		WHERE pr.is_excluded = 0 AND pgs.brought = 1
+		      AND pgs.item != '' AND pgs.item_is_mega = 0
+		GROUP BY pgs.item
+		ORDER BY count DESC, item ASC
+	`).all() as Array<{item: string; count: number}>;
+	return rows;
 }
 
 // ---------------------------------------------------------------------------

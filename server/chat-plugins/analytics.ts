@@ -67,6 +67,7 @@ interface FullReport {
 	avg_turns_per_game: number;
 	players: PlayerRow[];
 	pokemon: PokemonRow[];
+	items?: Array<{item: string; count: number}>;
 }
 
 interface LeaderEntry {
@@ -280,6 +281,22 @@ function buildSpeciesTable(pokemon: PokemonRow[]): string {
 		</tr>`;
 	}
 	return buf + '</table></div>';
+}
+
+function buildItems(items?: Array<{item: string; count: number}>): string {
+	if (!items?.length) return '';
+	const max = items[0].count || 1;
+	let buf = `<h3>Most Brought Items <small style="font-weight:normal;font-size:.7em">(Mega Stones &amp; Z-Crystals excluded)</small></h3>`;
+	buf += `<table class="ladder" style="max-width:480px">`;
+	buf += `<tr><th></th><th>Item</th><th>Times Brought</th></tr>`;
+	items.slice(0, 25).forEach((it, i) => {
+		const pctW = Math.round((it.count / max) * 100);
+		buf += `<tr><td>${medal(i + 1)}</td>` +
+			`<td><strong>${h(it.item)}</strong></td>` +
+			`<td><span style="display:inline-block;background:#88a;height:10px;width:${pctW}px;` +
+			`vertical-align:middle;border-radius:2px"></span> ${h(it.count)}</td></tr>`;
+	});
+	return buf + `</table>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -517,6 +534,8 @@ export const pages: Chat.PageTable = {
 		}
 		buf += '<hr/>';
 		buf += buildSpeciesTable(full.pokemon);
+		buf += '<hr/>';
+		buf += buildItems(full.items);
 		buf += `<hr/><p><button class="button" name="send" value="/join view-analyticsfull">` +
 			`<i class="fa fa-database"></i> View Full Raw Data</button></p>`;
 		buf += '</div>';

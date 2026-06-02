@@ -57,6 +57,8 @@ interface PokeEnd {
 	fainted: boolean;
 	lead: boolean;     // was the team lead
 	activeTurns: number;
+	item?: string;     // item brought (set.item display name), '' if none
+	itemMega?: boolean; // true if a Mega Stone / Z-Crystal (excluded from item leaderboard)
 }
 
 interface EndPayload {
@@ -345,7 +347,8 @@ function flushGame(
 				takenTotal, takenDirect, takenResidual, takenHazard, takenTrue,
 				reducedTyping, amplifiedTyping, reducedModifiers, dmgAvoided,
 				healingReceived, healingTrue, kills, deaths, assists, pk.activeTurns, immuneHits,
-				statusInflicted, hazardsSet, hazardsCleared
+				statusInflicted, hazardsSet, hazardsCleared,
+				pk.item || '', pk.itemMega ? 1 : 0
 			);
 		}
 	})();

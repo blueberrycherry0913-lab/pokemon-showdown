@@ -93,6 +93,8 @@ function initSchema(database: Database.Database): void {
 			status_inflicted      INTEGER NOT NULL DEFAULT 0,
 			hazards_set           INTEGER NOT NULL DEFAULT 0,
 			hazards_cleared       INTEGER NOT NULL DEFAULT 0,
+			item                  TEXT NOT NULL DEFAULT '',
+			item_is_mega          INTEGER NOT NULL DEFAULT 0,
 			FOREIGN KEY (game_id)   REFERENCES game_record(game_id),
 			FOREIGN KEY (player_id) REFERENCES player_record(player_id)
 		);
@@ -127,6 +129,38 @@ function initSchema(database: Database.Database): void {
 		CREATE INDEX IF NOT EXISTS idx_pgs_player
 			ON pokemon_game_stats(player_id);
 	`);
+
+	// Idempotent migration: this feature has grown columns incrementally, and
+	// CREATE TABLE IF NOT EXISTS won't alter an existing table. Add any missing
+	// columns so an older DB keeps working without a manual reset.
+	migrateColumns(database, 'pokemon_game_stats', [
+		['dmg_dealt_true', 'REAL NOT NULL DEFAULT 0'],
+		['dmg_taken_true', 'REAL NOT NULL DEFAULT 0'],
+		['dmg_avoided', 'REAL NOT NULL DEFAULT 0'],
+		['healing_true', 'REAL NOT NULL DEFAULT 0'],
+		['immune_hits', 'INTEGER NOT NULL DEFAULT 0'],
+		['status_inflicted', 'INTEGER NOT NULL DEFAULT 0'],
+		['hazards_set', 'INTEGER NOT NULL DEFAULT 0'],
+		['hazards_cleared', 'INTEGER NOT NULL DEFAULT 0'],
+		['item', `TEXT NOT NULL DEFAULT ''`],
+		['item_is_mega', 'INTEGER NOT NULL DEFAULT 0'],
+	]);
+	migrateColumns(database, 'damage_event', [
+		['calculated_damage', 'INTEGER NOT NULL DEFAULT 0'],
+		['target_maxhp', 'INTEGER NOT NULL DEFAULT 0'],
+	]);
+}
+
+/** Add any of the given columns that don't already exist on `table`. */
+function migrateColumns(database: Database.Database, table: string, cols: [string, string][]): void {
+	const existing = new Set(
+		(database.prepare(`PRAGMA table_info(${table})`).all() as Array<{name: string}>).map(r => r.name)
+	);
+	for (const [name, def] of cols) {
+		if (!existing.has(name)) {
+			database.prepare(`ALTER TABLE ${table} ADD COLUMN ${name} ${def}`).run();
+		}
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -202,7 +236,8 @@ export function insertPokemonGameStats(
 	dmgReducedTyping: number, dmgAmplifiedTyping: number, dmgReducedModifiers: number, dmgAvoided: number,
 	healingReceived: number, healingTrue: number,
 	kills: number, deaths: number, assists: number, turnsSurvived: number, immuneHits: number,
-	statusInflicted: number, hazardsSet: number, hazardsCleared: number
+	statusInflicted: number, hazardsSet: number, hazardsCleared: number,
+	item: string, itemIsMega: number
 ): void {
 	database.prepare(
 		`INSERT INTO pokemon_game_stats
@@ -211,8 +246,8 @@ export function insertPokemonGameStats(
 		  dmg_taken_total,dmg_taken_direct,dmg_taken_residual,dmg_taken_hazard,dmg_taken_true,
 		  dmg_reduced_typing,dmg_amplified_typing,dmg_reduced_modifiers,dmg_avoided,
 		  healing_received,healing_true,kills,deaths,assists,turns_survived,immune_hits,
-		  status_inflicted,hazards_set,hazards_cleared)
-		 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		  status_inflicted,hazards_set,hazards_cleared,item,item_is_mega)
+		 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 	).run(
 		gameId, playerId, species,
 		brought ? 1 : 0, wasLead ? 1 : 0, outcome,
@@ -220,7 +255,7 @@ export function insertPokemonGameStats(
 		dmgTakenTotal, dmgTakenDirect, dmgTakenResidual, dmgTakenHazard, dmgTakenTrue,
 		dmgReducedTyping, dmgAmplifiedTyping, dmgReducedModifiers, dmgAvoided,
 		healingReceived, healingTrue, kills, deaths, assists, turnsSurvived, immuneHits,
-		statusInflicted, hazardsSet, hazardsCleared
+		statusInflicted, hazardsSet, hazardsCleared, item, itemIsMega
 	);
 }
 
