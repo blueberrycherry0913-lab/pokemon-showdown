@@ -122,7 +122,11 @@ export function process(
 	const parts = line.split('|');
 	// parts: ['', 'analytic', TYPE, JSON...]
 	const type = parts[2];
-	const json = parts.slice(3).join('|');
+	// The §7 speed-tie log reordering can append protocol tags (e.g. "|[simult]")
+	// to the line. Our payload is always a JSON object, so cut at its closing brace.
+	let json = parts.slice(3).join('|');
+	const braceEnd = json.lastIndexOf('}');
+	if (braceEnd >= 0) json = json.slice(0, braceEnd + 1);
 
 	// Get the per-game buffer, creating it on demand. Any event type may be the
 	// first one seen in a game (e.g. an immune hit or heal on turn 1 before any

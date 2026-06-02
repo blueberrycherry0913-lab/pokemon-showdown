@@ -3146,6 +3146,8 @@ export class Battle {
 								out.push(line); // keep split marker unmodified
 								if (++i < lines.length) out.push(lines[i] + '|[simult]'); // secret
 								if (++i < lines.length) out.push(lines[i] ? lines[i] + '|[simult]' : lines[i]); // shared
+							} else if (line.startsWith('|analytic|')) {
+								out.push(line); // analytics lines are out-of-band; never tag them
 							} else {
 								out.push(line.startsWith('|') ? line + '|[simult]' : line);
 							}
