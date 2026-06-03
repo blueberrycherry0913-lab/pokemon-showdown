@@ -325,6 +325,7 @@ export const Aliases: import('../sim/dex').AliasesTable = {
 	eiscueice: "Eiscue",
 	eiscuen: "Eiscue-Noice",
 	trodeh: "Electrode-Hisui",
+	electrodehisui: "Galvenut",
 	enamorust: "Enamorus-Therian",
 	enamt: "Enamorus-Therian",
 	eternamax: "Eternatus-Eternamax",
@@ -2589,7 +2590,7 @@ export const Aliases: import('../sim/dex').AliasesTable = {
 	// custom renames
 	// magolem is now a real dex key; golemalola alias above handles backward compat
 	cocommander: "Exeggutor",
-	galvenut: "Electrode-Hisui",
+	// galvenut is now a real dex key; electrodehisui alias above handles backward compat
 	reactivelevitation: "Levitate",
 	solarbattery: "Mega Sol",
 };

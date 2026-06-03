@@ -14628,7 +14628,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			{generation: 4, level: 23},
 		],
 	},
-	electrodehisui: {
+	galvenut: {
 		learnset: {
 			agility: ["9M"],
 			bulletseed: ["9M", "9L9"],

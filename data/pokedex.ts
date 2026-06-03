@@ -2436,7 +2436,7 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		heightm: 0.5,
 		weightkg: 13,
 		color: "Red",
-		evos: ["Electrode-Hisui"],
+		evos: ["Galvenut"],
 		eggGroups: ["Mineral"],
 	},
 	electrode: {
@@ -2452,14 +2452,11 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		prevo: "Voltorb",
 		evoLevel: 30,
 		eggGroups: ["Mineral"],
-		otherFormes: ["Electrode-Hisui"],
-		formeOrder: ["Electrode", "Electrode-Hisui"],
 	},
-	electrodehisui: {
+	galvenut: {
 		num: 101,
 		name: "Galvenut",
-		baseSpecies: "Electrode",
-		forme: "Hisui",
+		baseSpecies: "Galvenut",
 		types: ["Grass", "Electric"],
 		gender: "N",
 		baseStats: {hp: 70, atk: 60, def: 70, spa: 90, spd: 70, spe: 150},
