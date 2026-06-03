@@ -95,6 +95,12 @@ function initSchema(database: Database.Database): void {
 			hazards_cleared       INTEGER NOT NULL DEFAULT 0,
 			item                  TEXT NOT NULL DEFAULT '',
 			item_is_mega          INTEGER NOT NULL DEFAULT 0,
+			-- Threat Stats system
+			threat_output_raw     REAL NOT NULL DEFAULT 0,
+			moves_used            INTEGER NOT NULL DEFAULT 0,
+			threat_absorbed_raw   REAL NOT NULL DEFAULT 0,
+			hits_faced            INTEGER NOT NULL DEFAULT 0,
+			threats_nullified     INTEGER NOT NULL DEFAULT 0,
 			FOREIGN KEY (game_id)   REFERENCES game_record(game_id),
 			FOREIGN KEY (player_id) REFERENCES player_record(player_id)
 		);
@@ -144,10 +150,16 @@ function initSchema(database: Database.Database): void {
 		['hazards_cleared', 'INTEGER NOT NULL DEFAULT 0'],
 		['item', `TEXT NOT NULL DEFAULT ''`],
 		['item_is_mega', 'INTEGER NOT NULL DEFAULT 0'],
+		['threat_output_raw', 'REAL NOT NULL DEFAULT 0'],
+		['moves_used', 'INTEGER NOT NULL DEFAULT 0'],
+		['threat_absorbed_raw', 'REAL NOT NULL DEFAULT 0'],
+		['hits_faced', 'INTEGER NOT NULL DEFAULT 0'],
+		['threats_nullified', 'INTEGER NOT NULL DEFAULT 0'],
 	]);
 	migrateColumns(database, 'damage_event', [
 		['calculated_damage', 'INTEGER NOT NULL DEFAULT 0'],
 		['target_maxhp', 'INTEGER NOT NULL DEFAULT 0'],
+		['threat_power', 'INTEGER NOT NULL DEFAULT 0'],
 	]);
 }
 
@@ -210,52 +222,41 @@ export function insertDamageEvent(
 	targetPokemon: string, targetPlayer: string,
 	damageAmount: number, calculatedDamage: number, targetMaxhp: number, neutralBaseline: number,
 	sourceMove: string | null, sourceStatus: string | null, sourceHazard: string | null,
-	statusInflicted: string | null, isLethal: boolean
+	statusInflicted: string | null, isLethal: boolean, threatPower: number
 ): void {
 	stmt(database, 'ins_damage',
 		`INSERT INTO damage_event
 		 (game_id,turn,event_type,inflictor_pokemon,inflictor_player,
 		  target_pokemon,target_player,damage_amount,calculated_damage,target_maxhp,neutral_baseline_dmg,
-		  source_move,source_status,source_hazard,status_inflicted,is_lethal)
-		 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+		  source_move,source_status,source_hazard,status_inflicted,is_lethal,threat_power)
+		 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 	).run(
 		gameId, turn, eventType, inflictorPokemon, inflictorPlayer,
 		targetPokemon, targetPlayer, damageAmount, calculatedDamage, targetMaxhp, neutralBaseline,
-		sourceMove, sourceStatus, sourceHazard, statusInflicted, isLethal ? 1 : 0
+		sourceMove, sourceStatus, sourceHazard, statusInflicted, isLethal ? 1 : 0, Math.round(threatPower)
 	);
 }
 
+/**
+ * Insert one per-(game, player, species) rollup row. `stats` is keyed by column
+ * name → value; any column omitted falls back to its DB default (0/''). This
+ * object form lets the stat set evolve without churning a giant positional
+ * signature. Non-numeric `item` is allowed.
+ */
 export function insertPokemonGameStats(
 	database: Database.Database,
 	gameId: string, playerId: string, species: string,
 	brought: boolean, wasLead: boolean, outcome: 'win' | 'loss' | 'dnp',
-	dmgDealtTotal: number, dmgDealtDirect: number, dmgDealtResidual: number, dmgDealtHazard: number,
-	dmgDealtTrue: number,
-	dmgTakenTotal: number, dmgTakenDirect: number, dmgTakenResidual: number, dmgTakenHazard: number,
-	dmgTakenTrue: number,
-	dmgReducedTyping: number, dmgAmplifiedTyping: number, dmgReducedModifiers: number, dmgAvoided: number,
-	healingReceived: number, healingTrue: number,
-	kills: number, deaths: number, assists: number, turnsSurvived: number, immuneHits: number,
-	statusInflicted: number, hazardsSet: number, hazardsCleared: number,
-	item: string, itemIsMega: number
+	stats: {[column: string]: number | string}
 ): void {
-	database.prepare(
-		`INSERT INTO pokemon_game_stats
-		 (game_id,player_id,pokemon_species,brought,was_lead,outcome,
-		  dmg_dealt_total,dmg_dealt_direct,dmg_dealt_residual,dmg_dealt_hazard,dmg_dealt_true,
-		  dmg_taken_total,dmg_taken_direct,dmg_taken_residual,dmg_taken_hazard,dmg_taken_true,
-		  dmg_reduced_typing,dmg_amplified_typing,dmg_reduced_modifiers,dmg_avoided,
-		  healing_received,healing_true,kills,deaths,assists,turns_survived,immune_hits,
-		  status_inflicted,hazards_set,hazards_cleared,item,item_is_mega)
-		 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
-	).run(
-		gameId, playerId, species,
-		brought ? 1 : 0, wasLead ? 1 : 0, outcome,
-		dmgDealtTotal, dmgDealtDirect, dmgDealtResidual, dmgDealtHazard, dmgDealtTrue,
-		dmgTakenTotal, dmgTakenDirect, dmgTakenResidual, dmgTakenHazard, dmgTakenTrue,
-		dmgReducedTyping, dmgAmplifiedTyping, dmgReducedModifiers, dmgAvoided,
-		healingReceived, healingTrue, kills, deaths, assists, turnsSurvived, immuneHits,
-		statusInflicted, hazardsSet, hazardsCleared, item, itemIsMega
+	const cols = Object.keys(stats);
+	const sql =
+		`INSERT INTO pokemon_game_stats (game_id,player_id,pokemon_species,brought,was_lead,outcome` +
+		(cols.length ? ',' + cols.join(',') : '') +
+		`) VALUES (?,?,?,?,?,?` + cols.map(() => ',?').join('') + `)`;
+	database.prepare(sql).run(
+		gameId, playerId, species, brought ? 1 : 0, wasLead ? 1 : 0, outcome,
+		...cols.map(c => stats[c])
 	);
 }
 

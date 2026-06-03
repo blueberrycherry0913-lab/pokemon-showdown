@@ -18,7 +18,12 @@ import type Database from 'better-sqlite3';
 const ANALYTICS_DIR = path.join(__dirname, '../../../logs/analytics');
 const FULL_PATH = path.join(ANALYTICS_DIR, 'battle_report_full.json');
 const SUMMARY_PATH = path.join(ANALYTICS_DIR, 'battle_report_summary.json');
-const MIN_GAMES_FOR_LEADERBOARD = 1; // TODO: restore to 3 once testing is done
+// Leaderboard sample-size floors. Testing values now; real-play values in comments.
+const MIN_GAMES_FOR_LEADERBOARD = 1; // → 3
+const MIN_MOVES_USED = 1;            // → 10  (offense per-move stats)
+const MIN_HITS_FACED = 1;            // → 10  (Threat Absorbed)
+const MIN_MOVES_AIMED = 1;           // → 10  (Threats Nullified rate)
+const MIN_ACTIVE_TURNS = 1;          // → 10  (per-active-turn stats)
 
 // ---------------------------------------------------------------------------
 // Main entry point
@@ -46,34 +51,44 @@ export function generateReports(db: Database.Database): void {
 	// --- Summary report (slice from full data — no re-query) ---
 	const leaderboards: {[stat: string]: {top_10: object[]; bottom_10: object[]}} = {};
 
-	const statKeys: Array<[string, (p: PokemonRow) => number]> = [
-		['win_rate_when_brought', p => p.win_rate_when_brought],
-		['games_brought', p => p.games_brought],
-		['dmg_dealt_per_game', p => p.dmg_dealt_per_game],
-		['dmg_dealt_true_per_game', p => p.dmg_dealt_true_per_game],
-		['dmg_dealt_direct_per_game', p => p.dmg_dealt_direct_per_game],
-		['dmg_dealt_residual_per_game', p => p.dmg_dealt_residual_per_game],
-		['dmg_dealt_hazard_per_game', p => p.dmg_dealt_hazard_per_game],
-		['dmg_taken_per_game', p => p.dmg_taken_per_game],
-		['dmg_taken_true_per_game', p => p.dmg_taken_true_per_game],
-		['dmg_reduced_typing_per_game', p => p.dmg_reduced_typing_per_game],
-		['dmg_amplified_typing_per_game', p => p.dmg_amplified_typing_per_game],
-		['dmg_reduced_modifiers_per_game', p => p.dmg_reduced_modifiers_per_game],
-		['dmg_avoided_per_game', p => p.dmg_avoided_per_game],
-		['immune_hits_per_game', p => p.immune_hits_per_game],
-		['healing_per_game', p => p.healing_per_game],
-		['avg_turns_survived', p => p.avg_turns_survived],
-		['kda_ratio', p => p.kda_ratio],
-		['turns_survived_total', p => p.turns_survived_total],
-		['status_inflicted_total', p => p.status_inflicted_total],
-		['hazards_set_total', p => p.hazards_set_total],
-		['hazards_cleared_total', p => p.hazards_cleared_total],
+	// [key, accessor, eligibility] — each stat's floor depends on its denominator.
+	const byGames = (p: PokemonRow) => p.games_brought >= MIN_GAMES_FOR_LEADERBOARD;
+	const byMoves = (p: PokemonRow) => p.moves_used_total >= MIN_MOVES_USED;
+	const byHits = (p: PokemonRow) => p.hits_faced_total >= MIN_HITS_FACED;
+	const byAimed = (p: PokemonRow) => (p.hits_faced_total + p.threats_nullified_total) >= MIN_MOVES_AIMED;
+	const byTurns = (p: PokemonRow) => p.active_turns_total >= MIN_ACTIVE_TURNS;
+	const byPart = (p: PokemonRow) => p.games_participated >= MIN_GAMES_FOR_LEADERBOARD;
+
+	const statKeys: Array<[string, (p: PokemonRow) => number, (p: PokemonRow) => boolean]> = [
+		['win_rate_when_brought', p => p.win_rate_when_brought, byGames],
+		['games_brought', p => p.games_brought, byGames],
+		// offense (÷ moves used)
+		['threat_output_per_move', p => p.threat_output_per_move, byMoves],
+		['pct_max_hp_dealt_per_move', p => p.pct_max_hp_dealt_per_move, byMoves],
+		['true_damage_dealt_per_move', p => p.true_damage_dealt_per_move, byMoves],
+		// defense
+		['threat_absorbed_per_hit', p => p.threat_absorbed_per_hit, byHits],
+		['threats_nullified_rate', p => p.threats_nullified_rate, byAimed],
+		// per active turn
+		['healing_per_turn', p => p.healing_per_turn, byTurns],
+		['kills_per_turn', p => p.kills_per_turn, byTurns],
+		['assists_per_turn', p => p.assists_per_turn, byTurns],
+		// chip dealt (÷ games)
+		['residual_dealt_per_game', p => p.residual_dealt_per_game, byGames],
+		['hazard_dealt_per_game', p => p.hazard_dealt_per_game, byGames],
+		// outcome / presence
+		['death_rate', p => p.death_rate, byPart],
+		['kda_ratio', p => p.kda_ratio, byPart],
+		['avg_turns_survived', p => p.avg_turns_survived, byPart],
+		['turns_survived_total', p => p.turns_survived_total, byGames],
+		['status_inflicted_total', p => p.status_inflicted_total, byGames],
+		['hazards_set_total', p => p.hazards_set_total, byGames],
+		['hazards_cleared_total', p => p.hazards_cleared_total, byGames],
 	];
 
-	const eligible = pokemon.filter(p => p.games_brought >= MIN_GAMES_FOR_LEADERBOARD);
-
-	for (const [statKey, accessor] of statKeys) {
-		const sorted = [...eligible].sort((a, b) => accessor(b) - accessor(a));
+	for (const [statKey, accessor, eligible] of statKeys) {
+		const pool = pokemon.filter(eligible);
+		const sorted = [...pool].sort((a, b) => accessor(b) - accessor(a));
 		const top10 = sorted.slice(0, 10).map((p, i) => ({
 			rank: i + 1, species: p.species, value: accessor(p), games_brought: p.games_brought,
 		}));
@@ -141,197 +156,129 @@ function getMostBrought(db: Database.Database, playerId: string): string {
 
 interface PokemonRow {
 	species: string;
+	// presence / denominators
 	games_brought: number;
+	games_participated: number;
 	games_as_lead: number;
+	moves_used_total: number;
+	hits_faced_total: number;
+	active_turns_total: number;
+	turns_survived_total: number;
+	// win rates
 	win_rate_when_brought: number;
 	win_rate_as_lead: number;
-	avg_turns_survived: number;
-	dmg_dealt_total: number;
-	dmg_dealt_direct_total: number;
-	dmg_dealt_residual_total: number;
-	dmg_dealt_hazard_total: number;
-	dmg_dealt_per_game: number;
-	dmg_dealt_direct_per_game: number;
-	dmg_dealt_residual_per_game: number;
-	dmg_dealt_hazard_per_game: number;
-	dmg_dealt_true_total: number;
-	dmg_dealt_true_per_game: number;
-	dmg_taken_total: number;
-	dmg_taken_direct_total: number;
-	dmg_taken_residual_total: number;
-	dmg_taken_hazard_total: number;
-	dmg_taken_per_game: number;
-	dmg_taken_direct_per_game: number;
-	dmg_taken_residual_per_game: number;
-	dmg_taken_hazard_per_game: number;
-	dmg_taken_true_total: number;
-	dmg_taken_true_per_game: number;
-	dmg_reduced_typing_total: number;
-	dmg_reduced_typing_per_game: number;
-	dmg_amplified_typing_total: number;
-	dmg_amplified_typing_per_game: number;
-	dmg_reduced_modifiers_total: number;
-	dmg_reduced_modifiers_per_game: number;
-	dmg_avoided_total: number;
-	dmg_avoided_per_game: number;
-	healing_total: number;
-	healing_per_game: number;
-	healing_true_total: number;
-	healing_true_per_game: number;
-	kills_total: number;
-	kills_per_game: number;
+	// offense (÷ damaging moves used)
+	threat_output_per_move: number;
+	pct_max_hp_dealt_per_move: number;
+	true_damage_dealt_per_move: number;
+	// chip dealt (÷ games brought)
+	residual_dealt_per_game: number;
+	hazard_dealt_per_game: number;
+	// defense
+	threat_absorbed_per_hit: number;
+	threats_nullified_rate: number;
+	threats_nullified_total: number;
+	// per active turn
+	healing_per_turn: number;
+	kills_per_turn: number;
+	assists_per_turn: number;
+	// outcome
+	death_rate: number;
 	deaths_total: number;
-	deaths_per_game: number;
-	assists_total: number;
-	assists_per_game: number;
 	kda_ratio: number;
-	immune_hits_total: number;
-	immune_hits_per_game: number;
-	turns_survived_total: number;
+	avg_turns_survived: number; // per participated game
+	// flat totals
 	status_inflicted_total: number;
-	status_inflicted_per_game: number;
 	hazards_set_total: number;
-	hazards_set_per_game: number;
 	hazards_cleared_total: number;
-	hazards_cleared_per_game: number;
+	kills_total: number;
+	assists_total: number;
+	threat_output_raw_total: number;
+	threat_absorbed_raw_total: number;
 }
 
 function getPokemon(db: Database.Database): PokemonRow[] {
-	// Aggregate per species across all non-excluded players.
-	// "per game" = divided by games where brought=1 for that species.
 	const rows = db.prepare(`
 		SELECT
-			pgs.pokemon_species                           AS species,
-			COUNT(*)                                      AS games_brought,
-			SUM(pgs.was_lead)                             AS games_as_lead,
+			pgs.pokemon_species                                   AS species,
+			COUNT(*)                                              AS games_brought,
+			SUM(CASE WHEN pgs.outcome != 'dnp' THEN 1 ELSE 0 END) AS games_participated,
+			SUM(pgs.was_lead)                                     AS games_as_lead,
 			SUM(CASE WHEN pgs.outcome = 'win' THEN 1 ELSE 0 END)  AS wins_brought,
 			SUM(CASE WHEN pgs.was_lead = 1 AND pgs.outcome = 'win' THEN 1 ELSE 0 END) AS wins_lead,
 			SUM(CASE WHEN pgs.was_lead = 1 THEN 1 ELSE 0 END)     AS lead_count,
-			SUM(pgs.turns_survived)                       AS turns_survived_total,
-			SUM(pgs.dmg_dealt_total)                      AS dmg_dealt_total,
-			SUM(pgs.dmg_dealt_direct)                     AS dmg_dealt_direct_total,
-			SUM(pgs.dmg_dealt_residual)                   AS dmg_dealt_residual_total,
-			SUM(pgs.dmg_dealt_hazard)                     AS dmg_dealt_hazard_total,
-			SUM(pgs.dmg_dealt_true)                       AS dmg_dealt_true_total,
-			SUM(pgs.dmg_taken_total)                      AS dmg_taken_total,
-			SUM(pgs.dmg_taken_direct)                     AS dmg_taken_direct_total,
-			SUM(pgs.dmg_taken_residual)                   AS dmg_taken_residual_total,
-			SUM(pgs.dmg_taken_hazard)                     AS dmg_taken_hazard_total,
-			SUM(pgs.dmg_taken_true)                       AS dmg_taken_true_total,
-			SUM(pgs.dmg_reduced_typing)                   AS dmg_reduced_typing_total,
-			SUM(pgs.dmg_amplified_typing)                 AS dmg_amplified_typing_total,
-			SUM(pgs.dmg_reduced_modifiers)                AS dmg_reduced_modifiers_total,
-			SUM(pgs.dmg_avoided)                          AS dmg_avoided_total,
-			SUM(pgs.healing_received)                     AS healing_total,
-			SUM(pgs.healing_true)                         AS healing_true_total,
-			SUM(pgs.kills)                                AS kills_total,
-			SUM(pgs.deaths)                               AS deaths_total,
-			SUM(pgs.assists)                              AS assists_total,
-			SUM(pgs.immune_hits)                          AS immune_hits_total,
-			SUM(pgs.status_inflicted)                     AS status_inflicted_total,
-			SUM(pgs.hazards_set)                          AS hazards_set_total,
-			SUM(pgs.hazards_cleared)                      AS hazards_cleared_total
+			SUM(pgs.turns_survived)                               AS active_turns_total,
+			SUM(pgs.moves_used)                                   AS moves_used_total,
+			SUM(pgs.hits_faced)                                   AS hits_faced_total,
+			SUM(pgs.threat_output_raw)                            AS threat_output_raw_total,
+			SUM(pgs.threat_absorbed_raw)                          AS threat_absorbed_raw_total,
+			SUM(pgs.threats_nullified)                            AS threats_nullified_total,
+			SUM(pgs.dmg_dealt_direct)                             AS pct_max_hp_dealt_total,
+			SUM(pgs.dmg_dealt_true)                               AS true_damage_dealt_total,
+			SUM(pgs.dmg_dealt_residual)                           AS residual_dealt_total,
+			SUM(pgs.dmg_dealt_hazard)                             AS hazard_dealt_total,
+			SUM(pgs.healing_received)                             AS healing_total,
+			SUM(pgs.kills)                                        AS kills_total,
+			SUM(pgs.deaths)                                       AS deaths_total,
+			SUM(pgs.assists)                                      AS assists_total,
+			SUM(pgs.status_inflicted)                             AS status_inflicted_total,
+			SUM(pgs.hazards_set)                                  AS hazards_set_total,
+			SUM(pgs.hazards_cleared)                              AS hazards_cleared_total
 		FROM pokemon_game_stats pgs
 		JOIN player_record pr ON pgs.player_id = pr.player_id
 		WHERE pr.is_excluded = 0 AND pgs.brought = 1
 		GROUP BY pgs.pokemon_species
-	`).all() as Array<{
-		species: string;
-		games_brought: number;
-		games_as_lead: number;
-		wins_brought: number;
-		wins_lead: number;
-		lead_count: number;
-		turns_survived_total: number;
-		dmg_dealt_total: number;
-		dmg_dealt_direct_total: number;
-		dmg_dealt_residual_total: number;
-		dmg_dealt_hazard_total: number;
-		dmg_dealt_true_total: number;
-		dmg_taken_total: number;
-		dmg_taken_direct_total: number;
-		dmg_taken_residual_total: number;
-		dmg_taken_hazard_total: number;
-		dmg_taken_true_total: number;
-		dmg_reduced_typing_total: number;
-		dmg_amplified_typing_total: number;
-		dmg_reduced_modifiers_total: number;
-		dmg_avoided_total: number;
-		healing_total: number;
-		healing_true_total: number;
-		kills_total: number;
-		deaths_total: number;
-		assists_total: number;
-		immune_hits_total: number;
-		status_inflicted_total: number;
-		hazards_set_total: number;
-		hazards_cleared_total: number;
-	}>;
+	`).all() as Array<{[k: string]: number} & {species: string}>;
 
 	return rows.map(r => {
 		const gb = r.games_brought;
-		const pg = (n: number) => gb > 0 ? round2(n / gb) : 0;
-		const kda = round2((r.kills_total + r.assists_total) / Math.max(r.deaths_total, 1));
+		const gp = r.games_participated || 0;
+		const mu = r.moves_used_total || 0;
+		const hf = r.hits_faced_total || 0;
+		const at = r.active_turns_total || 0;
+		const movesAimed = hf + (r.threats_nullified_total || 0);
+		const perMove = (n: number) => mu > 0 ? round2(n / mu) : 0;
+		const perTurn = (n: number) => at > 0 ? round2(n / at) : 0;
+		const perGame = (n: number) => gb > 0 ? round2(n / gb) : 0;
 		return {
 			species: r.species,
 			games_brought: gb,
+			games_participated: gp,
 			games_as_lead: r.games_as_lead,
+			moves_used_total: mu,
+			hits_faced_total: hf,
+			active_turns_total: at,
+			turns_survived_total: at,
 			win_rate_when_brought: gb > 0 ? round2(r.wins_brought / gb) : 0,
 			win_rate_as_lead: r.lead_count > 0 ? round2(r.wins_lead / r.lead_count) : 0,
-			avg_turns_survived: pg(r.turns_survived_total),
 
-			dmg_dealt_total: round2(r.dmg_dealt_total),
-			dmg_dealt_direct_total: round2(r.dmg_dealt_direct_total),
-			dmg_dealt_residual_total: round2(r.dmg_dealt_residual_total),
-			dmg_dealt_hazard_total: round2(r.dmg_dealt_hazard_total),
-			dmg_dealt_per_game: pg(r.dmg_dealt_total),
-			dmg_dealt_direct_per_game: pg(r.dmg_dealt_direct_total),
-			dmg_dealt_residual_per_game: pg(r.dmg_dealt_residual_total),
-			dmg_dealt_hazard_per_game: pg(r.dmg_dealt_hazard_total),
-			dmg_dealt_true_total: round2(r.dmg_dealt_true_total),
-			dmg_dealt_true_per_game: pg(r.dmg_dealt_true_total),
+			threat_output_per_move: Math.round(mu > 0 ? r.threat_output_raw_total / mu : 0),
+			pct_max_hp_dealt_per_move: perMove(r.pct_max_hp_dealt_total),
+			true_damage_dealt_per_move: perMove(r.true_damage_dealt_total),
 
-			dmg_taken_total: round2(r.dmg_taken_total),
-			dmg_taken_direct_total: round2(r.dmg_taken_direct_total),
-			dmg_taken_residual_total: round2(r.dmg_taken_residual_total),
-			dmg_taken_hazard_total: round2(r.dmg_taken_hazard_total),
-			dmg_taken_per_game: pg(r.dmg_taken_total),
-			dmg_taken_direct_per_game: pg(r.dmg_taken_direct_total),
-			dmg_taken_residual_per_game: pg(r.dmg_taken_residual_total),
-			dmg_taken_hazard_per_game: pg(r.dmg_taken_hazard_total),
-			dmg_taken_true_total: round2(r.dmg_taken_true_total),
-			dmg_taken_true_per_game: pg(r.dmg_taken_true_total),
+			residual_dealt_per_game: perGame(r.residual_dealt_total),
+			hazard_dealt_per_game: perGame(r.hazard_dealt_total),
 
-			dmg_reduced_typing_total: round2(r.dmg_reduced_typing_total),
-			dmg_reduced_typing_per_game: pg(r.dmg_reduced_typing_total),
-			dmg_amplified_typing_total: round2(r.dmg_amplified_typing_total),
-			dmg_amplified_typing_per_game: pg(r.dmg_amplified_typing_total),
-			dmg_reduced_modifiers_total: round2(r.dmg_reduced_modifiers_total),
-			dmg_reduced_modifiers_per_game: pg(r.dmg_reduced_modifiers_total),
-			dmg_avoided_total: round2(r.dmg_avoided_total),
-			dmg_avoided_per_game: pg(r.dmg_avoided_total),
+			threat_absorbed_per_hit: Math.round(hf > 0 ? r.threat_absorbed_raw_total / hf : 0),
+			threats_nullified_rate: movesAimed > 0 ? round2((r.threats_nullified_total || 0) / movesAimed) : 0,
+			threats_nullified_total: r.threats_nullified_total || 0,
 
-			healing_total: round2(r.healing_total),
-			healing_per_game: pg(r.healing_total),
-			healing_true_total: round2(r.healing_true_total),
-			healing_true_per_game: pg(r.healing_true_total),
+			healing_per_turn: perTurn(r.healing_total),
+			kills_per_turn: perTurn(r.kills_total),
+			assists_per_turn: perTurn(r.assists_total),
 
-			kills_total: r.kills_total,
-			kills_per_game: pg(r.kills_total),
+			death_rate: gp > 0 ? round2(r.deaths_total / gp) : 0,
 			deaths_total: r.deaths_total,
-			deaths_per_game: pg(r.deaths_total),
-			assists_total: r.assists_total,
-			assists_per_game: pg(r.assists_total),
-			kda_ratio: kda,
-			immune_hits_total: r.immune_hits_total,
-			immune_hits_per_game: pg(r.immune_hits_total),
-			turns_survived_total: r.turns_survived_total,
+			kda_ratio: round2((r.kills_total + r.assists_total) / Math.max(r.deaths_total, 1)),
+			avg_turns_survived: gp > 0 ? round2(at / gp) : 0,
+
 			status_inflicted_total: r.status_inflicted_total,
-			status_inflicted_per_game: pg(r.status_inflicted_total),
 			hazards_set_total: r.hazards_set_total,
-			hazards_set_per_game: pg(r.hazards_set_total),
 			hazards_cleared_total: r.hazards_cleared_total,
-			hazards_cleared_per_game: pg(r.hazards_cleared_total),
+			kills_total: r.kills_total,
+			assists_total: r.assists_total,
+			threat_output_raw_total: Math.round(r.threat_output_raw_total || 0),
+			threat_absorbed_raw_total: Math.round(r.threat_absorbed_raw_total || 0),
 		};
 	});
 }

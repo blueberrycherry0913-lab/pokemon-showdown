@@ -18347,6 +18347,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 					this.add('analytic', 'subavoid', JSON.stringify({
 						t: this.turn, tp: target.species.name, tpl: target.side.id,
 						av: damage, mhp: target.maxhp,
+						tpow: (move as any).analyticsThreatPower ?? 0,
 					}));
 				}
 				if (damage > target.volatiles['substitute'].hp) {

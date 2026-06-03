@@ -470,6 +470,17 @@ export class BattleActions {
 			target = targets[targets.length - 1]; // in case of redirection
 		}
 
+		// Analytics: a damaging move was USED. Compute its Threat Power once here
+		// (attacker-side EV; covers misses/immunities too), store it on the active
+		// move so damage/subavoid events can reuse it, and emit the offense event.
+		if (move.category !== 'Status' && target) {
+			const tpow = this.analyticsThreatPower(pokemon, target, move);
+			(move as any).analyticsThreatPower = tpow;
+			this.battle.add('analytic', 'threatused', JSON.stringify({
+				ip: pokemon.species.name, ipl: pokemon.side.id, tpow,
+			}));
+		}
+
 		const callerMoveForPressure = sourceEffect && (sourceEffect as ActiveMove).pp ? sourceEffect as ActiveMove : null;
 		if (!sourceEffect || callerMoveForPressure || sourceEffect.id === 'pursuit') {
 			let extraPP = 0;
@@ -1918,6 +1929,73 @@ export class BattleActions {
 		let damage = tr(baseDamage, 16);
 		damage = this.battle.randomizer(damage);
 		return Math.max(1, damage);
+	}
+
+	/**
+	 * Analytics: "Threat Power" of a damaging move — an attacker-side, target-agnostic,
+	 * expected-value figure. No Defense, no type effectiveness, no defender anything.
+	 *   ((2L/5+2)*Power*Atk/50 + 2) * STAB * E[crit] * Acc   (roll = max 1.0)
+	 * Computed once per damaging move used (incl. misses/immunities) in useMoveInner.
+	 */
+	analyticsThreatPower(source: Pokemon, target: Pokemon, move: ActiveMove): number {
+		const battle = this.battle;
+		const tr = battle.trunc;
+		if (battle.getCategory(move) === 'Status') return 0;
+		let basePower: number | false | null = move.basePower;
+		if (move.basePowerCallback) basePower = move.basePowerCallback.call(battle, source, target, move);
+		if (!basePower) return 0;
+		basePower = battle.clampIntRange(basePower, 1);
+		basePower = battle.runEvent('BasePower', source, target, move, basePower, true);
+		if (!basePower) return 0;
+		basePower = battle.clampIntRange(basePower, 1);
+
+		const level = source.level;
+		const isPhysical = move.category === 'Physical';
+		const attackStat: StatIDExceptHP = move.overrideOffensiveStat || (isPhysical ? 'atk' : 'spa');
+		const attacker = move.overrideOffensivePokemon === 'target' ? target : source;
+		let atk = attacker.calculateStat(attackStat, attacker.boosts[attackStat], 1, source);
+		atk = battle.runEvent('Modify' + (isPhysical ? 'Atk' : 'SpA'), source, target, move, atk);
+
+		// base, with no /Defense
+		let threat = tr(tr((2 * level / 5 + 2) * basePower * atk) / 50) + 2;
+
+		// STAB (engine's actual type-order STAB, via the format's onModifySTAB)
+		if (move.type && move.type !== '???') {
+			const isSTAB = move.forceSTAB || source.hasType(move.type) || source.getTypes(false, true).includes(move.type);
+			let stab: number = isSTAB ? 1.5 : 1;
+			if (source.terastallized === move.type && source.getTypes(false, true).includes(move.type)) stab = 2;
+			stab = battle.runEvent('ModifySTAB', source, target, move, stab);
+			threat *= stab;
+		}
+
+		// E[crit] — attacker-side crit chance only (exclude defender Fairy halving)
+		let critRatio = battle.clampIntRange(battle.runEvent('ModifyCritRatio', source, target, move, move.critRatio || 0), 0, 4);
+		const critMult = battle.gen === 6 ? [0, 16, 8, 2, 1] : [0, 24, 8, 2, 1];
+		let pCrit = 0;
+		if (move.willCrit) pCrit = 1;
+		else if (critRatio > 0 && critMult[critRatio] > 0) pCrit = 1 / critMult[critRatio];
+		const critDmg = move.critModifier || (battle.gen >= 6 ? 1.5 : 2);
+		threat *= (1 - pCrit) + pCrit * critDmg;
+
+		// Accuracy — attacker-only factors
+		threat *= this.analyticsAttackerAccuracy(source, move);
+
+		return threat;
+	}
+
+	/** Attacker-only accuracy fraction (excludes defender evasion / defender abilities). */
+	analyticsAttackerAccuracy(source: Pokemon, move: ActiveMove): number {
+		if (move.accuracy === true) return 1;
+		if (source.hasAbility('noguard')) return 1;
+		let acc = move.accuracy / 100;
+		const stage = source.boosts.accuracy || 0;
+		if (stage > 0) acc *= (3 + stage) / 3;
+		else if (stage < 0) acc *= 3 / (3 - stage);
+		if (source.hasAbility('compoundeyes')) acc *= 1.3;
+		if (source.hasAbility('victorystar')) acc *= 1.1;
+		if (source.hasAbility('hustle') && move.category === 'Physical') acc *= 0.8;
+		if (source.getItem().id === 'widelens') acc *= 1.1;
+		return acc > 1 ? 1 : acc;
 	}
 
 	// #endregion

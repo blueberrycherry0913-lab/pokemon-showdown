@@ -2552,30 +2552,23 @@ export class Battle {
 			srcLabel = effect.name || effect.id || null;
 		}
 
-		// For direct move damage, read avoidance factors from MoveHitData.
-		let neutralBaseline = damage;
-		let typeMod = 0;
-		let stageFactor = 1;
-		let screenMult = 1;
+		// For direct move damage, read the move's Threat Power and detect any
+		// relevant screen (for the Threat Absorbed split). Screen detection is
+		// independent of crit so the 50/50 split applies per spec even on crit-bypass.
+		let threatPower = 0;
 		let screenSetterSpecies: string | null = null;
 		let screenSetterPlayer: string | null = null;
 		if (eventType === 'direct' && effect.effectType === 'Move') {
-			const hitData = target.getMoveHitData(effect as ActiveMove);
-			neutralBaseline = hitData.neutralBaseline ?? damage;
-			typeMod = hitData.typeMod ?? 0;
-			stageFactor = hitData.avoidStageFactor ?? 1;
-			screenMult = hitData.avoidScreenMult ?? 1;
-			if (screenMult < 1) {
-				// Identify the screen + its setter to credit the avoidance
-				const conds = target.side.sideConditions as any;
-				const moveCat = (effect as ActiveMove).category;
-				const screenId = conds['auroraveil'] ? 'auroraveil' :
-					(moveCat === 'Physical' ? 'reflect' : 'lightscreen');
-				const setter = conds[screenId]?.source as Pokemon | undefined;
-				if (setter?.species) {
-					screenSetterSpecies = setter.species.name;
-					screenSetterPlayer = setter.side?.id ?? null;
-				}
+			threatPower = (effect as any).analyticsThreatPower ?? 0;
+			const conds = target.side.sideConditions as any;
+			const moveCat = (effect as ActiveMove).category;
+			const screenId = conds['auroraveil'] ? 'auroraveil' :
+				(moveCat === 'Physical' ? (conds['reflect'] ? 'reflect' : '') :
+					(conds['lightscreen'] ? 'lightscreen' : ''));
+			const setter = screenId ? conds[screenId]?.source as Pokemon | undefined : undefined;
+			if (setter?.species && moveCat !== 'Status') {
+				screenSetterSpecies = setter.species.name;
+				screenSetterPlayer = setter.side?.id ?? null;
 			}
 		}
 
@@ -2591,11 +2584,8 @@ export class Battle {
 			d: damage,             // actual HP removed (clamped to remaining HP)
 			c: calculated,         // calculated damage before HP-clamp (for True/overkill)
 			mhp: maxHp,            // target's max HP (for % normalization)
-			b: neutralBaseline,
-			tm: typeMod,
-			fstage: stageFactor,   // base-damage factor from favorable stat stages (≤1)
-			fscreen: screenMult,   // screen reduction multiplier (≤1)
-			ssp: screenSetterSpecies, // screen setter species (avoidance credited here)
+			tpow: threatPower,     // move's Threat Power (for Threat Absorbed)
+			ssp: screenSetterSpecies, // screen setter species (Threat Absorbed split)
 			sspl: screenSetterPlayer,
 			src: srcLabel,
 			lethal: isLethal,
@@ -3577,12 +3567,18 @@ export class Battle {
 	}
 
 	add(...parts: (Part | (() => { side: SideID, secret: string, shared: string }))[]) {
-		// Analytics: count immune hits (type- or ability-based) that occur during a
-		// move. The recursive this.add('analytic', ...) call has parts[0]='analytic'
-		// so it does not re-trigger this branch.
-		if (parts[0] === '-immune' && this.activeMove && parts[1] instanceof Pokemon) {
-			const t = parts[1];
-			this.add('analytic', 'immune', JSON.stringify({ t: this.turn, tp: t.species.name, tpl: t.side.id }));
+		// Analytics: a DAMAGING move that did nothing to the target — a type/ability
+		// immunity (-immune) or a miss (-miss) — counts toward Threats Nullified.
+		// The recursive this.add('analytic', ...) has parts[0]='analytic' so it does
+		// not re-trigger this branch.
+		if (this.activeMove && this.activeMove.category !== 'Status') {
+			if (parts[0] === '-immune' && parts[1] instanceof Pokemon) {
+				const t = parts[1];
+				this.add('analytic', 'nullified', JSON.stringify({ tp: t.species.name, tpl: t.side.id, kind: 'immune' }));
+			} else if (parts[0] === '-miss' && parts[2] instanceof Pokemon) {
+				const t = parts[2];
+				this.add('analytic', 'nullified', JSON.stringify({ tp: t.species.name, tpl: t.side.id, kind: 'miss' }));
+			}
 		}
 
 		if (!parts.some(part => typeof part === 'function')) {

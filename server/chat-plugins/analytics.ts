@@ -32,33 +32,34 @@ interface PlayerRow {
 interface PokemonRow {
 	species: string;
 	games_brought: number;
+	games_participated: number;
+	moves_used_total: number;
+	hits_faced_total: number;
+	active_turns_total: number;
 	win_rate_when_brought: number;
-	avg_turns_survived: number;
-	dmg_dealt_per_game: number;
-	dmg_dealt_true_per_game: number;
-	dmg_dealt_direct_per_game: number;
-	dmg_dealt_residual_per_game: number;
-	dmg_dealt_hazard_per_game: number;
-	dmg_taken_per_game: number;
-	dmg_taken_true_per_game: number;
-	dmg_reduced_typing_per_game: number;
-	dmg_amplified_typing_per_game: number;
-	dmg_reduced_modifiers_per_game: number;
-	dmg_avoided_per_game: number;
-	healing_per_game: number;
-	kills_total: number;
+	threat_output_per_move: number;
+	pct_max_hp_dealt_per_move: number;
+	true_damage_dealt_per_move: number;
+	residual_dealt_per_game: number;
+	hazard_dealt_per_game: number;
+	threat_absorbed_per_hit: number;
+	threats_nullified_rate: number;
+	threats_nullified_total: number;
+	healing_per_turn: number;
+	kills_per_turn: number;
+	assists_per_turn: number;
+	death_rate: number;
 	deaths_total: number;
-	assists_total: number;
-	kills_per_game: number;
-	deaths_per_game: number;
-	assists_per_game: number;
 	kda_ratio: number;
-	immune_hits_total: number;
-	immune_hits_per_game: number;
+	avg_turns_survived: number;
 	turns_survived_total: number;
 	status_inflicted_total: number;
 	hazards_set_total: number;
 	hazards_cleared_total: number;
+	kills_total: number;
+	assists_total: number;
+	threat_output_raw_total: number;
+	threat_absorbed_raw_total: number;
 }
 
 interface FullReport {
@@ -183,21 +184,28 @@ function buildPlayers(players: PlayerRow[]): string {
 	return buf + '</table>';
 }
 
-// All damage/healing stats are % of max HP (averaged per game brought).
 const pctOf = (v: number) => v.toFixed(1) + '%';
+const num0 = (v: number) => Math.round(v).toLocaleString(); // big raw threat numbers
 const STAT_LABELS: {[k: string]: {label: string; fmt: (v: number) => string; desc: string}} = {
 	win_rate_when_brought: {label: 'Win Rate', fmt: pct, desc: 'Win % when this species is on the team'},
-	dmg_dealt_per_game: {label: 'Damage Dealt / Game', fmt: pctOf, desc: 'Avg % of targets’ max HP dealt per game (capped at 100% per hit)'},
-	dmg_dealt_true_per_game: {label: 'True Damage Dealt / Game', fmt: pctOf, desc: 'Like Damage Dealt but uncapped — counts overkill / >100% nukes'},
-	dmg_taken_per_game: {label: 'Damage Taken / Game', fmt: pctOf, desc: 'Avg % of own max HP lost per game (capped at 100% per hit)'},
+	// Offense — per damaging move used
+	threat_output_per_move: {label: 'Threat Output / Move', fmt: num0, desc: 'Avg Threat Power generated per damaging move used (attacker-side EV — how hard it hits). Raw, relative number.'},
+	pct_max_hp_dealt_per_move: {label: '% Max HP Dealt / Move', fmt: pctOf, desc: 'Avg % of a target’s max HP realized per damaging move used (capped at 100% per hit)'},
+	true_damage_dealt_per_move: {label: 'True Damage Dealt / Move', fmt: pctOf, desc: 'Like % Max HP Dealt but uncapped — counts overkill / >100% nukes'},
+	// Defense
+	threat_absorbed_per_hit: {label: 'Threat Absorbed / Hit', fmt: num0, desc: 'Avg Threat Power soaked per direct hit faced — survived hits log the threat in full, fainting logs 0. The wall stat.'},
+	threats_nullified_rate: {label: 'Threats Nullified', fmt: pct, desc: 'Fraction of damaging moves aimed at it that did nothing — type/ability immunity or a miss (evasion). Where immunity & evasion shine.'},
+	// Per active turn
+	healing_per_turn: {label: 'Healing Caused / Turn', fmt: pctOf, desc: 'Avg % HP of healing this Pokémon caused, per turn it was on the field (Wish credits the wisher, etc.)'},
+	kills_per_turn: {label: 'Kills / Turn', fmt: v => v.toFixed(2), desc: 'KOs secured per turn active on the field'},
+	assists_per_turn: {label: 'Assists / Turn', fmt: v => v.toFixed(2), desc: 'Assists per turn active on the field'},
+	// Chip dealt (÷ games)
+	residual_dealt_per_game: {label: 'Residual Damage / Game', fmt: pctOf, desc: 'Avg % max HP of residual chip (burn/poison/leech/etc.) this Pokémon dealt per game'},
+	hazard_dealt_per_game: {label: 'Hazard Damage / Game', fmt: pctOf, desc: 'Avg % max HP of entry-hazard damage credited to this Pokémon (the setter) per game'},
+	// Outcome / presence
 	kda_ratio: {label: 'KDA', fmt: v => v.toFixed(2), desc: '(Kills + Assists) / max(Deaths, 1)'},
-	healing_per_game: {label: 'Healing Caused / Game', fmt: pctOf, desc: 'Avg % of HP this Pokémon caused to be healed per game (Wish credits the wisher, etc.)'},
-	avg_turns_survived: {label: 'Turns Survived', fmt: v => v.toFixed(1), desc: 'Avg turns active on field per game brought'},
-	dmg_avoided_per_game: {label: 'Damage Avoided / Game', fmt: pctOf, desc: 'Avg % max HP of damage prevented per game — typing resists, stat stages, abilities/items, Substitute, and screens (screens credited to the setter)'},
-	immune_hits_per_game: {label: 'Immune Hits / Game', fmt: v => v.toFixed(2), desc: 'Avg number of fully-immune hits absorbed per game (type immunity or ability — Levitate, Volt Absorb, Flash Fire, etc.)'},
-	dmg_reduced_typing_per_game: {label: 'Dmg Avoided (Typing)', fmt: pctOf, desc: 'Avg % max HP of damage blocked by type resistances per game'},
-	dmg_amplified_typing_per_game: {label: 'Dmg Amplified (Typing)', fmt: pctOf, desc: 'Avg % max HP of extra damage taken from type weaknesses per game'},
-	dmg_reduced_modifiers_per_game: {label: 'Dmg Avoided (Modifiers)', fmt: pctOf, desc: 'Avg % max HP of damage blocked by screens/buffs/abilities per game'},
+	death_rate: {label: 'Death Rate', fmt: pct, desc: 'Fraction of games it participated in where it fainted'},
+	avg_turns_survived: {label: 'Turns Survived', fmt: v => v.toFixed(1), desc: 'Avg turns active on field per game it participated in'},
 	games_brought: {label: 'Times Brought', fmt: v => String(v), desc: 'Total number of times this species was brought to a battle (counts each player separately)'},
 	turns_survived_total: {label: 'Most Turns Survived', fmt: v => String(v), desc: 'Total turns spent active on the field across all games'},
 	status_inflicted_total: {label: 'Most Status Inflicted', fmt: v => String(v), desc: 'Total non-volatile statuses (burn/poison/sleep/etc.) this species inflicted on foes'},
@@ -257,7 +265,7 @@ function buildSpeciesTable(pokemon: PokemonRow[]): string {
 	<table class="ladder" style="width:100%;font-size:.9em">
 		<tr>
 			<th>Species</th><th>Brought</th><th>Win%</th>
-			<th>Dealt%/g</th><th>True%/g</th><th>Taken%/g</th><th>Heal%/g</th>
+			<th>Threat Out/Move</th><th>%HP Dealt/Move</th><th>Threat Abs/Hit</th><th>Nullified%</th>
 			<th>K</th><th>D</th><th>A</th><th>KDA</th><th>Turns</th>
 		</tr>`;
 	// Defensive against stale report files that predate newer fields.
@@ -269,10 +277,10 @@ function buildSpeciesTable(pokemon: PokemonRow[]): string {
 			<td><strong>${h(p.species)}</strong></td>
 			<td>${h(num(p.games_brought))}</td>
 			<td>${pct(num(p.win_rate_when_brought))}</td>
-			<td>${h(num(p.dmg_dealt_per_game).toFixed(1))}%</td>
-			<td>${h(num(p.dmg_dealt_true_per_game).toFixed(1))}%</td>
-			<td>${h(num(p.dmg_taken_per_game).toFixed(1))}%</td>
-			<td>${h(num(p.healing_per_game).toFixed(1))}%</td>
+			<td>${h(Math.round(num(p.threat_output_per_move)).toLocaleString())}</td>
+			<td>${h(num(p.pct_max_hp_dealt_per_move).toFixed(1))}%</td>
+			<td>${h(Math.round(num(p.threat_absorbed_per_hit)).toLocaleString())}</td>
+			<td>${pct(num(p.threats_nullified_rate))}</td>
 			<td>${h(num(p.kills_total))}</td>
 			<td>${h(num(p.deaths_total))}</td>
 			<td>${h(num(p.assists_total))}</td>
@@ -306,27 +314,20 @@ function buildItems(items?: Array<{item: string; count: number}>): string {
 // Every numeric column on pokemon_game_stats, in display order.
 // `pctCol` marks values that are % of max HP (shown with 1 decimal + %).
 const PGS_NUMERIC_COLUMNS: [string, string, boolean][] = [
-	['dmg_dealt_total', 'Dealt', true],
-	['dmg_dealt_direct', 'Dealt(dir)', true],
-	['dmg_dealt_residual', 'Dealt(res)', true],
-	['dmg_dealt_hazard', 'Dealt(haz)', true],
-	['dmg_dealt_true', 'Dealt(true)', true],
-	['dmg_taken_total', 'Taken', true],
-	['dmg_taken_direct', 'Taken(dir)', true],
-	['dmg_taken_residual', 'Taken(res)', true],
-	['dmg_taken_hazard', 'Taken(haz)', true],
-	['dmg_taken_true', 'Taken(true)', true],
-	['dmg_avoided', 'Avoided', true],
-	['dmg_reduced_typing', 'Red(type)', true],
-	['dmg_amplified_typing', 'Amp(type)', true],
-	['dmg_reduced_modifiers', 'Red(mod)', true],
-	['healing_received', 'Heal', true],
-	['healing_true', 'Heal(true)', true],
+	['threat_output_raw', 'ThreatOut', false],
+	['moves_used', 'Moves', false],
+	['dmg_dealt_direct', 'Dealt%', true],
+	['dmg_dealt_true', 'True%', true],
+	['dmg_dealt_residual', 'Resid%', true],
+	['dmg_dealt_hazard', 'Hazard%', true],
+	['threat_absorbed_raw', 'ThreatAbs', false],
+	['hits_faced', 'HitsFaced', false],
+	['threats_nullified', 'Nullified', false],
+	['healing_received', 'Heal%', true],
 	['kills', 'K', false],
 	['deaths', 'D', false],
 	['assists', 'A', false],
 	['turns_survived', 'Turns', false],
-	['immune_hits', 'Immune', false],
 	['status_inflicted', 'Status', false],
 	['hazards_set', 'HazSet', false],
 	['hazards_cleared', 'HazClr', false],
@@ -502,17 +503,19 @@ export const pages: Chat.PageTable = {
 
 		const statOrder = [
 			'win_rate_when_brought',
-			'dmg_dealt_per_game',
-			'dmg_dealt_true_per_game',
+			'threat_output_per_move',
+			'pct_max_hp_dealt_per_move',
+			'true_damage_dealt_per_move',
+			'threat_absorbed_per_hit',
+			'threats_nullified_rate',
 			'kda_ratio',
-			'dmg_taken_per_game',
-			'dmg_avoided_per_game',
-			'immune_hits_per_game',
-			'healing_per_game',
+			'death_rate',
+			'kills_per_turn',
+			'assists_per_turn',
+			'healing_per_turn',
 			'avg_turns_survived',
-			'dmg_reduced_typing_per_game',
-			'dmg_amplified_typing_per_game',
-			'dmg_reduced_modifiers_per_game',
+			'residual_dealt_per_game',
+			'hazard_dealt_per_game',
 			'games_brought',
 			'turns_survived_total',
 			'status_inflicted_total',

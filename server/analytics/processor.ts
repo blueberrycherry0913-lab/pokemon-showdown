@@ -30,11 +30,8 @@ interface DmgEvent {
 	d: number;            // actual damage (HP removed, clamped)
 	c: number;            // calculated damage (pre-clamp, for True/overkill)
 	mhp: number;          // target's max HP (for % normalization)
-	b: number;            // neutral baseline
-	tm: number;           // typeMod
-	fstage?: number;      // base-damage factor from favorable stat stages (≤1)
-	fscreen?: number;     // screen reduction multiplier (≤1)
-	ssp?: string | null;  // screen setter species (avoidance credited here)
+	tpow?: number;        // Threat Power of the move (for Threat Absorbed)
+	ssp?: string | null;  // screen setter species (Threat Absorbed split)
 	sspl?: string | null; // screen setter player slot
 	src: string | null;   // source move/status/hazard name
 	lethal: boolean;
@@ -72,17 +69,21 @@ interface EndPayload {
 
 interface SubAvoidEvent {
 	t: number;
-	tp: string;           // substitute owner species (credited the avoidance)
+	tp: string;           // substitute owner species (credited)
 	tpl: string;          // owner player slot
 	av: number;           // would-be damage the sub absorbed
 	mhp: number;          // owner max HP
+	tpow?: number;        // Threat Power of the intercepted move
 }
 
-interface ImmuneEvent {
-	t: number;
-	tp: string;   // species that was immune
-	tpl: string;  // player slot
+interface NullifiedEvent {
+	tp: string;           // species the move did nothing to
+	tpl: string;          // player slot
+	kind: 'immune' | 'miss';
 }
+
+// A damaging move was USED (offense numerator + moves-used denominator).
+interface ThreatUsedEvent { ip: string; ipl: string; tpow: number }
 
 // Inflictor-attributed count events (assist / status / hazard set / hazard clear).
 interface CreditEvent { ip: string; ipl: string }
@@ -92,7 +93,8 @@ interface GameBuffer {
 	dmg: DmgEvent[];
 	heal: HealEvent[];
 	sub: SubAvoidEvent[];
-	immune: ImmuneEvent[];
+	nullified: NullifiedEvent[];
+	threatused: ThreatUsedEvent[];
 	assist: CreditEvent[];
 	status: CreditEvent[];
 	hazardset: CreditEvent[];
@@ -137,7 +139,10 @@ export function process(
 	const getBuf = (): GameBuffer => {
 		let buf = buffers.get(roomId);
 		if (!buf) {
-			buf = {gameId: roomId, dmg: [], heal: [], sub: [], immune: [], assist: [], status: [], hazardset: [], hazardclear: [], playerMap: {}};
+			buf = {
+				gameId: roomId, dmg: [], heal: [], sub: [], nullified: [], threatused: [],
+				assist: [], status: [], hazardset: [], hazardclear: [], playerMap: {},
+			};
 			buffers.set(roomId, buf);
 		}
 		return buf;
@@ -162,10 +167,16 @@ export function process(
 		getBuf().sub.push(ev);
 		break;
 	}
-	case 'immune': {
-		let ev: ImmuneEvent;
+	case 'nullified': {
+		let ev: NullifiedEvent;
 		try { ev = JSON.parse(json); } catch { return; }
-		getBuf().immune.push(ev);
+		getBuf().nullified.push(ev);
+		break;
+	}
+	case 'threatused': {
+		let ev: ThreatUsedEvent;
+		try { ev = JSON.parse(json); } catch { return; }
+		getBuf().threatused.push(ev);
 		break;
 	}
 	case 'assist': case 'status': case 'hazardset': case 'hazardclear': {
@@ -226,89 +237,87 @@ function flushGame(
 				buf.gameId, ev.t, ev.type,
 				ev.ip, inflictorPlayerId,
 				ev.tp, targetPlayerId,
-				ev.d, ev.c ?? ev.d, ev.mhp ?? 0, ev.b,
+				ev.d, ev.c ?? ev.d, ev.mhp ?? 0, 0,
 				ev.type === 'direct' ? ev.src : null,
 				ev.type === 'residual' ? ev.src : null,
 				ev.type === 'hazard' ? ev.src : null,
 				null, // status_inflicted — not yet tracked
-				ev.lethal
+				ev.lethal, ev.tpow ?? 0
 			);
 		}
 
-		// 4. pokemon_game_stats — aggregate from damage events + heal events
-		const allSpecies = new Set<string>();
-		for (const p of end.pokes) allSpecies.add(`${p.pl}:${p.sp}`);
-
+		// 4. pokemon_game_stats — aggregate the Threat Stats system per Pokémon.
 		for (const pk of end.pokes) {
 			const playerId = buf.playerMap[pk.pl]?.id || pk.pl;
 			const isWinnerSide = pk.pl === end.winner;
-			// Base-aware species match: an event credits this entry if its species is
-			// the final forme (pk.sp) OR the base species (pk.base). This folds a
-			// permanent Mega's pre-evolution events ("Gengar") into the Mega row
-			// ("Gengar-Mega"). For non-megas, base === sp so it's a plain match.
+			// Base-aware species match (permanent-Mega folding; base === sp for non-megas).
 			const baseName = pk.base || pk.sp;
 			const mon = (sp: string | null | undefined) => sp === pk.sp || sp === baseName;
-			const participated = buf.dmg.some(e =>
-				(mon(e.ip) && e.ipl === pk.pl) || (mon(e.tp) && e.tpl === pk.pl)
-			);
+			// Participated = was actually sent out (active ≥ 1 turn).
+			const participated = (pk.activeTurns || 0) > 0;
 			const outcome: 'win' | 'loss' | 'dnp' =
 				!participated ? 'dnp' : isWinnerSide ? 'win' : 'loss';
 
-			// All damage/healing accumulated as % of max HP.
-			//   Total = actual HP removed / maxHP (capped 100% per hit)
-			//   True  = calculated damage / maxHP (uncapped — includes overkill)
-			let dealtTotal = 0, dealtDirect = 0, dealtResidual = 0, dealtHazard = 0, dealtTrue = 0;
-			let takenTotal = 0, takenDirect = 0, takenResidual = 0, takenHazard = 0, takenTrue = 0;
-			let reducedTyping = 0, amplifiedTyping = 0, reducedModifiers = 0;
-			// Combined "damage avoided" (% max HP): typing + stat stages + defensive
-			// modifiers, plus the screen portion of any hit THIS Pokémon set a screen for.
-			let dmgAvoided = 0;
+			// Offense realized damage (direct moves only): % Max HP Dealt (capped) and
+			// True Damage Dealt (uncapped). Residual/hazard dealt kept separately.
+			let dealtDirect = 0, dealtDirectTrue = 0, dealtResidual = 0, dealtHazard = 0;
+			// Defense: Threat Absorbed (raw Threat Power soaked) + hits faced denominator.
+			let threatAbsorbed = 0, hitsFaced = 0;
 			let kills = 0, deaths = 0;
 
 			for (const ev of buf.dmg) {
 				const mhp = ev.mhp || 0;
-				if (mhp <= 0) continue; // can't normalize without max HP
-				const pctTotal = Math.min((ev.d / mhp) * 100, 100); // actual removed, capped
-				const pctTrue = ((ev.c ?? ev.d) / mhp) * 100;        // calculated, uncapped
 				const isInflictor = mon(ev.ip) && ev.ipl === pk.pl;
 				const isTarget = mon(ev.tp) && ev.tpl === pk.pl;
-				const isScreenSetter = !!ev.ssp && mon(ev.ssp) && ev.sspl === pk.pl;
 
 				if (isInflictor) {
-					dealtTotal += pctTotal;
-					dealtTrue += pctTrue;
-					if (ev.type === 'direct') dealtDirect += pctTotal;
-					else if (ev.type === 'residual') dealtResidual += pctTotal;
-					else if (ev.type === 'hazard') dealtHazard += pctTotal;
+					if (mhp > 0) {
+						const pctTotal = Math.min((ev.d / mhp) * 100, 100);
+						const pctTrue = ((ev.c ?? ev.d) / mhp) * 100;
+						if (ev.type === 'direct') { dealtDirect += pctTotal; dealtDirectTrue += pctTrue; }
+						else if (ev.type === 'residual') dealtResidual += pctTotal;
+						else if (ev.type === 'hazard') dealtHazard += pctTotal;
+					}
 					if (ev.lethal) kills++;
 				}
 				if (isTarget) {
-					takenTotal += pctTotal;
-					takenTrue += pctTrue;
-					if (ev.type === 'direct') takenDirect += pctTotal;
-					else if (ev.type === 'residual') takenResidual += pctTotal;
-					else if (ev.type === 'hazard') takenHazard += pctTotal;
 					if (ev.lethal) deaths++;
-
-					// Typing / modifier reduction, as % of max HP (full-data breakdown).
-					if (ev.type === 'direct' && ev.b > 0) {
-						const expectedAfterType = ev.b * Math.pow(2, ev.tm); // type applied to neutral
-						const calc = ev.c ?? ev.d;
-						if (ev.tm < 0) reducedTyping += Math.max(0, (ev.b - expectedAfterType) / mhp * 100);
-						if (ev.tm > 0) amplifiedTyping += Math.max(0, (expectedAfterType - ev.b) / mhp * 100);
-						if (calc < expectedAfterType) {
-							reducedModifiers += Math.max(0, (expectedAfterType - calc) / mhp * 100);
+					// Threat Absorbed only counts DIRECT move hits that connect.
+					if (ev.type === 'direct') {
+						hitsFaced++;
+						if (!ev.lethal) {
+							const tpow = ev.tpow || 0;
+							const ownScreen = !!ev.ssp && ev.ssp === ev.tp && ev.sspl === ev.tpl;
+							const allyScreen = !!ev.ssp && !ownScreen;
+							threatAbsorbed += allyScreen ? tpow * 0.5 : tpow; // own/no screen → full
 						}
 					}
 				}
-
-				// Combined avoidance — only direct hits, only when this Pokémon is the
-				// target (gets type+stage+other) or the screen setter (gets screen).
-				if (ev.type === 'direct' && (isTarget || isScreenSetter)) {
-					const a = avoidanceComponents(ev);
-					if (isTarget) dmgAvoided += (a.targetHp / mhp) * 100;
-					if (isScreenSetter) dmgAvoided += (a.screenHp / mhp) * 100;
+				// Ally screen setter gets the other half (only when setter ≠ target).
+				if (ev.type === 'direct' && !ev.lethal && !!ev.ssp &&
+					mon(ev.ssp) && ev.sspl === pk.pl && !(ev.ssp === ev.tp && ev.sspl === ev.tpl)) {
+					threatAbsorbed += (ev.tpow || 0) * 0.5;
 				}
+			}
+
+			// Substitute intercepts → full Threat Power to the sub owner, no survival gate.
+			for (const ev of buf.sub) {
+				if (mon(ev.tp) && ev.tpl === pk.pl) {
+					threatAbsorbed += ev.tpow || 0;
+					hitsFaced++;
+				}
+			}
+
+			// Threat Output (Σ Threat Power) + moves-used denominator.
+			let threatOutputRaw = 0, movesUsed = 0;
+			for (const ev of buf.threatused) {
+				if (mon(ev.ip) && ev.ipl === pk.pl) { threatOutputRaw += ev.tpow || 0; movesUsed++; }
+			}
+
+			// Threats Nullified — damaging moves (immune/miss) that did nothing to it.
+			let threatsNullified = 0;
+			for (const ev of buf.nullified) {
+				if (mon(ev.tp) && ev.tpl === pk.pl) threatsNullified++;
 			}
 
 			// Healing CAUSED by this Pokémon, as % of recipient max HP.
@@ -322,41 +331,30 @@ function flushGame(
 				}
 			}
 
-			// Substitute absorption — the sub owner avoided the full would-be hit.
-			for (const ev of buf.sub) {
-				if (mon(ev.tp) && ev.tpl === pk.pl) {
-					const mhp = ev.mhp || 0;
-					if (mhp <= 0) continue;
-					dmgAvoided += Math.min((ev.av / mhp) * 100, 100);
-				}
-			}
-
-			// Immune hits absorbed (type- or ability-based) by this Pokémon.
-			let immuneHits = 0;
-			for (const ev of buf.immune) {
-				if (mon(ev.tp) && ev.tpl === pk.pl) immuneHits++;
-			}
-
-			// Assists / status / hazards — counted from inflictor-attributed events
-			// emitted live by the sim (assist logic lives in the battle engine now).
 			const countCredit = (arr: CreditEvent[]) =>
 				arr.reduce((n, e) => n + (mon(e.ip) && e.ipl === pk.pl ? 1 : 0), 0);
-			const assists = countCredit(buf.assist);
-			const statusInflicted = countCredit(buf.status);
-			const hazardsSet = countCredit(buf.hazardset);
-			const hazardsCleared = countCredit(buf.hazardclear);
 
-			insertPokemonGameStats(
-				db,
-				buf.gameId, playerId, pk.sp,
-				true, pk.lead, outcome,
-				dealtTotal, dealtDirect, dealtResidual, dealtHazard, dealtTrue,
-				takenTotal, takenDirect, takenResidual, takenHazard, takenTrue,
-				reducedTyping, amplifiedTyping, reducedModifiers, dmgAvoided,
-				healingReceived, healingTrue, kills, deaths, assists, pk.activeTurns, immuneHits,
-				statusInflicted, hazardsSet, hazardsCleared,
-				pk.item || '', pk.itemMega ? 1 : 0
-			);
+			insertPokemonGameStats(db, buf.gameId, playerId, pk.sp, true, pk.lead, outcome, {
+				dmg_dealt_direct: dealtDirect,
+				dmg_dealt_true: dealtDirectTrue,
+				dmg_dealt_residual: dealtResidual,
+				dmg_dealt_hazard: dealtHazard,
+				threat_output_raw: threatOutputRaw,
+				moves_used: movesUsed,
+				threat_absorbed_raw: threatAbsorbed,
+				hits_faced: hitsFaced,
+				threats_nullified: threatsNullified,
+				healing_received: healingReceived,
+				healing_true: healingTrue,
+				kills, deaths,
+				assists: countCredit(buf.assist),
+				turns_survived: pk.activeTurns || 0,
+				status_inflicted: countCredit(buf.status),
+				hazards_set: countCredit(buf.hazardset),
+				hazards_cleared: countCredit(buf.hazardclear),
+				item: pk.item || '',
+				item_is_mega: pk.itemMega ? 1 : 0,
+			});
 		}
 	})();
 
@@ -368,43 +366,3 @@ function flushGame(
 	}
 }
 
-// ---------------------------------------------------------------------------
-// Damage-avoidance decomposition
-// ---------------------------------------------------------------------------
-
-/**
- * Decompose a direct hit's avoided damage (in HP) into the portion credited to
- * the defender (typing resist + favorable stat stages + non-screen defensive
- * modifiers) and the portion credited to the screen setter. Uses a multiplicative
- * model so the components compose correctly (no double counting).
- */
-function avoidanceComponents(ev: DmgEvent): {targetHp: number; screenHp: number} {
-	const c = ev.c ?? ev.d;
-	if (c <= 0 || ev.type !== 'direct') return {targetHp: 0, screenHp: 0};
-
-	const fType = ev.tm < 0 ? Math.pow(2, ev.tm) : 1;       // resist factor (≤1)
-	let fStage = ev.fstage ?? 1;                            // favorable stat stages (≤1)
-	if (!(fStage > 0) || fStage > 1) fStage = 1;
-	let fScreen = ev.fscreen ?? 1;                          // screen multiplier (≤1)
-
-	// Net final-chain modifier factor, derived from neutral baseline vs calculated.
-	const afterType = (ev.b || 0) * Math.pow(2, ev.tm);
-	let modChain = afterType > 0 ? c / afterType : 1;
-	if (modChain > 1) modChain = 1;                          // count reductions only
-	// If there was effectively no chain reduction, don't credit a screen (it was
-	// likely bypassed — crit/infiltrator/etc. — despite being present).
-	if (modChain > 0.999) fScreen = 1;
-	const fOther = fScreen > 0 ? Math.min(modChain / fScreen, 1) : 1; // non-screen mods
-
-	const denom = fType * fStage * fScreen * fOther;
-	if (!(denom > 0)) return {targetHp: 0, screenHp: 0};
-
-	const baseline = c / denom; // what the hit would have done with no defender advantages
-	let rem = baseline;
-	const typeAv = rem * (1 - fType); rem *= fType;
-	const stageAv = rem * (1 - fStage); rem *= fStage;
-	const screenAv = rem * (1 - fScreen); rem *= fScreen;
-	const otherAv = rem * (1 - fOther);
-
-	return {targetHp: typeAv + stageAv + otherAv, screenHp: screenAv};
-}
