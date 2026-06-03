@@ -1912,14 +1912,11 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		weightkg: 300,
 		color: "Brown",
 		eggGroups: ["Mineral"],
-		otherFormes: ["Golem-Alola"],
-		formeOrder: ["Golem", "Golem-Alola"],
 	},
-	golemalola: {
+	magolem: {
 		num: 76,
 		name: "Magolem",
-		baseSpecies: "Golem",
-		forme: "Alola",
+		baseSpecies: "Magolem",
 		types: ["Rock", "Electric"],
 		baseStats: { hp: 80, atk: 120, def: 130, spa: 70, spd: 70, spe: 45 },
 		abilities: { 0: "Antimagnet", 1: "Magnetism Pulse", H: "Galvanize" },

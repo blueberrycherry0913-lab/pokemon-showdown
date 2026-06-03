@@ -338,6 +338,7 @@ export const Aliases: import('../sim/dex').AliasesTable = {
 	girao: "Giratina-Origin",
 	giratinao: "Giratina-Origin",
 	alolem: "Golem-Alola",
+	golemalola: "Magolem",
 	hoodra: "Goodra-Hisui",
 	gourgeists: "Gourgeist-Small",
 	gourgeistl: "Gourgeist-Large",
@@ -2586,7 +2587,7 @@ export const Aliases: import('../sim/dex').AliasesTable = {
 	volk: "Volkraken",
 
 	// custom renames
-	magolem: "Golem-Alola",
+	// magolem is now a real dex key; golemalola alias above handles backward compat
 	cocommander: "Exeggutor",
 	galvenut: "Electrode-Hisui",
 	reactivelevitation: "Levitate",

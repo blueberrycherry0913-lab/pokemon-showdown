@@ -554,7 +554,7 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 		doublesTier: "(DUU)",
 		natDexTier: "Illegal",
 	},
-	golemalola: {
+	magolem: {
 		tier: "ZU",
 		doublesTier: "(DUU)",
 		natDexTier: "RU",

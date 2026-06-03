@@ -10890,7 +10890,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			toxic: ["8V", "7M", "7V", "6M", "5M", "4M", "3M"],
 		},
 	},
-	golemalola: {
+	magolem: {
 		learnset: {
 			allyswitch: ["7T"],
 			attract: ["7M"],
