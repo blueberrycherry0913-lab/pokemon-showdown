@@ -565,7 +565,7 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 	},
 	fearowevo: {
 		num: 22,
-		name: "Fearow-Evo",
+		name: "Petrifearow",
 		types: ["Flying", "Dark"],
 		baseStats: {hp: 90, atk: 110, def: 80, spa: 65, spd: 55, spe: 105},
 		abilities: { 0: "Keen Eye", 1: "Sniper", H: "Piercing Drill" },
@@ -1310,7 +1310,7 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 	},
 	parasectevo: {
 		num: 47,
-		name: "Parasect-Evo",
+		name: "Paraspore",
 		types: ["Poison", "Grass"],
 		baseStats: {hp: 30, atk: 120, def: 45, spa: 120, spd: 40, spe: 15},
 		abilities: { 0: "Effect Spore", H: "Parasitic Spores" },

@@ -578,7 +578,8 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 		natDexTier: "RU",
 	},
 	slowpoke: {
-		tier: "LC",
+		tier: "Illegal",
+		natDexTier: "Illegal",
 	},
 	slowpokegalar: {
 		tier: "LC",
@@ -594,9 +595,8 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 		natDexTier: "RUBL",
 	},
 	slowbrokanto: {
-		tier: "RU",
-		doublesTier: "(DUU)",
-		natDexTier: "OU",
+		tier: "Illegal",
+		natDexTier: "Illegal",
 	},
 	slowking: {
 		tier: "OU",
@@ -604,9 +604,8 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 		natDexTier: "OU",
 	},
 	slowkingjohto: {
-		tier: "UU",
-		doublesTier: "(DUU)",
-		natDexTier: "UU",
+		tier: "Illegal",
+		natDexTier: "Illegal",
 	},
 	magnemite: {
 		tier: "LC",
@@ -649,7 +648,8 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 		natDexTier: "RU",
 	},
 	grimer: {
-		tier: "LC",
+		tier: "Illegal",
+		natDexTier: "Illegal",
 	},
 	grimeralola: {
 		tier: "LC",
@@ -660,9 +660,8 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 		natDexTier: "RU",
 	},
 	mukkanto: {
-		tier: "ZU",
-		doublesTier: "(DUU)",
-		natDexTier: "RU",
+		tier: "Illegal",
+		natDexTier: "Illegal",
 	},
 	shellder: {
 		tier: "NFE",
