@@ -12234,7 +12234,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			zapcannon: ["9L64", "8L64", "7L1", "6L1", "5L66", "4L60"],
 		},
 	},
-	farfetchd: {
+	farfetchdkanto: {
 		learnset: {
 			acrobatics: ["8M", "7M", "7L37", "6M", "6L37", "5M", "5L37"],
 			aerialace: ["8L20", "7M", "7L9", "6M", "6L9", "5M", "5L13", "4M", "4L13", "3M", "3S1"],
@@ -12343,7 +12343,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			{generation: 3, level: 3, gender: "M", nature: "Adamant", ivs: {hp: 20, atk: 25, def: 21, spa: 24, spd: 15, spe: 20}, abilities: ["keeneye"], pokeball: "pokeball"},
 		],
 	},
-	farfetchdgalar: {
+	farfetchd: {
 		learnset: {
 			assurance: ["8M"],
 			attract: ["8M"],

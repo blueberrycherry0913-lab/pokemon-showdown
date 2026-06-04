@@ -145,7 +145,7 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 	fearow: {
 		tier: "NFE",
 	},
-	fearowevo: {
+	petrifearow: {
 		tier: "ZU",
 	},
 	ekans: {
@@ -371,7 +371,7 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 	parasect: {
 		tier: "NFE",
 	},
-	parasectevo: {
+	paraspore: {
 		tier: "ZU",
 	},
 	venonat: {
@@ -623,13 +623,11 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 	farfetchd: {
 		tier: "ZU",
 	},
-	farfetchdgalar: {
-		isNonstandard: "Past",
-		tier: "Illegal",
-		natDexTier: "LC",
+	farfetchdkanto: {
+		tier: "ZU",
 	},
 	sirfetchd: {
-		isNonstandard: "Past",
+		tier: "ZU",
 	},
 	doduo: {
 		tier: "LC",

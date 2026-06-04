@@ -329,6 +329,9 @@ export const Aliases: import('../sim/dex').AliasesTable = {
 	mukalola: "Muk",
 	slowbrogalar: "Slowbro",
 	slowkinggalar: "Slowking",
+	farfetchdgalar: "Farfetch'd",
+	fearowevo: "Petrifearow",
+	parasectevo: "Paraspore",
 	enamorust: "Enamorus-Therian",
 	enamt: "Enamorus-Therian",
 	eternamax: "Eternatus-Eternamax",
@@ -2596,8 +2599,6 @@ export const Aliases: import('../sim/dex').AliasesTable = {
 	// galvenut is now a real dex key; electrodehisui alias above handles backward compat
 	reactivelevitation: "Levitate",
 	solarbattery: "Mega Sol",
-	petrifearow: "Fearow-Evo",
-	paraspore: "Parasect-Evo",
 };
 
 /** This is what lets you type "tb"/"tbolt"/"bolt" to find "thunderbolt" in the
