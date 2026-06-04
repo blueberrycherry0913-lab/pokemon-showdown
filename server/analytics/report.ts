@@ -77,7 +77,6 @@ export function generateReports(db: Database.Database): void {
 		['residual_dealt_per_game', p => p.residual_dealt_per_game, byGames],
 		['hazard_dealt_per_game', p => p.hazard_dealt_per_game, byGames],
 		// outcome / presence
-		['death_rate', p => p.death_rate, byPart],
 		['kda_ratio', p => p.kda_ratio, byPart],
 		['avg_turns_survived', p => p.avg_turns_survived, byPart],
 		['turns_survived_total', p => p.turns_survived_total, byGames],
@@ -183,7 +182,6 @@ interface PokemonRow {
 	kills_per_turn: number;
 	assists_per_turn: number;
 	// outcome
-	death_rate: number;
 	deaths_total: number;
 	kda_ratio: number;
 	avg_turns_survived: number; // per participated game
@@ -267,7 +265,6 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 			kills_per_turn: perTurn(r.kills_total),
 			assists_per_turn: perTurn(r.assists_total),
 
-			death_rate: gp > 0 ? round2(r.deaths_total / gp) : 0,
 			deaths_total: r.deaths_total,
 			kda_ratio: round2((r.kills_total + r.assists_total) / Math.max(r.deaths_total, 1)),
 			avg_turns_survived: gp > 0 ? round2(at / gp) : 0,

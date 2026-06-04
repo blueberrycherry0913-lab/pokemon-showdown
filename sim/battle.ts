@@ -2574,6 +2574,16 @@ export class Battle {
 
 		const isLethal = target.hp === 0;
 
+		// Recoil-type self-damage (move recoil like Double-Edge, Life Orb, the
+		// Overthinker ability, etc.) is HP the Pokémon spends on itself — it must
+		// NOT count toward "Residual Damage / Game" (residual damage *dealt*).
+		// Detected as non-direct damage where the source IS the victim. Confusion
+		// self-hits are excluded (they're deliberately credited to the confuser).
+		// The event is still emitted (flagged, not dropped) so a self-KO still
+		// registers as a death for KDA.
+		const isSelfInflicted = !!source && source === target &&
+			eventType !== 'direct' && effect.id !== 'confused';
+
 		this.add('analytic', 'dmg', JSON.stringify({
 			t: this.turn,
 			type: eventType,
@@ -2589,6 +2599,7 @@ export class Battle {
 			sspl: screenSetterPlayer,
 			src: srcLabel,
 			lethal: isLethal,
+			self: isSelfInflicted, // recoil/Life Orb/self HP loss — excluded from residual dealt
 		}));
 
 		// Assist tracking: a damaging contribution opens/refreshes a 5-field-turn

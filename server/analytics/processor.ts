@@ -35,6 +35,7 @@ interface DmgEvent {
 	sspl?: string | null; // screen setter player slot
 	src: string | null;   // source move/status/hazard name
 	lethal: boolean;
+	self?: boolean;       // recoil/Life Orb/self HP loss — excluded from residual dealt
 }
 
 interface HealEvent {
@@ -279,7 +280,7 @@ function flushGame(
 						const pctTotal = Math.min((ev.d / mhp) * 100, 100);
 						const pctTrue = ((ev.c ?? ev.d) / mhp) * 100;
 						if (ev.type === 'direct') { dealtDirect += pctTotal; dealtDirectTrue += pctTrue; }
-						else if (ev.type === 'residual') dealtResidual += pctTotal;
+						else if (ev.type === 'residual' && !ev.self) dealtResidual += pctTotal;
 						else if (ev.type === 'hazard') dealtHazard += pctTotal;
 					}
 					if (ev.lethal) kills++;

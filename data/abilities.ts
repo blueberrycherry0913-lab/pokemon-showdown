@@ -8404,14 +8404,14 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 10117,
 	},
 
-	// --- Row 442: Trash Eater ---
-	trasheater: {
+	// --- Row 442: Garbage Eater ---
+	garbageeater: {
 		onStart(pokemon) {
 			const hazards = ['spikes', 'toxicspikes', 'stealthrock', 'stickyweb'] as const;
 			let absorbed = 0;
 			for (const hazard of hazards) {
 				if (pokemon.side.removeSideCondition(hazard)) {
-					this.add('-sideend', pokemon.side, this.dex.conditions.get(hazard).name, '[from] ability: Trash Eater', `[of] ${pokemon}`);
+					this.add('-sideend', pokemon.side, this.dex.conditions.get(hazard).name, '[from] ability: Garbage Eater', `[of] ${pokemon}`);
 					absorbed++;
 				}
 			}
@@ -8422,7 +8422,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		shortDesc: "On switch-in, absorbs all entry hazards on user's side; heals 1/16 MaxHP per hazard.",
 		origin: 'Custom',
 		flags: {},
-		name: "Trash Eater",
+		name: "Garbage Eater",
 		rating: 2.5,
 		num: 10118,
 	},

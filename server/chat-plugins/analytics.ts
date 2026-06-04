@@ -48,7 +48,6 @@ interface PokemonRow {
 	healing_per_turn: number;
 	kills_per_turn: number;
 	assists_per_turn: number;
-	death_rate: number;
 	deaths_total: number;
 	kda_ratio: number;
 	avg_turns_survived: number;
@@ -204,7 +203,6 @@ const STAT_LABELS: {[k: string]: {label: string; fmt: (v: number) => string; des
 	hazard_dealt_per_game: {label: 'Hazard Damage / Game', fmt: pctOf, desc: 'Avg % max HP of entry-hazard damage credited to this Pokémon (the setter) per game'},
 	// Outcome / presence
 	kda_ratio: {label: 'KDA', fmt: v => v.toFixed(2), desc: '(Kills + Assists) / max(Deaths, 1)'},
-	death_rate: {label: 'Death Rate', fmt: pct, desc: 'Fraction of games it participated in where it fainted'},
 	avg_turns_survived: {label: 'Turns Survived', fmt: v => v.toFixed(1), desc: 'Avg turns active on field per game it participated in'},
 	games_brought: {label: 'Times Brought', fmt: v => String(v), desc: 'Total number of times this species was brought to a battle (counts each player separately)'},
 	turns_survived_total: {label: 'Most Turns Survived', fmt: v => String(v), desc: 'Total turns spent active on the field across all games'},
@@ -509,7 +507,6 @@ export const pages: Chat.PageTable = {
 			'threat_absorbed_per_hit',
 			'threats_nullified_rate',
 			'kda_ratio',
-			'death_rate',
 			'kills_per_turn',
 			'assists_per_turn',
 			'healing_per_turn',
