@@ -35,7 +35,7 @@ interface DmgEvent {
 	sspl?: string | null; // screen setter player slot
 	src: string | null;   // source move/status/hazard name
 	lethal: boolean;
-	self?: boolean;       // recoil/Life Orb/self HP loss — excluded from residual dealt
+	self?: boolean;       // recoil/Life Orb/self HP loss — excluded from indirect dealt
 }
 
 interface HealEvent {
@@ -264,8 +264,8 @@ function flushGame(
 				!participated ? 'dnp' : isWinnerSide ? 'win' : 'loss';
 
 			// Offense realized damage (direct moves only): % Max HP Dealt (capped) and
-			// True Damage Dealt (uncapped). Residual/hazard dealt kept separately.
-			let dealtDirect = 0, dealtDirectTrue = 0, dealtResidual = 0, dealtHazard = 0;
+			// True Damage Dealt (uncapped). Indirect (non-hazard) / hazard dealt kept separately.
+			let dealtDirect = 0, dealtDirectTrue = 0, dealtIndirect = 0, dealtHazard = 0;
 			// Defense: Threat Absorbed (raw Threat Power soaked) + hits faced denominator.
 			let threatAbsorbed = 0, hitsFaced = 0;
 			let kills = 0, deaths = 0;
@@ -280,7 +280,7 @@ function flushGame(
 						const pctTotal = Math.min((ev.d / mhp) * 100, 100);
 						const pctTrue = ((ev.c ?? ev.d) / mhp) * 100;
 						if (ev.type === 'direct') { dealtDirect += pctTotal; dealtDirectTrue += pctTrue; }
-						else if (ev.type === 'residual' && !ev.self) dealtResidual += pctTotal;
+						else if (ev.type === 'residual' && !ev.self) dealtIndirect += pctTotal;
 						else if (ev.type === 'hazard') dealtHazard += pctTotal;
 					}
 					if (ev.lethal) kills++;
@@ -342,7 +342,7 @@ function flushGame(
 			insertPokemonGameStats(db, buf.gameId, playerId, pk.sp, true, pk.lead, outcome, {
 				dmg_dealt_direct: dealtDirect,
 				dmg_dealt_true: dealtDirectTrue,
-				dmg_dealt_residual: dealtResidual,
+				dmg_dealt_residual: dealtIndirect, // DB column kept; conceptually "indirect" (non-hazard)
 				dmg_dealt_hazard: dealtHazard,
 				threat_output_raw: threatOutputRaw,
 				moves_used: movesUsed,

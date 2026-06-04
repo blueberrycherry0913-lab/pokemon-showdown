@@ -2576,7 +2576,7 @@ export class Battle {
 
 		// Recoil-type self-damage (move recoil like Double-Edge, Life Orb, the
 		// Overthinker ability, etc.) is HP the Pokémon spends on itself — it must
-		// NOT count toward "Residual Damage / Game" (residual damage *dealt*).
+		// NOT count toward "Indirect Damage / Game" (indirect damage *dealt*).
 		// Detected as non-direct damage where the source IS the victim. Confusion
 		// self-hits are excluded (they're deliberately credited to the confuser).
 		// The event is still emitted (flagged, not dropped) so a self-KO still

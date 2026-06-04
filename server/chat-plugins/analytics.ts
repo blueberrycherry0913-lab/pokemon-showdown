@@ -40,7 +40,7 @@ interface PokemonRow {
 	threat_output_per_move: number;
 	pct_max_hp_dealt_per_move: number;
 	true_damage_dealt_per_move: number;
-	residual_dealt_per_game: number;
+	indirect_dealt_per_game: number;
 	hazard_dealt_per_game: number;
 	threat_absorbed_per_hit: number;
 	threats_nullified_rate: number;
@@ -199,7 +199,7 @@ const STAT_LABELS: {[k: string]: {label: string; fmt: (v: number) => string; des
 	kills_per_turn: {label: 'Kills / Turn', fmt: v => v.toFixed(2), desc: 'KOs secured per turn active on the field'},
 	assists_per_turn: {label: 'Assists / Turn', fmt: v => v.toFixed(2), desc: 'Assists per turn active on the field'},
 	// Chip dealt (÷ games)
-	residual_dealt_per_game: {label: 'Residual Damage / Game', fmt: pctOf, desc: 'Avg % max HP of residual chip (burn/poison/leech/etc.) this Pokémon dealt per game'},
+	indirect_dealt_per_game: {label: 'Indirect Damage / Game', fmt: pctOf, desc: 'Avg % max HP of indirect damage this Pokémon dealt per game — residual chip (burn/poison/leech/weather/etc.) plus contact-punish (Rocky Helmet/Iron Barbs/Aftermath) and similar non-direct sources. Entry-hazard damage is tracked separately.'},
 	hazard_dealt_per_game: {label: 'Hazard Damage / Game', fmt: pctOf, desc: 'Avg % max HP of entry-hazard damage credited to this Pokémon (the setter) per game'},
 	// Outcome / presence
 	kda_ratio: {label: 'KDA', fmt: v => v.toFixed(2), desc: '(Kills + Assists) / max(Deaths, 1)'},
@@ -316,7 +316,7 @@ const PGS_NUMERIC_COLUMNS: [string, string, boolean][] = [
 	['moves_used', 'Moves', false],
 	['dmg_dealt_direct', 'Dealt%', true],
 	['dmg_dealt_true', 'True%', true],
-	['dmg_dealt_residual', 'Resid%', true],
+	['dmg_dealt_residual', 'Indir%', true],
 	['dmg_dealt_hazard', 'Hazard%', true],
 	['threat_absorbed_raw', 'ThreatAbs', false],
 	['hits_faced', 'HitsFaced', false],
@@ -511,7 +511,7 @@ export const pages: Chat.PageTable = {
 			'assists_per_turn',
 			'healing_per_turn',
 			'avg_turns_survived',
-			'residual_dealt_per_game',
+			'indirect_dealt_per_game',
 			'hazard_dealt_per_game',
 			'games_brought',
 			'turns_survived_total',

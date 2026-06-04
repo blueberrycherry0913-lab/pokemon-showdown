@@ -74,7 +74,7 @@ export function generateReports(db: Database.Database): void {
 		['kills_per_turn', p => p.kills_per_turn, byTurns],
 		['assists_per_turn', p => p.assists_per_turn, byTurns],
 		// chip dealt (÷ games)
-		['residual_dealt_per_game', p => p.residual_dealt_per_game, byGames],
+		['indirect_dealt_per_game', p => p.indirect_dealt_per_game, byGames],
 		['hazard_dealt_per_game', p => p.hazard_dealt_per_game, byGames],
 		// outcome / presence
 		['kda_ratio', p => p.kda_ratio, byPart],
@@ -170,8 +170,8 @@ interface PokemonRow {
 	threat_output_per_move: number;
 	pct_max_hp_dealt_per_move: number;
 	true_damage_dealt_per_move: number;
-	// chip dealt (÷ games brought)
-	residual_dealt_per_game: number;
+	// indirect (non-hazard) damage dealt (÷ games brought)
+	indirect_dealt_per_game: number;
 	hazard_dealt_per_game: number;
 	// defense
 	threat_absorbed_per_hit: number;
@@ -213,7 +213,7 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 			SUM(pgs.threats_nullified)                            AS threats_nullified_total,
 			SUM(pgs.dmg_dealt_direct)                             AS pct_max_hp_dealt_total,
 			SUM(pgs.dmg_dealt_true)                               AS true_damage_dealt_total,
-			SUM(pgs.dmg_dealt_residual)                           AS residual_dealt_total,
+			SUM(pgs.dmg_dealt_residual)                           AS indirect_dealt_total,
 			SUM(pgs.dmg_dealt_hazard)                             AS hazard_dealt_total,
 			SUM(pgs.healing_received)                             AS healing_total,
 			SUM(pgs.kills)                                        AS kills_total,
@@ -254,7 +254,7 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 			pct_max_hp_dealt_per_move: perMove(r.pct_max_hp_dealt_total),
 			true_damage_dealt_per_move: perMove(r.true_damage_dealt_total),
 
-			residual_dealt_per_game: perGame(r.residual_dealt_total),
+			indirect_dealt_per_game: perGame(r.indirect_dealt_total),
 			hazard_dealt_per_game: perGame(r.hazard_dealt_total),
 
 			threat_absorbed_per_hit: Math.round(hf > 0 ? r.threat_absorbed_raw_total / hf : 0),
