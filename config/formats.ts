@@ -17,6 +17,25 @@ New sections will be added to the bottom of the specified column.
 The column value will be ignored for repeat sections.
 */
 
+// Active-Domain stat boost (§3): a Pokémon gets ×1.2 to all five battle stats while standing in
+// ANY active Domain matching one of its types. Applied ONCE even when a dual-type qualifies for
+// two active Domains (×1.2, not ×1.44) — this single shared check replaces the per-Domain stat
+// handlers that used to live in data/mods/champions/conditions.ts. Anti-Domain suppresses it.
+const DOMAIN_TYPE_BY_ID: {[id: string]: string} = {
+	normaldomain: 'Normal', firedomain: 'Fire', waterdomain: 'Water', electricdomain: 'Electric',
+	grassdomain: 'Grass', icedomain: 'Ice', fightingdomain: 'Fighting', poisondomain: 'Poison',
+	grounddomain: 'Ground', flyingdomain: 'Flying', psychicdomain: 'Psychic', bugdomain: 'Bug',
+	rockdomain: 'Rock', ghostdomain: 'Ghost', dragondomain: 'Dragon', darkdomain: 'Dark',
+	steeldomain: 'Steel', fairydomain: 'Fairy', cosmicdomain: 'Cosmic',
+};
+function pokemonInActiveDomain(battle: any, pokemon: any): boolean {
+	if (battle.field.pseudoWeather['antidomain']) return false;
+	for (const id in DOMAIN_TYPE_BY_ID) {
+		if (battle.field.pseudoWeather[id] && pokemon.hasType(DOMAIN_TYPE_BY_ID[id])) return true;
+	}
+	return false;
+}
+
 export const Formats: import('../sim/dex-formats').FormatList = [
 
 	// Custom
@@ -94,6 +113,30 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			}
 			const result = 1 + bonus + teraBonus;
 			return result > 1 ? result : stab;
+		},
+		// Active-Domain stat boost (§3): ×1.2 to all five battle stats for a Pokémon standing in
+		// any active Domain of one of its types — applied once (no dual-type ×1.44 stacking), and
+		// suppressed by Anti-Domain. Priorities mirror the per-Domain handlers this replaced
+		// (Atk/SpA/Spe at 5, Def/SpD at 6) so the boost lands after stat-stage calculation.
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk, attacker) {
+			if (pokemonInActiveDomain(this, attacker)) return this.chainModify([6144, 5120]);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa, attacker) {
+			if (pokemonInActiveDomain(this, attacker)) return this.chainModify([6144, 5120]);
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def, target) {
+			if (pokemonInActiveDomain(this, target)) return this.chainModify([6144, 5120]);
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd, target) {
+			if (pokemonInActiveDomain(this, target)) return this.chainModify([6144, 5120]);
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe, pokemon) {
+			if (pokemonInActiveDomain(this, pokemon)) return this.chainModify([6144, 5120]);
 		},
 		// Normal blanket effects (§1.5), applied as flat end-of-calc damage multipliers:
 		//  - Inverse-STAB: a Normal-type attacker deals ×1.1 on NON-STAB moves (move type is

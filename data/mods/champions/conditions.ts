@@ -1,13 +1,63 @@
-// Domains — the champions-mod replacement for terrains.
-// Multiple domains can be active at once (backed by pseudoWeather, not terrain).
-// Each affects all Pokémon on the field with no grounding requirement.
-// Effects: +20% Atk/SpA/Def/SpD/Spe for same-type Pokémon; +10% BP and accuracy for same-type moves.
+// Domains — the champions-mod replacement for terrains (§3 of the master reference).
+// Backed by pseudoWeather (not the terrain slot) so Weather, a Celestial Event, and up
+// to two Domains (one per side) can all coexist. Each Domain affects the whole field with
+// no grounding requirement. Effects:
+//   • Stat boost: a type-matched Pokémon gets ×1.2 to all five battle stats. Applied ONCE
+//     even if a dual-type qualifies for two active Domains (×1.2, not ×1.44) — the single
+//     application lives in the shared handler on the Testing Standard format (config/formats.ts).
+//   • Accuracy boost: a type-matched Pokémon using a type-matched move gets ×1.2 accuracy
+//     on that move (handled per-Domain below).
+// Duration scales 1 turn per corresponding-type Pokémon on the setter's team (max 6).
+// One Domain per team: setting a new Domain removes that side's previously-set Domain.
+// Anti-Domain (pseudoWeather 'antidomain') suppresses both Domain effects while active.
+const DOMAIN_IDS = [
+	'normaldomain',
+	'firedomain',
+	'waterdomain',
+	'electricdomain',
+	'grassdomain',
+	'icedomain',
+	'fightingdomain',
+	'poisondomain',
+	'grounddomain',
+	'flyingdomain',
+	'psychicdomain',
+	'bugdomain',
+	'rockdomain',
+	'ghostdomain',
+	'dragondomain',
+	'darkdomain',
+	'steeldomain',
+	'fairydomain',
+	'cosmicdomain',
+];
+
+// Celestial Events (§2.5) — a field slot separate from Weather, backed by pseudoWeather so a
+// Celestial Event can coexist with a Weather and with Domains. Only ONE Celestial Event may be
+// active at a time: setting a new one removes any other active Celestial Event. (Harvest Moon /
+// Blood Moon are TBD in the master reference and not yet implemented.)
+const CELESTIAL_IDS = [
+	'fullmoon',
+	'newmoon',
+];
+
 export const Conditions: import('../../../sim/dex-conditions').ConditionDataTable = {
+
 	normaldomain: {
 		name: "Normal Domain",
-
-		duration: 5,
+		// Duration scales with the number of Normal-type Pokémon on the setter's team (max 6, §3).
+		durationCallback(source) {
+			if (!source) return 5;
+			const n = source.side.pokemon.filter(p => p.hasType('Normal')).length;
+			return this.clampIntRange(n, 1, 6);
+		},
 		onFieldStart(field, source, effect) {
+			// One Domain per team (§3): remove this side's previously-set Domain, if any.
+			for (const id of DOMAIN_IDS) {
+				const pw = field.pseudoWeather[id];
+				if (!pw || pw === this.effectState) continue;
+				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
+			}
 			if (effect?.effectType === 'Ability') {
 				this.add('-fieldstart', 'move: Normal Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
 			} else {
@@ -19,40 +69,29 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Normal Domain');
 		},
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Normal')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Normal')) return this.chainModify([6144, 5120]);
-		},
-		onModifyDefPriority: 6,
-		onModifyDef(def, target) {
-			if (target.hasType('Normal')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpDPriority: 6,
-		onModifySpD(spd, target) {
-			if (target.hasType('Normal')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpePriority: 5,
-		onModifySpe(spe, pokemon) {
-			if (pokemon.hasType('Normal')) return this.chainModify([6144, 5120]);
-		},
-		onModifyBasePower(basePower, attacker, defender, move) {
-			if (move.type === 'Normal') return this.chainModify(1.1);
-		},
+		// Accuracy boost (§3): a Normal-type Pokémon using a Normal-type move gets ×1.2 accuracy.
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
-			if (move.type === 'Normal') return this.chainModify(1.1);
+			if (this.field.pseudoWeather['antidomain']) return;
+			if (source.hasType('Normal') && move.type === 'Normal') return this.chainModify([6144, 5120]);
 		},
 	},
 
 	firedomain: {
 		name: "Fire Domain",
-
-		duration: 5,
+		// Duration scales with the number of Fire-type Pokémon on the setter's team (max 6, §3).
+		durationCallback(source) {
+			if (!source) return 5;
+			const n = source.side.pokemon.filter(p => p.hasType('Fire')).length;
+			return this.clampIntRange(n, 1, 6);
+		},
 		onFieldStart(field, source, effect) {
+			// One Domain per team (§3): remove this side's previously-set Domain, if any.
+			for (const id of DOMAIN_IDS) {
+				const pw = field.pseudoWeather[id];
+				if (!pw || pw === this.effectState) continue;
+				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
+			}
 			if (effect?.effectType === 'Ability') {
 				this.add('-fieldstart', 'move: Fire Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
 			} else {
@@ -64,40 +103,29 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Fire Domain');
 		},
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Fire')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Fire')) return this.chainModify([6144, 5120]);
-		},
-		onModifyDefPriority: 6,
-		onModifyDef(def, target) {
-			if (target.hasType('Fire')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpDPriority: 6,
-		onModifySpD(spd, target) {
-			if (target.hasType('Fire')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpePriority: 5,
-		onModifySpe(spe, pokemon) {
-			if (pokemon.hasType('Fire')) return this.chainModify([6144, 5120]);
-		},
-		onModifyBasePower(basePower, attacker, defender, move) {
-			if (move.type === 'Fire') return this.chainModify(1.1);
-		},
+		// Accuracy boost (§3): a Fire-type Pokémon using a Fire-type move gets ×1.2 accuracy.
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
-			if (move.type === 'Fire') return this.chainModify(1.1);
+			if (this.field.pseudoWeather['antidomain']) return;
+			if (source.hasType('Fire') && move.type === 'Fire') return this.chainModify([6144, 5120]);
 		},
 	},
 
 	waterdomain: {
 		name: "Water Domain",
-
-		duration: 5,
+		// Duration scales with the number of Water-type Pokémon on the setter's team (max 6, §3).
+		durationCallback(source) {
+			if (!source) return 5;
+			const n = source.side.pokemon.filter(p => p.hasType('Water')).length;
+			return this.clampIntRange(n, 1, 6);
+		},
 		onFieldStart(field, source, effect) {
+			// One Domain per team (§3): remove this side's previously-set Domain, if any.
+			for (const id of DOMAIN_IDS) {
+				const pw = field.pseudoWeather[id];
+				if (!pw || pw === this.effectState) continue;
+				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
+			}
 			if (effect?.effectType === 'Ability') {
 				this.add('-fieldstart', 'move: Water Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
 			} else {
@@ -109,40 +137,29 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Water Domain');
 		},
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Water')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Water')) return this.chainModify([6144, 5120]);
-		},
-		onModifyDefPriority: 6,
-		onModifyDef(def, target) {
-			if (target.hasType('Water')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpDPriority: 6,
-		onModifySpD(spd, target) {
-			if (target.hasType('Water')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpePriority: 5,
-		onModifySpe(spe, pokemon) {
-			if (pokemon.hasType('Water')) return this.chainModify([6144, 5120]);
-		},
-		onModifyBasePower(basePower, attacker, defender, move) {
-			if (move.type === 'Water') return this.chainModify(1.1);
-		},
+		// Accuracy boost (§3): a Water-type Pokémon using a Water-type move gets ×1.2 accuracy.
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
-			if (move.type === 'Water') return this.chainModify(1.1);
+			if (this.field.pseudoWeather['antidomain']) return;
+			if (source.hasType('Water') && move.type === 'Water') return this.chainModify([6144, 5120]);
 		},
 	},
 
 	electricdomain: {
 		name: "Electric Domain",
-
-		duration: 5,
+		// Duration scales with the number of Electric-type Pokémon on the setter's team (max 6, §3).
+		durationCallback(source) {
+			if (!source) return 5;
+			const n = source.side.pokemon.filter(p => p.hasType('Electric')).length;
+			return this.clampIntRange(n, 1, 6);
+		},
 		onFieldStart(field, source, effect) {
+			// One Domain per team (§3): remove this side's previously-set Domain, if any.
+			for (const id of DOMAIN_IDS) {
+				const pw = field.pseudoWeather[id];
+				if (!pw || pw === this.effectState) continue;
+				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
+			}
 			if (effect?.effectType === 'Ability') {
 				this.add('-fieldstart', 'move: Electric Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
 			} else {
@@ -154,40 +171,29 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Electric Domain');
 		},
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Electric')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Electric')) return this.chainModify([6144, 5120]);
-		},
-		onModifyDefPriority: 6,
-		onModifyDef(def, target) {
-			if (target.hasType('Electric')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpDPriority: 6,
-		onModifySpD(spd, target) {
-			if (target.hasType('Electric')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpePriority: 5,
-		onModifySpe(spe, pokemon) {
-			if (pokemon.hasType('Electric')) return this.chainModify([6144, 5120]);
-		},
-		onModifyBasePower(basePower, attacker, defender, move) {
-			if (move.type === 'Electric') return this.chainModify(1.1);
-		},
+		// Accuracy boost (§3): a Electric-type Pokémon using a Electric-type move gets ×1.2 accuracy.
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
-			if (move.type === 'Electric') return this.chainModify(1.1);
+			if (this.field.pseudoWeather['antidomain']) return;
+			if (source.hasType('Electric') && move.type === 'Electric') return this.chainModify([6144, 5120]);
 		},
 	},
 
 	grassdomain: {
 		name: "Grass Domain",
-
-		duration: 5,
+		// Duration scales with the number of Grass-type Pokémon on the setter's team (max 6, §3).
+		durationCallback(source) {
+			if (!source) return 5;
+			const n = source.side.pokemon.filter(p => p.hasType('Grass')).length;
+			return this.clampIntRange(n, 1, 6);
+		},
 		onFieldStart(field, source, effect) {
+			// One Domain per team (§3): remove this side's previously-set Domain, if any.
+			for (const id of DOMAIN_IDS) {
+				const pw = field.pseudoWeather[id];
+				if (!pw || pw === this.effectState) continue;
+				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
+			}
 			if (effect?.effectType === 'Ability') {
 				this.add('-fieldstart', 'move: Grass Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
 			} else {
@@ -199,40 +205,29 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Grass Domain');
 		},
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Grass')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Grass')) return this.chainModify([6144, 5120]);
-		},
-		onModifyDefPriority: 6,
-		onModifyDef(def, target) {
-			if (target.hasType('Grass')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpDPriority: 6,
-		onModifySpD(spd, target) {
-			if (target.hasType('Grass')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpePriority: 5,
-		onModifySpe(spe, pokemon) {
-			if (pokemon.hasType('Grass')) return this.chainModify([6144, 5120]);
-		},
-		onModifyBasePower(basePower, attacker, defender, move) {
-			if (move.type === 'Grass') return this.chainModify(1.1);
-		},
+		// Accuracy boost (§3): a Grass-type Pokémon using a Grass-type move gets ×1.2 accuracy.
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
-			if (move.type === 'Grass') return this.chainModify(1.1);
+			if (this.field.pseudoWeather['antidomain']) return;
+			if (source.hasType('Grass') && move.type === 'Grass') return this.chainModify([6144, 5120]);
 		},
 	},
 
 	icedomain: {
 		name: "Ice Domain",
-
-		duration: 5,
+		// Duration scales with the number of Ice-type Pokémon on the setter's team (max 6, §3).
+		durationCallback(source) {
+			if (!source) return 5;
+			const n = source.side.pokemon.filter(p => p.hasType('Ice')).length;
+			return this.clampIntRange(n, 1, 6);
+		},
 		onFieldStart(field, source, effect) {
+			// One Domain per team (§3): remove this side's previously-set Domain, if any.
+			for (const id of DOMAIN_IDS) {
+				const pw = field.pseudoWeather[id];
+				if (!pw || pw === this.effectState) continue;
+				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
+			}
 			if (effect?.effectType === 'Ability') {
 				this.add('-fieldstart', 'move: Ice Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
 			} else {
@@ -244,40 +239,29 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Ice Domain');
 		},
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Ice')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Ice')) return this.chainModify([6144, 5120]);
-		},
-		onModifyDefPriority: 6,
-		onModifyDef(def, target) {
-			if (target.hasType('Ice')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpDPriority: 6,
-		onModifySpD(spd, target) {
-			if (target.hasType('Ice')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpePriority: 5,
-		onModifySpe(spe, pokemon) {
-			if (pokemon.hasType('Ice')) return this.chainModify([6144, 5120]);
-		},
-		onModifyBasePower(basePower, attacker, defender, move) {
-			if (move.type === 'Ice') return this.chainModify(1.1);
-		},
+		// Accuracy boost (§3): a Ice-type Pokémon using a Ice-type move gets ×1.2 accuracy.
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
-			if (move.type === 'Ice') return this.chainModify(1.1);
+			if (this.field.pseudoWeather['antidomain']) return;
+			if (source.hasType('Ice') && move.type === 'Ice') return this.chainModify([6144, 5120]);
 		},
 	},
 
 	fightingdomain: {
 		name: "Fighting Domain",
-
-		duration: 5,
+		// Duration scales with the number of Fighting-type Pokémon on the setter's team (max 6, §3).
+		durationCallback(source) {
+			if (!source) return 5;
+			const n = source.side.pokemon.filter(p => p.hasType('Fighting')).length;
+			return this.clampIntRange(n, 1, 6);
+		},
 		onFieldStart(field, source, effect) {
+			// One Domain per team (§3): remove this side's previously-set Domain, if any.
+			for (const id of DOMAIN_IDS) {
+				const pw = field.pseudoWeather[id];
+				if (!pw || pw === this.effectState) continue;
+				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
+			}
 			if (effect?.effectType === 'Ability') {
 				this.add('-fieldstart', 'move: Fighting Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
 			} else {
@@ -289,40 +273,29 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Fighting Domain');
 		},
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Fighting')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Fighting')) return this.chainModify([6144, 5120]);
-		},
-		onModifyDefPriority: 6,
-		onModifyDef(def, target) {
-			if (target.hasType('Fighting')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpDPriority: 6,
-		onModifySpD(spd, target) {
-			if (target.hasType('Fighting')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpePriority: 5,
-		onModifySpe(spe, pokemon) {
-			if (pokemon.hasType('Fighting')) return this.chainModify([6144, 5120]);
-		},
-		onModifyBasePower(basePower, attacker, defender, move) {
-			if (move.type === 'Fighting') return this.chainModify(1.1);
-		},
+		// Accuracy boost (§3): a Fighting-type Pokémon using a Fighting-type move gets ×1.2 accuracy.
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
-			if (move.type === 'Fighting') return this.chainModify(1.1);
+			if (this.field.pseudoWeather['antidomain']) return;
+			if (source.hasType('Fighting') && move.type === 'Fighting') return this.chainModify([6144, 5120]);
 		},
 	},
 
 	poisondomain: {
 		name: "Poison Domain",
-
-		duration: 5,
+		// Duration scales with the number of Poison-type Pokémon on the setter's team (max 6, §3).
+		durationCallback(source) {
+			if (!source) return 5;
+			const n = source.side.pokemon.filter(p => p.hasType('Poison')).length;
+			return this.clampIntRange(n, 1, 6);
+		},
 		onFieldStart(field, source, effect) {
+			// One Domain per team (§3): remove this side's previously-set Domain, if any.
+			for (const id of DOMAIN_IDS) {
+				const pw = field.pseudoWeather[id];
+				if (!pw || pw === this.effectState) continue;
+				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
+			}
 			if (effect?.effectType === 'Ability') {
 				this.add('-fieldstart', 'move: Poison Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
 			} else {
@@ -334,40 +307,29 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Poison Domain');
 		},
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Poison')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Poison')) return this.chainModify([6144, 5120]);
-		},
-		onModifyDefPriority: 6,
-		onModifyDef(def, target) {
-			if (target.hasType('Poison')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpDPriority: 6,
-		onModifySpD(spd, target) {
-			if (target.hasType('Poison')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpePriority: 5,
-		onModifySpe(spe, pokemon) {
-			if (pokemon.hasType('Poison')) return this.chainModify([6144, 5120]);
-		},
-		onModifyBasePower(basePower, attacker, defender, move) {
-			if (move.type === 'Poison') return this.chainModify(1.1);
-		},
+		// Accuracy boost (§3): a Poison-type Pokémon using a Poison-type move gets ×1.2 accuracy.
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
-			if (move.type === 'Poison') return this.chainModify(1.1);
+			if (this.field.pseudoWeather['antidomain']) return;
+			if (source.hasType('Poison') && move.type === 'Poison') return this.chainModify([6144, 5120]);
 		},
 	},
 
 	grounddomain: {
 		name: "Ground Domain",
-
-		duration: 5,
+		// Duration scales with the number of Ground-type Pokémon on the setter's team (max 6, §3).
+		durationCallback(source) {
+			if (!source) return 5;
+			const n = source.side.pokemon.filter(p => p.hasType('Ground')).length;
+			return this.clampIntRange(n, 1, 6);
+		},
 		onFieldStart(field, source, effect) {
+			// One Domain per team (§3): remove this side's previously-set Domain, if any.
+			for (const id of DOMAIN_IDS) {
+				const pw = field.pseudoWeather[id];
+				if (!pw || pw === this.effectState) continue;
+				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
+			}
 			if (effect?.effectType === 'Ability') {
 				this.add('-fieldstart', 'move: Ground Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
 			} else {
@@ -379,40 +341,29 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Ground Domain');
 		},
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Ground')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Ground')) return this.chainModify([6144, 5120]);
-		},
-		onModifyDefPriority: 6,
-		onModifyDef(def, target) {
-			if (target.hasType('Ground')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpDPriority: 6,
-		onModifySpD(spd, target) {
-			if (target.hasType('Ground')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpePriority: 5,
-		onModifySpe(spe, pokemon) {
-			if (pokemon.hasType('Ground')) return this.chainModify([6144, 5120]);
-		},
-		onModifyBasePower(basePower, attacker, defender, move) {
-			if (move.type === 'Ground') return this.chainModify(1.1);
-		},
+		// Accuracy boost (§3): a Ground-type Pokémon using a Ground-type move gets ×1.2 accuracy.
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
-			if (move.type === 'Ground') return this.chainModify(1.1);
+			if (this.field.pseudoWeather['antidomain']) return;
+			if (source.hasType('Ground') && move.type === 'Ground') return this.chainModify([6144, 5120]);
 		},
 	},
 
 	flyingdomain: {
 		name: "Air Domain",
-
-		duration: 5,
+		// Duration scales with the number of Flying-type Pokémon on the setter's team (max 6, §3).
+		durationCallback(source) {
+			if (!source) return 5;
+			const n = source.side.pokemon.filter(p => p.hasType('Flying')).length;
+			return this.clampIntRange(n, 1, 6);
+		},
 		onFieldStart(field, source, effect) {
+			// One Domain per team (§3): remove this side's previously-set Domain, if any.
+			for (const id of DOMAIN_IDS) {
+				const pw = field.pseudoWeather[id];
+				if (!pw || pw === this.effectState) continue;
+				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
+			}
 			if (effect?.effectType === 'Ability') {
 				this.add('-fieldstart', 'move: Air Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
 			} else {
@@ -424,40 +375,29 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Air Domain');
 		},
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Flying')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Flying')) return this.chainModify([6144, 5120]);
-		},
-		onModifyDefPriority: 6,
-		onModifyDef(def, target) {
-			if (target.hasType('Flying')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpDPriority: 6,
-		onModifySpD(spd, target) {
-			if (target.hasType('Flying')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpePriority: 5,
-		onModifySpe(spe, pokemon) {
-			if (pokemon.hasType('Flying')) return this.chainModify([6144, 5120]);
-		},
-		onModifyBasePower(basePower, attacker, defender, move) {
-			if (move.type === 'Flying') return this.chainModify(1.1);
-		},
+		// Accuracy boost (§3): a Flying-type Pokémon using a Flying-type move gets ×1.2 accuracy.
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
-			if (move.type === 'Flying') return this.chainModify(1.1);
+			if (this.field.pseudoWeather['antidomain']) return;
+			if (source.hasType('Flying') && move.type === 'Flying') return this.chainModify([6144, 5120]);
 		},
 	},
 
 	psychicdomain: {
 		name: "Psychic Domain",
-
-		duration: 5,
+		// Duration scales with the number of Psychic-type Pokémon on the setter's team (max 6, §3).
+		durationCallback(source) {
+			if (!source) return 5;
+			const n = source.side.pokemon.filter(p => p.hasType('Psychic')).length;
+			return this.clampIntRange(n, 1, 6);
+		},
 		onFieldStart(field, source, effect) {
+			// One Domain per team (§3): remove this side's previously-set Domain, if any.
+			for (const id of DOMAIN_IDS) {
+				const pw = field.pseudoWeather[id];
+				if (!pw || pw === this.effectState) continue;
+				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
+			}
 			if (effect?.effectType === 'Ability') {
 				this.add('-fieldstart', 'move: Psychic Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
 			} else {
@@ -469,40 +409,29 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Psychic Domain');
 		},
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Psychic')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Psychic')) return this.chainModify([6144, 5120]);
-		},
-		onModifyDefPriority: 6,
-		onModifyDef(def, target) {
-			if (target.hasType('Psychic')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpDPriority: 6,
-		onModifySpD(spd, target) {
-			if (target.hasType('Psychic')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpePriority: 5,
-		onModifySpe(spe, pokemon) {
-			if (pokemon.hasType('Psychic')) return this.chainModify([6144, 5120]);
-		},
-		onModifyBasePower(basePower, attacker, defender, move) {
-			if (move.type === 'Psychic') return this.chainModify(1.1);
-		},
+		// Accuracy boost (§3): a Psychic-type Pokémon using a Psychic-type move gets ×1.2 accuracy.
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
-			if (move.type === 'Psychic') return this.chainModify(1.1);
+			if (this.field.pseudoWeather['antidomain']) return;
+			if (source.hasType('Psychic') && move.type === 'Psychic') return this.chainModify([6144, 5120]);
 		},
 	},
 
 	bugdomain: {
 		name: "Bug Domain",
-
-		duration: 5,
+		// Duration scales with the number of Bug-type Pokémon on the setter's team (max 6, §3).
+		durationCallback(source) {
+			if (!source) return 5;
+			const n = source.side.pokemon.filter(p => p.hasType('Bug')).length;
+			return this.clampIntRange(n, 1, 6);
+		},
 		onFieldStart(field, source, effect) {
+			// One Domain per team (§3): remove this side's previously-set Domain, if any.
+			for (const id of DOMAIN_IDS) {
+				const pw = field.pseudoWeather[id];
+				if (!pw || pw === this.effectState) continue;
+				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
+			}
 			if (effect?.effectType === 'Ability') {
 				this.add('-fieldstart', 'move: Bug Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
 			} else {
@@ -514,40 +443,29 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Bug Domain');
 		},
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Bug')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Bug')) return this.chainModify([6144, 5120]);
-		},
-		onModifyDefPriority: 6,
-		onModifyDef(def, target) {
-			if (target.hasType('Bug')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpDPriority: 6,
-		onModifySpD(spd, target) {
-			if (target.hasType('Bug')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpePriority: 5,
-		onModifySpe(spe, pokemon) {
-			if (pokemon.hasType('Bug')) return this.chainModify([6144, 5120]);
-		},
-		onModifyBasePower(basePower, attacker, defender, move) {
-			if (move.type === 'Bug') return this.chainModify(1.1);
-		},
+		// Accuracy boost (§3): a Bug-type Pokémon using a Bug-type move gets ×1.2 accuracy.
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
-			if (move.type === 'Bug') return this.chainModify(1.1);
+			if (this.field.pseudoWeather['antidomain']) return;
+			if (source.hasType('Bug') && move.type === 'Bug') return this.chainModify([6144, 5120]);
 		},
 	},
 
 	rockdomain: {
 		name: "Rock Domain",
-
-		duration: 5,
+		// Duration scales with the number of Rock-type Pokémon on the setter's team (max 6, §3).
+		durationCallback(source) {
+			if (!source) return 5;
+			const n = source.side.pokemon.filter(p => p.hasType('Rock')).length;
+			return this.clampIntRange(n, 1, 6);
+		},
 		onFieldStart(field, source, effect) {
+			// One Domain per team (§3): remove this side's previously-set Domain, if any.
+			for (const id of DOMAIN_IDS) {
+				const pw = field.pseudoWeather[id];
+				if (!pw || pw === this.effectState) continue;
+				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
+			}
 			if (effect?.effectType === 'Ability') {
 				this.add('-fieldstart', 'move: Rock Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
 			} else {
@@ -559,40 +477,29 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Rock Domain');
 		},
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Rock')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Rock')) return this.chainModify([6144, 5120]);
-		},
-		onModifyDefPriority: 6,
-		onModifyDef(def, target) {
-			if (target.hasType('Rock')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpDPriority: 6,
-		onModifySpD(spd, target) {
-			if (target.hasType('Rock')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpePriority: 5,
-		onModifySpe(spe, pokemon) {
-			if (pokemon.hasType('Rock')) return this.chainModify([6144, 5120]);
-		},
-		onModifyBasePower(basePower, attacker, defender, move) {
-			if (move.type === 'Rock') return this.chainModify(1.1);
-		},
+		// Accuracy boost (§3): a Rock-type Pokémon using a Rock-type move gets ×1.2 accuracy.
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
-			if (move.type === 'Rock') return this.chainModify(1.1);
+			if (this.field.pseudoWeather['antidomain']) return;
+			if (source.hasType('Rock') && move.type === 'Rock') return this.chainModify([6144, 5120]);
 		},
 	},
 
 	ghostdomain: {
 		name: "Ghost Domain",
-
-		duration: 5,
+		// Duration scales with the number of Ghost-type Pokémon on the setter's team (max 6, §3).
+		durationCallback(source) {
+			if (!source) return 5;
+			const n = source.side.pokemon.filter(p => p.hasType('Ghost')).length;
+			return this.clampIntRange(n, 1, 6);
+		},
 		onFieldStart(field, source, effect) {
+			// One Domain per team (§3): remove this side's previously-set Domain, if any.
+			for (const id of DOMAIN_IDS) {
+				const pw = field.pseudoWeather[id];
+				if (!pw || pw === this.effectState) continue;
+				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
+			}
 			if (effect?.effectType === 'Ability') {
 				this.add('-fieldstart', 'move: Ghost Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
 			} else {
@@ -604,40 +511,29 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Ghost Domain');
 		},
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Ghost')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Ghost')) return this.chainModify([6144, 5120]);
-		},
-		onModifyDefPriority: 6,
-		onModifyDef(def, target) {
-			if (target.hasType('Ghost')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpDPriority: 6,
-		onModifySpD(spd, target) {
-			if (target.hasType('Ghost')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpePriority: 5,
-		onModifySpe(spe, pokemon) {
-			if (pokemon.hasType('Ghost')) return this.chainModify([6144, 5120]);
-		},
-		onModifyBasePower(basePower, attacker, defender, move) {
-			if (move.type === 'Ghost') return this.chainModify(1.1);
-		},
+		// Accuracy boost (§3): a Ghost-type Pokémon using a Ghost-type move gets ×1.2 accuracy.
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
-			if (move.type === 'Ghost') return this.chainModify(1.1);
+			if (this.field.pseudoWeather['antidomain']) return;
+			if (source.hasType('Ghost') && move.type === 'Ghost') return this.chainModify([6144, 5120]);
 		},
 	},
 
 	dragondomain: {
 		name: "Dragon Domain",
-
-		duration: 5,
+		// Duration scales with the number of Dragon-type Pokémon on the setter's team (max 6, §3).
+		durationCallback(source) {
+			if (!source) return 5;
+			const n = source.side.pokemon.filter(p => p.hasType('Dragon')).length;
+			return this.clampIntRange(n, 1, 6);
+		},
 		onFieldStart(field, source, effect) {
+			// One Domain per team (§3): remove this side's previously-set Domain, if any.
+			for (const id of DOMAIN_IDS) {
+				const pw = field.pseudoWeather[id];
+				if (!pw || pw === this.effectState) continue;
+				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
+			}
 			if (effect?.effectType === 'Ability') {
 				this.add('-fieldstart', 'move: Dragon Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
 			} else {
@@ -649,40 +545,29 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Dragon Domain');
 		},
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Dragon')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Dragon')) return this.chainModify([6144, 5120]);
-		},
-		onModifyDefPriority: 6,
-		onModifyDef(def, target) {
-			if (target.hasType('Dragon')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpDPriority: 6,
-		onModifySpD(spd, target) {
-			if (target.hasType('Dragon')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpePriority: 5,
-		onModifySpe(spe, pokemon) {
-			if (pokemon.hasType('Dragon')) return this.chainModify([6144, 5120]);
-		},
-		onModifyBasePower(basePower, attacker, defender, move) {
-			if (move.type === 'Dragon') return this.chainModify(1.1);
-		},
+		// Accuracy boost (§3): a Dragon-type Pokémon using a Dragon-type move gets ×1.2 accuracy.
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
-			if (move.type === 'Dragon') return this.chainModify(1.1);
+			if (this.field.pseudoWeather['antidomain']) return;
+			if (source.hasType('Dragon') && move.type === 'Dragon') return this.chainModify([6144, 5120]);
 		},
 	},
 
 	darkdomain: {
 		name: "Dark Domain",
-
-		duration: 5,
+		// Duration scales with the number of Dark-type Pokémon on the setter's team (max 6, §3).
+		durationCallback(source) {
+			if (!source) return 5;
+			const n = source.side.pokemon.filter(p => p.hasType('Dark')).length;
+			return this.clampIntRange(n, 1, 6);
+		},
 		onFieldStart(field, source, effect) {
+			// One Domain per team (§3): remove this side's previously-set Domain, if any.
+			for (const id of DOMAIN_IDS) {
+				const pw = field.pseudoWeather[id];
+				if (!pw || pw === this.effectState) continue;
+				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
+			}
 			if (effect?.effectType === 'Ability') {
 				this.add('-fieldstart', 'move: Dark Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
 			} else {
@@ -694,40 +579,29 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Dark Domain');
 		},
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Dark')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Dark')) return this.chainModify([6144, 5120]);
-		},
-		onModifyDefPriority: 6,
-		onModifyDef(def, target) {
-			if (target.hasType('Dark')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpDPriority: 6,
-		onModifySpD(spd, target) {
-			if (target.hasType('Dark')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpePriority: 5,
-		onModifySpe(spe, pokemon) {
-			if (pokemon.hasType('Dark')) return this.chainModify([6144, 5120]);
-		},
-		onModifyBasePower(basePower, attacker, defender, move) {
-			if (move.type === 'Dark') return this.chainModify(1.1);
-		},
+		// Accuracy boost (§3): a Dark-type Pokémon using a Dark-type move gets ×1.2 accuracy.
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
-			if (move.type === 'Dark') return this.chainModify(1.1);
+			if (this.field.pseudoWeather['antidomain']) return;
+			if (source.hasType('Dark') && move.type === 'Dark') return this.chainModify([6144, 5120]);
 		},
 	},
 
 	steeldomain: {
 		name: "Steel Domain",
-
-		duration: 5,
+		// Duration scales with the number of Steel-type Pokémon on the setter's team (max 6, §3).
+		durationCallback(source) {
+			if (!source) return 5;
+			const n = source.side.pokemon.filter(p => p.hasType('Steel')).length;
+			return this.clampIntRange(n, 1, 6);
+		},
 		onFieldStart(field, source, effect) {
+			// One Domain per team (§3): remove this side's previously-set Domain, if any.
+			for (const id of DOMAIN_IDS) {
+				const pw = field.pseudoWeather[id];
+				if (!pw || pw === this.effectState) continue;
+				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
+			}
 			if (effect?.effectType === 'Ability') {
 				this.add('-fieldstart', 'move: Steel Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
 			} else {
@@ -739,40 +613,29 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Steel Domain');
 		},
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Steel')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Steel')) return this.chainModify([6144, 5120]);
-		},
-		onModifyDefPriority: 6,
-		onModifyDef(def, target) {
-			if (target.hasType('Steel')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpDPriority: 6,
-		onModifySpD(spd, target) {
-			if (target.hasType('Steel')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpePriority: 5,
-		onModifySpe(spe, pokemon) {
-			if (pokemon.hasType('Steel')) return this.chainModify([6144, 5120]);
-		},
-		onModifyBasePower(basePower, attacker, defender, move) {
-			if (move.type === 'Steel') return this.chainModify(1.1);
-		},
+		// Accuracy boost (§3): a Steel-type Pokémon using a Steel-type move gets ×1.2 accuracy.
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
-			if (move.type === 'Steel') return this.chainModify(1.1);
+			if (this.field.pseudoWeather['antidomain']) return;
+			if (source.hasType('Steel') && move.type === 'Steel') return this.chainModify([6144, 5120]);
 		},
 	},
 
 	fairydomain: {
 		name: "Fairy Domain",
-
-		duration: 5,
+		// Duration scales with the number of Fairy-type Pokémon on the setter's team (max 6, §3).
+		durationCallback(source) {
+			if (!source) return 5;
+			const n = source.side.pokemon.filter(p => p.hasType('Fairy')).length;
+			return this.clampIntRange(n, 1, 6);
+		},
 		onFieldStart(field, source, effect) {
+			// One Domain per team (§3): remove this side's previously-set Domain, if any.
+			for (const id of DOMAIN_IDS) {
+				const pw = field.pseudoWeather[id];
+				if (!pw || pw === this.effectState) continue;
+				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
+			}
 			if (effect?.effectType === 'Ability') {
 				this.add('-fieldstart', 'move: Fairy Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
 			} else {
@@ -784,40 +647,29 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Fairy Domain');
 		},
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Fairy')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Fairy')) return this.chainModify([6144, 5120]);
-		},
-		onModifyDefPriority: 6,
-		onModifyDef(def, target) {
-			if (target.hasType('Fairy')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpDPriority: 6,
-		onModifySpD(spd, target) {
-			if (target.hasType('Fairy')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpePriority: 5,
-		onModifySpe(spe, pokemon) {
-			if (pokemon.hasType('Fairy')) return this.chainModify([6144, 5120]);
-		},
-		onModifyBasePower(basePower, attacker, defender, move) {
-			if (move.type === 'Fairy') return this.chainModify(1.1);
-		},
+		// Accuracy boost (§3): a Fairy-type Pokémon using a Fairy-type move gets ×1.2 accuracy.
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
-			if (move.type === 'Fairy') return this.chainModify(1.1);
+			if (this.field.pseudoWeather['antidomain']) return;
+			if (source.hasType('Fairy') && move.type === 'Fairy') return this.chainModify([6144, 5120]);
 		},
 	},
 
 	cosmicdomain: {
 		name: "Cosmic Domain",
-
-		duration: 5,
+		// Duration scales with the number of Cosmic-type Pokémon on the setter's team (max 6, §3).
+		durationCallback(source) {
+			if (!source) return 5;
+			const n = source.side.pokemon.filter(p => p.hasType('Cosmic')).length;
+			return this.clampIntRange(n, 1, 6);
+		},
 		onFieldStart(field, source, effect) {
+			// One Domain per team (§3): remove this side's previously-set Domain, if any.
+			for (const id of DOMAIN_IDS) {
+				const pw = field.pseudoWeather[id];
+				if (!pw || pw === this.effectState) continue;
+				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
+			}
 			if (effect?.effectType === 'Ability') {
 				this.add('-fieldstart', 'move: Cosmic Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
 			} else {
@@ -829,32 +681,11 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Cosmic Domain');
 		},
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker) {
-			if (attacker.hasType('Cosmic')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(spa, attacker) {
-			if (attacker.hasType('Cosmic')) return this.chainModify([6144, 5120]);
-		},
-		onModifyDefPriority: 6,
-		onModifyDef(def, target) {
-			if (target.hasType('Cosmic')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpDPriority: 6,
-		onModifySpD(spd, target) {
-			if (target.hasType('Cosmic')) return this.chainModify([6144, 5120]);
-		},
-		onModifySpePriority: 5,
-		onModifySpe(spe, pokemon) {
-			if (pokemon.hasType('Cosmic')) return this.chainModify([6144, 5120]);
-		},
-		onModifyBasePower(basePower, attacker, defender, move) {
-			if (move.type === 'Cosmic') return this.chainModify(1.1);
-		},
+		// Accuracy boost (§3): a Cosmic-type Pokémon using a Cosmic-type move gets ×1.2 accuracy.
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
-			if (move.type === 'Cosmic') return this.chainModify(1.1);
+			if (this.field.pseudoWeather['antidomain']) return;
+			if (source.hasType('Cosmic') && move.type === 'Cosmic') return this.chainModify([6144, 5120]);
 		},
 	},
 
@@ -1402,119 +1233,14 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	antidomain: {
 		name: "Anti-Domain",
+		// Suppresses both Domain effects while active. The Domain stat boost (config/formats.ts)
+		// and the per-Domain accuracy boost both early-return when 'antidomain' is present, so
+		// this condition only needs to announce itself — no reversal handlers required.
 		onFieldStart(field, source, effect) {
 			this.add('-fieldstart', 'move: Anti-Domain', '[from] ability: Anti-Domain', `[of] ${source}`);
 		},
 		onFieldEnd() {
 			this.add('-fieldend', 'move: Anti-Domain');
-		},
-		// Priority 4 fires after domain's priority 5 (Atk/SpA/Spe), undoing the ×1.2 boost.
-		onModifyAtkPriority: 4,
-		onModifyAtk(atk, attacker) {
-			const d = this.field.pseudoWeather;
-			for (const [id, type] of [
-				['normaldomain', 'Normal'], ['firedomain', 'Fire'], ['waterdomain', 'Water'],
-				['electricdomain', 'Electric'], ['grassdomain', 'Grass'], ['icedomain', 'Ice'],
-				['fightingdomain', 'Fighting'], ['poisondomain', 'Poison'], ['grounddomain', 'Ground'],
-				['flyingdomain', 'Flying'], ['psychicdomain', 'Psychic'], ['bugdomain', 'Bug'],
-				['rockdomain', 'Rock'], ['ghostdomain', 'Ghost'], ['dragondomain', 'Dragon'],
-				['darkdomain', 'Dark'], ['steeldomain', 'Steel'], ['fairydomain', 'Fairy'],
-				['cosmicdomain', 'Cosmic'],
-			] as [string, string][]) {
-				if (d[id] && attacker.hasType(type as any)) this.chainModify([5120, 6144]);
-			}
-		},
-		onModifySpAPriority: 4,
-		onModifySpA(spa, attacker) {
-			const d = this.field.pseudoWeather;
-			for (const [id, type] of [
-				['normaldomain', 'Normal'], ['firedomain', 'Fire'], ['waterdomain', 'Water'],
-				['electricdomain', 'Electric'], ['grassdomain', 'Grass'], ['icedomain', 'Ice'],
-				['fightingdomain', 'Fighting'], ['poisondomain', 'Poison'], ['grounddomain', 'Ground'],
-				['flyingdomain', 'Flying'], ['psychicdomain', 'Psychic'], ['bugdomain', 'Bug'],
-				['rockdomain', 'Rock'], ['ghostdomain', 'Ghost'], ['dragondomain', 'Dragon'],
-				['darkdomain', 'Dark'], ['steeldomain', 'Steel'], ['fairydomain', 'Fairy'],
-				['cosmicdomain', 'Cosmic'],
-			] as [string, string][]) {
-				if (d[id] && attacker.hasType(type as any)) this.chainModify([5120, 6144]);
-			}
-		},
-		// Priority 5 fires after domain's priority 6 (Def/SpD), undoing the ×1.2 boost.
-		onModifyDefPriority: 5,
-		onModifyDef(def, target) {
-			const d = this.field.pseudoWeather;
-			for (const [id, type] of [
-				['normaldomain', 'Normal'], ['firedomain', 'Fire'], ['waterdomain', 'Water'],
-				['electricdomain', 'Electric'], ['grassdomain', 'Grass'], ['icedomain', 'Ice'],
-				['fightingdomain', 'Fighting'], ['poisondomain', 'Poison'], ['grounddomain', 'Ground'],
-				['flyingdomain', 'Flying'], ['psychicdomain', 'Psychic'], ['bugdomain', 'Bug'],
-				['rockdomain', 'Rock'], ['ghostdomain', 'Ghost'], ['dragondomain', 'Dragon'],
-				['darkdomain', 'Dark'], ['steeldomain', 'Steel'], ['fairydomain', 'Fairy'],
-				['cosmicdomain', 'Cosmic'],
-			] as [string, string][]) {
-				if (d[id] && target.hasType(type as any)) this.chainModify([5120, 6144]);
-			}
-		},
-		onModifySpDPriority: 5,
-		onModifySpD(spd, target) {
-			const d = this.field.pseudoWeather;
-			for (const [id, type] of [
-				['normaldomain', 'Normal'], ['firedomain', 'Fire'], ['waterdomain', 'Water'],
-				['electricdomain', 'Electric'], ['grassdomain', 'Grass'], ['icedomain', 'Ice'],
-				['fightingdomain', 'Fighting'], ['poisondomain', 'Poison'], ['grounddomain', 'Ground'],
-				['flyingdomain', 'Flying'], ['psychicdomain', 'Psychic'], ['bugdomain', 'Bug'],
-				['rockdomain', 'Rock'], ['ghostdomain', 'Ghost'], ['dragondomain', 'Dragon'],
-				['darkdomain', 'Dark'], ['steeldomain', 'Steel'], ['fairydomain', 'Fairy'],
-				['cosmicdomain', 'Cosmic'],
-			] as [string, string][]) {
-				if (d[id] && target.hasType(type as any)) this.chainModify([5120, 6144]);
-			}
-		},
-		onModifySpePriority: 4,
-		onModifySpe(spe, pokemon) {
-			const d = this.field.pseudoWeather;
-			for (const [id, type] of [
-				['normaldomain', 'Normal'], ['firedomain', 'Fire'], ['waterdomain', 'Water'],
-				['electricdomain', 'Electric'], ['grassdomain', 'Grass'], ['icedomain', 'Ice'],
-				['fightingdomain', 'Fighting'], ['poisondomain', 'Poison'], ['grounddomain', 'Ground'],
-				['flyingdomain', 'Flying'], ['psychicdomain', 'Psychic'], ['bugdomain', 'Bug'],
-				['rockdomain', 'Rock'], ['ghostdomain', 'Ghost'], ['dragondomain', 'Dragon'],
-				['darkdomain', 'Dark'], ['steeldomain', 'Steel'], ['fairydomain', 'Fairy'],
-				['cosmicdomain', 'Cosmic'],
-			] as [string, string][]) {
-				if (d[id] && pokemon.hasType(type as any)) this.chainModify([5120, 6144]);
-			}
-		},
-		onModifyBasePowerPriority: -1,
-		onModifyBasePower(basePower, attacker, defender, move) {
-			const d = this.field.pseudoWeather;
-			for (const [id, type] of [
-				['normaldomain', 'Normal'], ['firedomain', 'Fire'], ['waterdomain', 'Water'],
-				['electricdomain', 'Electric'], ['grassdomain', 'Grass'], ['icedomain', 'Ice'],
-				['fightingdomain', 'Fighting'], ['poisondomain', 'Poison'], ['grounddomain', 'Ground'],
-				['flyingdomain', 'Flying'], ['psychicdomain', 'Psychic'], ['bugdomain', 'Bug'],
-				['rockdomain', 'Rock'], ['ghostdomain', 'Ghost'], ['dragondomain', 'Dragon'],
-				['darkdomain', 'Dark'], ['steeldomain', 'Steel'], ['fairydomain', 'Fairy'],
-				['cosmicdomain', 'Cosmic'],
-			] as [string, string][]) {
-				if (d[id] && move.type === type) this.chainModify([10, 11]);
-			}
-		},
-		onModifyAccuracyPriority: -1,
-		onModifyAccuracy(accuracy, target, source, move) {
-			if (typeof accuracy !== 'number') return;
-			const d = this.field.pseudoWeather;
-			for (const [id, type] of [
-				['normaldomain', 'Normal'], ['firedomain', 'Fire'], ['waterdomain', 'Water'],
-				['electricdomain', 'Electric'], ['grassdomain', 'Grass'], ['icedomain', 'Ice'],
-				['fightingdomain', 'Fighting'], ['poisondomain', 'Poison'], ['grounddomain', 'Ground'],
-				['flyingdomain', 'Flying'], ['psychicdomain', 'Psychic'], ['bugdomain', 'Bug'],
-				['rockdomain', 'Rock'], ['ghostdomain', 'Ghost'], ['dragondomain', 'Dragon'],
-				['darkdomain', 'Dark'], ['steeldomain', 'Steel'], ['fairydomain', 'Fairy'],
-				['cosmicdomain', 'Cosmic'],
-			] as [string, string][]) {
-				if (d[id] && move.type === type) this.chainModify([10, 11]);
-			}
 		},
 	},
 
@@ -1737,16 +1463,17 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 	},
 
-	// ── Minimal weather overrides (§2) — built so the §1.5 weather-coupled blanket
-	// immunities (Ice+Steel/Snowstorm, Water/Heavy Rain, Fire/Harsh Sun) have real
-	// mechanics to hook into. Canon weather IDs/names are retained; flavor renames and
-	// the full §2 weather pass (power-boost removal, etc.) are a separate task. Each
-	// condition is copied whole from data/conditions.ts because mod conditions replace
-	// the base entry, then modified.
+	// ── Weather overrides (§2) ──────────────────────────────────────────────────
+	// Canon weather IDs/names are retained (the client supplies the flavor display
+	// names via weatherNameTable). Per the current §2 spec weather DOES modify move
+	// power / defensive stats again, at a reduced ×1.3 (down from canon's ×1.5). Each
+	// condition is copied whole from data/conditions.ts (mod conditions replace the base
+	// entry) and then modified. The §1.5 weather-coupled blanket immunities
+	// (Ice+Steel/Snowstorm, Water/Heavy Rain, Fire/Harsh Sun) also hook in here.
 
 	// Sandstorm — chip 1/16 (§2). Rock/Ground/Steel immunity is canon
 	// (enforced by runStatusImmunity('sandstorm') before onWeather fires).
-	// §2: weather no longer modifies power/stats — the canon Rock SpD ×1.5 boost is removed.
+	// §2: boosts Special Defense of Rock AND Ground types by ×1.3.
 	sandstorm: {
 		name: 'Sandstorm',
 		effectType: 'Weather',
@@ -1754,6 +1481,13 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		durationCallback(source, effect) {
 			if (source?.hasItem('smoothrock')) return 8;
 			return 5;
+		},
+		// §2: Rock and Ground types get ×1.3 Special Defense in Sandstorm.
+		onModifySpDPriority: 10,
+		onModifySpD(spd, pokemon) {
+			if ((pokemon.hasType('Rock') || pokemon.hasType('Ground')) && this.field.isWeather('sandstorm')) {
+				return this.chainModify(1.3);
+			}
 		},
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -1776,8 +1510,8 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 	},
 
-	// Snowscape (Snowstorm) — hail-style chip (1/16) instead of the canon Snow Defense
-	// boost (§2). Ice and Steel types are immune to the chip (§1.5).
+	// Snowscape (Snowstorm) — hail-style chip (1/16). Ice and Steel types are immune to
+	// the chip (§1.5). §2: boosts Defense of Ice types by ×1.3 (Sandstorm's mirror).
 	snowscape: {
 		name: 'Snowscape',
 		effectType: 'Weather',
@@ -1785,6 +1519,13 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		durationCallback(source, effect) {
 			if (source?.hasItem('icyrock')) return 8;
 			return 5;
+		},
+		// §2: Ice types get ×1.3 Defense in Snowstorm.
+		onModifyDefPriority: 7,
+		onModifyDef(def, pokemon) {
+			if (pokemon.hasType('Ice') && this.field.isWeather('snowscape')) {
+				return this.chainModify(1.3);
+			}
 		},
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -1808,10 +1549,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 	},
 
-	// RainDance (Heavy Rain) — non-Water Pokémon spend +1 PP per move (§2); Water types
-	// are immune (§1.5). Burn cannot be inflicted while raining (Will-O-Wisp's move-level
-	// override is deferred to §5). §2: weather no longer modifies power — the canon Water ×1.5
-	// boost and Fire ×0.5 suppression are removed.
+	// RainDance (Heavy Rain) — Burn cannot be inflicted while raining (§2; Will-O-Wisp's
+	// move-level override is deferred to §5). §2: boosts Water moves ×1.3 and weakens Fire
+	// moves ×0.7 (down from canon's ×1.5 / ×0.5).
 	raindance: {
 		name: 'RainDance',
 		effectType: 'Weather',
@@ -1824,11 +1564,11 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			if (pokemon.effectiveWeather() !== 'raindance') return;
 			if (type === 'brn') return false;
 		},
-		onAfterMove(source, target, move) {
-			if (source.effectiveWeather() !== 'raindance') return;
-			if (source.hasType('Water')) return;
-			// Moves at 1 PP drop to 0; deductPP clamps at 0.
-			source.deductPP(move.id, 1);
+		// §2: Water ×1.3, Fire ×0.7. Utility Umbrella negates the holder's weather power mods.
+		onWeatherModifyDamage(damage, attacker, defender, move) {
+			if (defender.hasItem('utilityumbrella')) return;
+			if (move.type === 'Water') return this.chainModify(1.3);
+			if (move.type === 'Fire') return this.chainModify(0.7);
 		},
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -1848,10 +1588,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 	},
 
-	// SunnyDay (Harsh Sun) — self-stat-drop moves drop one ADDITIONAL stage (§2); Fire and
-	// Grass types are exempt (Fire's exemption is its §1.5 blanket effect). Frostbite (and
-	// canon Freeze) cannot be inflicted while the sun is harsh. §2: weather no longer modifies
-	// power — the canon Fire ×1.5 boost, Water ×0.5 suppression, and Hydro Steam boost are removed.
+	// SunnyDay (Harsh Sun) — Frostbite (and canon Freeze) cannot be inflicted while the sun
+	// is harsh (§2). §2: boosts Fire moves ×1.3 and weakens Water moves ×0.7 (down from
+	// canon's ×1.5 / ×0.5).
 	sunnyday: {
 		name: 'SunnyDay',
 		effectType: 'Weather',
@@ -1864,16 +1603,11 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			if (pokemon.effectiveWeather() !== 'sunnyday') return;
 			if (type === 'frz' || type === 'frb') return false;
 		},
-		onChangeBoost(boost, target, source, effect) {
-			if (target.effectiveWeather() !== 'sunnyday') return;
-			if (target !== source) return; // self-stat-drops only
-			if (!effect || effect.effectType !== 'Move') return;
-			if (target.hasType('Fire') || target.hasType('Grass')) return;
-			let stat: BoostID;
-			for (stat in boost) {
-				const v = boost[stat]!;
-				if (v < 0) boost[stat] = v - 1;
-			}
+		// §2: Fire ×1.3, Water ×0.7. Utility Umbrella negates the holder's weather power mods.
+		onWeatherModifyDamage(damage, attacker, defender, move) {
+			if (defender.hasItem('utilityumbrella')) return;
+			if (move.type === 'Fire') return this.chainModify(1.3);
+			if (move.type === 'Water') return this.chainModify(0.7);
 		},
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -1893,13 +1627,13 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 	},
 
-	// ── New §2 weathers ───────────────────────────────────────────────────────────
-	// Rainbow, Full Moon, New Moon, Fog, Clear Skies. None modify power/stats (§2).
-	// Weather IDs are lowercase (rainbow/fullmoon/newmoon/fog/clearskies); the protocol
-	// strings below ("Rainbow", "Full Moon", …) toID() to those IDs on the client, where
-	// `weatherNameTable` supplies the display names.
+	// ── New §2 weathers: Rainbow, Fog ───────────────────────────────────────────────
+	// (Full Moon and New Moon are NOT weathers — §2.5 makes them Celestial Events, a
+	// separate field slot that coexists with weather. They live below as pseudoWeather
+	// conditions.) Weather IDs are lowercase; the protocol strings below ("Rainbow", …)
+	// toID() to those IDs on the client, where `weatherNameTable` supplies display names.
 
-	// Rainbow — multiplies all secondary-effect rates of DAMAGING moves by ×1.25. Status
+	// Rainbow — multiplies all secondary-effect rates of DAMAGING moves by ×1.5 (§2). Status
 	// moves' primary effects and accuracy are unaffected. Stacks multiplicatively with
 	// Serene Grace (both run through onModifyMove; the product is order-independent).
 	rainbow: {
@@ -1911,10 +1645,10 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			if (move.category === 'Status') return;
 			if (move.secondaries) {
 				for (const secondary of move.secondaries) {
-					if (secondary.chance) secondary.chance *= 1.25;
+					if (secondary.chance) secondary.chance *= 1.5;
 				}
 			}
-			if (move.self?.chance) move.self.chance *= 1.25;
+			if (move.self?.chance) move.self.chance *= 1.5;
 		},
 		onFieldStart(field, source, effect) {
 			if (effect?.effectType === 'Ability') {
@@ -1933,13 +1667,14 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 	},
 
+	// ── Celestial Events (§2.5) — pseudoWeather, separate slot from Weather ──────────
+
 	// Full Moon — blocks moves with priority +1 or higher from being used. Same rule as canon
 	// Psychic Terrain, with the grounded-only restriction lifted (applies to ALL Pokémon).
 	// onTryHit only fires against foe-targeted moves, so protection/guard moves (target self or
 	// allySide) and zero/negative-priority moves are naturally exempt.
 	fullmoon: {
 		name: 'Full Moon',
-		effectType: 'Weather',
 		duration: 5,
 		onTryHitPriority: 4,
 		onTryHit(target, source, effect) {
@@ -1949,19 +1684,22 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return null;
 		},
 		onFieldStart(field, source, effect) {
+			// One Celestial Event at a time (§2.5): remove any other active Celestial Event.
+			for (const id of CELESTIAL_IDS) {
+				const pw = field.pseudoWeather[id];
+				if (!pw || pw === this.effectState) continue;
+				field.removePseudoWeather(id);
+			}
 			if (effect?.effectType === 'Ability') {
-				if (this.gen <= 5) this.effectState.duration = 0;
-				this.add('-weather', 'Full Moon', '[from] ability: ' + effect.name, `[of] ${source}`);
+				this.add('-fieldstart', 'move: Full Moon', '[from] ability: ' + effect.name, `[of] ${source}`);
 			} else {
-				this.add('-weather', 'Full Moon');
+				this.add('-fieldstart', 'move: Full Moon');
 			}
 		},
-		onFieldResidualOrder: 1,
-		onFieldResidual() {
-			this.add('-weather', 'Full Moon', '[upkeep]');
-		},
+		onFieldResidualOrder: 27,
+		onFieldResidualSubOrder: 20,
 		onFieldEnd() {
-			this.add('-weather', 'none');
+			this.add('-fieldend', 'move: Full Moon');
 		},
 	},
 
@@ -1972,7 +1710,6 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 	// and ability heals (Volt Absorb, Rain Dish, etc.) are all blocked by the default return.
 	newmoon: {
 		name: 'New Moon',
-		effectType: 'Weather',
 		duration: 5,
 		onTryHeal(damage, target, source, effect) {
 			if (!effect) return;
@@ -1982,19 +1719,22 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return false;
 		},
 		onFieldStart(field, source, effect) {
+			// One Celestial Event at a time (§2.5): remove any other active Celestial Event.
+			for (const id of CELESTIAL_IDS) {
+				const pw = field.pseudoWeather[id];
+				if (!pw || pw === this.effectState) continue;
+				field.removePseudoWeather(id);
+			}
 			if (effect?.effectType === 'Ability') {
-				if (this.gen <= 5) this.effectState.duration = 0;
-				this.add('-weather', 'New Moon', '[from] ability: ' + effect.name, `[of] ${source}`);
+				this.add('-fieldstart', 'move: New Moon', '[from] ability: ' + effect.name, `[of] ${source}`);
 			} else {
-				this.add('-weather', 'New Moon');
+				this.add('-fieldstart', 'move: New Moon');
 			}
 		},
-		onFieldResidualOrder: 1,
-		onFieldResidual() {
-			this.add('-weather', 'New Moon', '[upkeep]');
-		},
+		onFieldResidualOrder: 27,
+		onFieldResidualSubOrder: 21,
 		onFieldEnd() {
-			this.add('-weather', 'none');
+			this.add('-fieldend', 'move: New Moon');
 		},
 	},
 
@@ -2026,22 +1766,4 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 	},
 
-	// Clear Skies — the neutral named field state. No mechanical effects, no turn limit (no
-	// `duration`, so the residual decrement at sim/battle.ts never expires it). Persists until
-	// another weather replaces it. Settable explicitly (e.g. a weather-clearing move); the
-	// default empty-weather state is mechanically identical.
-	clearskies: {
-		name: 'Clear Skies',
-		effectType: 'Weather',
-		onFieldStart(field, source, effect) {
-			if (effect?.effectType === 'Ability') {
-				this.add('-weather', 'Clear Skies', '[from] ability: ' + effect.name, `[of] ${source}`);
-			} else {
-				this.add('-weather', 'Clear Skies');
-			}
-		},
-		onFieldEnd() {
-			this.add('-weather', 'none');
-		},
-	},
 };
