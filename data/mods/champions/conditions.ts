@@ -59,9 +59,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
 			}
 			if (effect?.effectType === 'Ability') {
-				this.add('-fieldstart', 'move: Normal Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
+				this.add('-fieldstart', 'move: Normal Domain', '[from] ability: ' + effect.name, `[of] ${source}`, `[timetoleft] ${this.effectState.duration}`);
 			} else {
-				this.add('-fieldstart', 'move: Normal Domain');
+				this.add('-fieldstart', 'move: Normal Domain', `[timetoleft] ${this.effectState.duration}`);
 			}
 		},
 		onFieldResidualOrder: 27,
@@ -93,9 +93,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
 			}
 			if (effect?.effectType === 'Ability') {
-				this.add('-fieldstart', 'move: Fire Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
+				this.add('-fieldstart', 'move: Fire Domain', '[from] ability: ' + effect.name, `[of] ${source}`, `[timetoleft] ${this.effectState.duration}`);
 			} else {
-				this.add('-fieldstart', 'move: Fire Domain');
+				this.add('-fieldstart', 'move: Fire Domain', `[timetoleft] ${this.effectState.duration}`);
 			}
 		},
 		onFieldResidualOrder: 27,
@@ -127,9 +127,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
 			}
 			if (effect?.effectType === 'Ability') {
-				this.add('-fieldstart', 'move: Water Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
+				this.add('-fieldstart', 'move: Water Domain', '[from] ability: ' + effect.name, `[of] ${source}`, `[timetoleft] ${this.effectState.duration}`);
 			} else {
-				this.add('-fieldstart', 'move: Water Domain');
+				this.add('-fieldstart', 'move: Water Domain', `[timetoleft] ${this.effectState.duration}`);
 			}
 		},
 		onFieldResidualOrder: 27,
@@ -161,9 +161,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
 			}
 			if (effect?.effectType === 'Ability') {
-				this.add('-fieldstart', 'move: Electric Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
+				this.add('-fieldstart', 'move: Electric Domain', '[from] ability: ' + effect.name, `[of] ${source}`, `[timetoleft] ${this.effectState.duration}`);
 			} else {
-				this.add('-fieldstart', 'move: Electric Domain');
+				this.add('-fieldstart', 'move: Electric Domain', `[timetoleft] ${this.effectState.duration}`);
 			}
 		},
 		onFieldResidualOrder: 27,
@@ -195,9 +195,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
 			}
 			if (effect?.effectType === 'Ability') {
-				this.add('-fieldstart', 'move: Grass Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
+				this.add('-fieldstart', 'move: Grass Domain', '[from] ability: ' + effect.name, `[of] ${source}`, `[timetoleft] ${this.effectState.duration}`);
 			} else {
-				this.add('-fieldstart', 'move: Grass Domain');
+				this.add('-fieldstart', 'move: Grass Domain', `[timetoleft] ${this.effectState.duration}`);
 			}
 		},
 		onFieldResidualOrder: 27,
@@ -229,9 +229,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
 			}
 			if (effect?.effectType === 'Ability') {
-				this.add('-fieldstart', 'move: Ice Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
+				this.add('-fieldstart', 'move: Ice Domain', '[from] ability: ' + effect.name, `[of] ${source}`, `[timetoleft] ${this.effectState.duration}`);
 			} else {
-				this.add('-fieldstart', 'move: Ice Domain');
+				this.add('-fieldstart', 'move: Ice Domain', `[timetoleft] ${this.effectState.duration}`);
 			}
 		},
 		onFieldResidualOrder: 27,
@@ -263,9 +263,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
 			}
 			if (effect?.effectType === 'Ability') {
-				this.add('-fieldstart', 'move: Fighting Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
+				this.add('-fieldstart', 'move: Fighting Domain', '[from] ability: ' + effect.name, `[of] ${source}`, `[timetoleft] ${this.effectState.duration}`);
 			} else {
-				this.add('-fieldstart', 'move: Fighting Domain');
+				this.add('-fieldstart', 'move: Fighting Domain', `[timetoleft] ${this.effectState.duration}`);
 			}
 		},
 		onFieldResidualOrder: 27,
@@ -297,9 +297,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
 			}
 			if (effect?.effectType === 'Ability') {
-				this.add('-fieldstart', 'move: Poison Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
+				this.add('-fieldstart', 'move: Poison Domain', '[from] ability: ' + effect.name, `[of] ${source}`, `[timetoleft] ${this.effectState.duration}`);
 			} else {
-				this.add('-fieldstart', 'move: Poison Domain');
+				this.add('-fieldstart', 'move: Poison Domain', `[timetoleft] ${this.effectState.duration}`);
 			}
 		},
 		onFieldResidualOrder: 27,
@@ -331,9 +331,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
 			}
 			if (effect?.effectType === 'Ability') {
-				this.add('-fieldstart', 'move: Ground Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
+				this.add('-fieldstart', 'move: Ground Domain', '[from] ability: ' + effect.name, `[of] ${source}`, `[timetoleft] ${this.effectState.duration}`);
 			} else {
-				this.add('-fieldstart', 'move: Ground Domain');
+				this.add('-fieldstart', 'move: Ground Domain', `[timetoleft] ${this.effectState.duration}`);
 			}
 		},
 		onFieldResidualOrder: 27,
@@ -365,9 +365,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
 			}
 			if (effect?.effectType === 'Ability') {
-				this.add('-fieldstart', 'move: Air Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
+				this.add('-fieldstart', 'move: Air Domain', '[from] ability: ' + effect.name, `[of] ${source}`, `[timetoleft] ${this.effectState.duration}`);
 			} else {
-				this.add('-fieldstart', 'move: Air Domain');
+				this.add('-fieldstart', 'move: Air Domain', `[timetoleft] ${this.effectState.duration}`);
 			}
 		},
 		onFieldResidualOrder: 27,
@@ -399,9 +399,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
 			}
 			if (effect?.effectType === 'Ability') {
-				this.add('-fieldstart', 'move: Psychic Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
+				this.add('-fieldstart', 'move: Psychic Domain', '[from] ability: ' + effect.name, `[of] ${source}`, `[timetoleft] ${this.effectState.duration}`);
 			} else {
-				this.add('-fieldstart', 'move: Psychic Domain');
+				this.add('-fieldstart', 'move: Psychic Domain', `[timetoleft] ${this.effectState.duration}`);
 			}
 		},
 		onFieldResidualOrder: 27,
@@ -433,9 +433,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
 			}
 			if (effect?.effectType === 'Ability') {
-				this.add('-fieldstart', 'move: Bug Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
+				this.add('-fieldstart', 'move: Bug Domain', '[from] ability: ' + effect.name, `[of] ${source}`, `[timetoleft] ${this.effectState.duration}`);
 			} else {
-				this.add('-fieldstart', 'move: Bug Domain');
+				this.add('-fieldstart', 'move: Bug Domain', `[timetoleft] ${this.effectState.duration}`);
 			}
 		},
 		onFieldResidualOrder: 27,
@@ -467,9 +467,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
 			}
 			if (effect?.effectType === 'Ability') {
-				this.add('-fieldstart', 'move: Rock Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
+				this.add('-fieldstart', 'move: Rock Domain', '[from] ability: ' + effect.name, `[of] ${source}`, `[timetoleft] ${this.effectState.duration}`);
 			} else {
-				this.add('-fieldstart', 'move: Rock Domain');
+				this.add('-fieldstart', 'move: Rock Domain', `[timetoleft] ${this.effectState.duration}`);
 			}
 		},
 		onFieldResidualOrder: 27,
@@ -501,9 +501,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
 			}
 			if (effect?.effectType === 'Ability') {
-				this.add('-fieldstart', 'move: Ghost Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
+				this.add('-fieldstart', 'move: Ghost Domain', '[from] ability: ' + effect.name, `[of] ${source}`, `[timetoleft] ${this.effectState.duration}`);
 			} else {
-				this.add('-fieldstart', 'move: Ghost Domain');
+				this.add('-fieldstart', 'move: Ghost Domain', `[timetoleft] ${this.effectState.duration}`);
 			}
 		},
 		onFieldResidualOrder: 27,
@@ -535,9 +535,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
 			}
 			if (effect?.effectType === 'Ability') {
-				this.add('-fieldstart', 'move: Dragon Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
+				this.add('-fieldstart', 'move: Dragon Domain', '[from] ability: ' + effect.name, `[of] ${source}`, `[timetoleft] ${this.effectState.duration}`);
 			} else {
-				this.add('-fieldstart', 'move: Dragon Domain');
+				this.add('-fieldstart', 'move: Dragon Domain', `[timetoleft] ${this.effectState.duration}`);
 			}
 		},
 		onFieldResidualOrder: 27,
@@ -569,9 +569,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
 			}
 			if (effect?.effectType === 'Ability') {
-				this.add('-fieldstart', 'move: Dark Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
+				this.add('-fieldstart', 'move: Dark Domain', '[from] ability: ' + effect.name, `[of] ${source}`, `[timetoleft] ${this.effectState.duration}`);
 			} else {
-				this.add('-fieldstart', 'move: Dark Domain');
+				this.add('-fieldstart', 'move: Dark Domain', `[timetoleft] ${this.effectState.duration}`);
 			}
 		},
 		onFieldResidualOrder: 27,
@@ -603,9 +603,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
 			}
 			if (effect?.effectType === 'Ability') {
-				this.add('-fieldstart', 'move: Steel Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
+				this.add('-fieldstart', 'move: Steel Domain', '[from] ability: ' + effect.name, `[of] ${source}`, `[timetoleft] ${this.effectState.duration}`);
 			} else {
-				this.add('-fieldstart', 'move: Steel Domain');
+				this.add('-fieldstart', 'move: Steel Domain', `[timetoleft] ${this.effectState.duration}`);
 			}
 		},
 		onFieldResidualOrder: 27,
@@ -637,9 +637,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
 			}
 			if (effect?.effectType === 'Ability') {
-				this.add('-fieldstart', 'move: Fairy Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
+				this.add('-fieldstart', 'move: Fairy Domain', '[from] ability: ' + effect.name, `[of] ${source}`, `[timetoleft] ${this.effectState.duration}`);
 			} else {
-				this.add('-fieldstart', 'move: Fairy Domain');
+				this.add('-fieldstart', 'move: Fairy Domain', `[timetoleft] ${this.effectState.duration}`);
 			}
 		},
 		onFieldResidualOrder: 27,
@@ -671,9 +671,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				if (source && pw.source && pw.source.side === source.side) field.removePseudoWeather(id);
 			}
 			if (effect?.effectType === 'Ability') {
-				this.add('-fieldstart', 'move: Cosmic Domain', '[from] ability: ' + effect.name, `[of] ${source}`);
+				this.add('-fieldstart', 'move: Cosmic Domain', '[from] ability: ' + effect.name, `[of] ${source}`, `[timetoleft] ${this.effectState.duration}`);
 			} else {
-				this.add('-fieldstart', 'move: Cosmic Domain');
+				this.add('-fieldstart', 'move: Cosmic Domain', `[timetoleft] ${this.effectState.duration}`);
 			}
 		},
 		onFieldResidualOrder: 27,

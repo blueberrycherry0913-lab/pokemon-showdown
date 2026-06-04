@@ -211,6 +211,10 @@ function flushGame(
 	const pB = end.players[1];
 	if (!pA || !pB) return;
 
+	// Discard very short games (forfeit/disconnect before meaningful play begins).
+	const MIN_TURNS_TO_RECORD = 5;
+	if (end.turns < MIN_TURNS_TO_RECORD) return;
+
 	// Resolve actual user IDs from the playerMap (set from room context).
 	// Fall back to the slot name if not available.
 	const idA = buf.playerMap[pA.id]?.id || pA.id;
