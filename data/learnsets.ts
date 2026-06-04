@@ -11462,7 +11462,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			zenheadbutt: ["9M", "9L24", "8M", "8L24"],
 		},
 	},
-	slowbro: {
+	slowbrokanto: {
 		learnset: {
 			aerialace: ["7M", "6M", "5M"],
 			afteryou: ["7T", "6T", "5T"],
@@ -11613,7 +11613,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			{generation: 7, level: 15},
 		],
 	},
-	slowbrogalar: {
+	slowbro: {
 		learnset: {
 			acid: ["9L1", "8L1"],
 			acidspray: ["9M"],
@@ -11725,7 +11725,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			zenheadbutt: ["9M", "9L24", "8M", "8L24"],
 		},
 	},
-	slowking: {
+	slowkingjohto: {
 		learnset: {
 			afteryou: ["7T", "6T", "5T"],
 			allyswitch: ["7T"],
@@ -11864,7 +11864,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			zenheadbutt: ["9M", "8M", "8L24", "7T", "7L32", "6T", "6L32", "5T", "5L32", "4T", "4L34"],
 		},
 	},
-	slowkinggalar: {
+	slowking: {
 		learnset: {
 			acid: ["9L1", "8L1"],
 			acidspray: ["9M"],
@@ -13029,7 +13029,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			{generation: 7, level: 10, abilities: ["poisontouch"], moves: ["bite", "harden", "poisongas", "pound"], pokeball: "cherishball"},
 		],
 	},
-	muk: {
+	mukkanto: {
 		learnset: {
 			acidarmor: ["9L46", "8V", "7L46", "7V", "6L43", "5L42", "4L44", "3L34"],
 			acidspray: ["9M"],
@@ -13144,7 +13144,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			{generation: 6, level: 30},
 		],
 	},
-	mukalola: {
+	muk: {
 		learnset: {
 			acidarmor: ["9L46", "8V", "7L46"],
 			acidspray: ["9M", "9L15", "7L15"],

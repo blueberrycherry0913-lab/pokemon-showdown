@@ -584,29 +584,29 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 		tier: "LC",
 	},
 	slowbro: {
-		tier: "RU",
+		tier: "PU",
 		doublesTier: "(DUU)",
-		natDexTier: "OU",
+		natDexTier: "RU",
 	},
 	slowbromega: {
 		isNonstandard: "Past",
 		tier: "Illegal",
 		natDexTier: "RUBL",
 	},
-	slowbrogalar: {
-		tier: "PU",
+	slowbrokanto: {
+		tier: "RU",
 		doublesTier: "(DUU)",
-		natDexTier: "RU",
+		natDexTier: "OU",
 	},
 	slowking: {
-		tier: "UU",
-		doublesTier: "(DUU)",
-		natDexTier: "UU",
-	},
-	slowkinggalar: {
 		tier: "OU",
 		doublesTier: "(DUU)",
 		natDexTier: "OU",
+	},
+	slowkingjohto: {
+		tier: "UU",
+		doublesTier: "(DUU)",
+		natDexTier: "UU",
 	},
 	magnemite: {
 		tier: "LC",
@@ -655,12 +655,12 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 		tier: "LC",
 	},
 	muk: {
-		tier: "ZU",
+		tier: "RU",
 		doublesTier: "(DUU)",
 		natDexTier: "RU",
 	},
-	mukalola: {
-		tier: "RU",
+	mukkanto: {
+		tier: "ZU",
 		doublesTier: "(DUU)",
 		natDexTier: "RU",
 	},
