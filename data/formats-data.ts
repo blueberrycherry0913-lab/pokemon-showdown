@@ -624,7 +624,7 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 		tier: "ZU",
 	},
 	farfetchdkanto: {
-		tier: "ZU",
+		natDexTier: "Illegal",
 	},
 	sirfetchd: {
 		tier: "ZU",
