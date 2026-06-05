@@ -36,6 +36,20 @@ function pokemonInActiveDomain(battle: any, pokemon: any): boolean {
 	return false;
 }
 
+// The "Trapped" category (§4): the family of trapping volatiles that bind a Pokémon in place
+// and/or restrict its targeting. Ghost-types are immune to ALL of them (§1.5 / §4 line 269) —
+// the onTryAddVolatile handler below blocks any of these from being applied to a Ghost, so
+// individual trapping moves/abilities never need their own Ghost check. Add a new trapping
+// volatile's id here and Ghost immunity is automatic.
+//   • interlocked — shared two-Pokémon bind (Gooey, Tangling Vines)
+//   • deathgrip   — relational variant of Interlocked (Wrap, Bind)
+//   • locked      — one-sided trap, ends when inflictor leaves the field (not yet built)
+//   • rooted      — one-sided trap, inflictor free to switch (not yet built)
+//   • swallowed   — predatory size-check trap (not yet built)
+// (Switch-prevention trapping — Arena Trap / Shadow Tag / Mean Look / canon binding moves — is
+//  handled separately by the Ghost guard in pokemon.tryTrap; see champions/scripts.ts.)
+const TRAPPED_VOLATILES = new Set(['interlocked', 'deathgrip', 'locked', 'rooted', 'swallowed']);
+
 export const Formats: import('../sim/dex-formats').FormatList = [
 
 	// Custom
@@ -179,6 +193,13 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		onTryAddVolatile(status, pokemon) {
 			if (status.id === 'flinch' && pokemon.hasType('Fighting')) {
 				this.add('-activate', pokemon, 'typeEffect', '[type]Fighting', '[msg]Flinch Immunity');
+				return null;
+			}
+			// Ghost types are immune to the entire "Trapped" category (§1.5 / §4 line 269):
+			// Interlocked, Death Grip, Locked, Rooted, Swallowed. Centralized here so individual
+			// trapping moves/abilities never need their own Ghost check.
+			if (TRAPPED_VOLATILES.has(status.id) && pokemon.hasType('Ghost')) {
+				this.add('-activate', pokemon, 'typeEffect', '[type]Ghost', '[msg]Trap Immunity');
 				return null;
 			}
 		},

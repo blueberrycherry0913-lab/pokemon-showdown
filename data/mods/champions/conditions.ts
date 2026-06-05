@@ -776,6 +776,8 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 	},
 
 	// §4 Interlocked volatile — shared two-Pokémon binding status.
+	// Member of the "Trapped" category (see TRAPPED_VOLATILES in config/formats.ts) — Ghost
+	// types are blocked from receiving it centrally via onTryAddVolatile.
 	// Both Pokémon receive this volatile simultaneously (applied by the move's onHit).
 	// Effects:
 	//   • 3-turn deterministic duration
@@ -866,6 +868,8 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 	},
 
 	// §4 Death Grip volatile — relational variant of Interlocked.
+	// Member of the "Trapped" category (see TRAPPED_VOLATILES in config/formats.ts) — Ghost
+	// types are blocked from receiving it centrally via onTryAddVolatile.
 	// The aggressor applies this to the victim. Both receive the volatile simultaneously.
 	// Shares all Interlocked mechanics (3-turn trap, move redirect, +1.5× accuracy on partner)
 	// EXCEPT: the victim takes 1/8 max HP chip damage each residual turn; the aggressor does not.

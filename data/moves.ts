@@ -1302,7 +1302,20 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		pp: 20,
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
-		volatileStatus: 'partiallytrapped',
+		// §4 trapping rework: Bind now inflicts Death Grip (relational Interlocked variant)
+		// instead of the canon multi-turn partial-trap. Damage is still dealt; the grip is
+		// applied on hit, binding both Pokémon for 3 turns with the victim (target) taking
+		// 1/8 HP chip each turn. Ghost immunity to the "Trapped" category is enforced centrally
+		// in config/formats.ts (onTryAddVolatile) — addVolatile returns false for a Ghost target.
+		onHit(target, source) {
+			if (
+				target.volatiles['deathgrip'] || source.volatiles['deathgrip'] ||
+				target.volatiles['interlocked'] || source.volatiles['interlocked']
+			) return;
+			if (!target.addVolatile('deathgrip', source)) return;
+			(target.volatiles['deathgrip'] as any).isVictim = true; // victim takes chip damage
+			source.addVolatile('deathgrip', target); // aggressor: no chip
+		},
 		target: "normal",
 		type: "Normal",
 		contestType: "Tough",
@@ -21096,7 +21109,20 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		pp: 20,
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
-		volatileStatus: 'partiallytrapped',
+		// §4 trapping rework: Wrap now inflicts Death Grip (relational Interlocked variant)
+		// instead of the canon multi-turn partial-trap. Damage is still dealt; the grip is
+		// applied on hit, binding both Pokémon for 3 turns with the victim (target) taking
+		// 1/8 HP chip each turn. Ghost immunity to the "Trapped" category is enforced centrally
+		// in config/formats.ts (onTryAddVolatile) — addVolatile returns false for a Ghost target.
+		onHit(target, source) {
+			if (
+				target.volatiles['deathgrip'] || source.volatiles['deathgrip'] ||
+				target.volatiles['interlocked'] || source.volatiles['interlocked']
+			) return;
+			if (!target.addVolatile('deathgrip', source)) return;
+			(target.volatiles['deathgrip'] as any).isVictim = true; // victim takes chip damage
+			source.addVolatile('deathgrip', target); // aggressor: no chip
+		},
 		target: "normal",
 		type: "Normal",
 		contestType: "Tough",
@@ -21755,7 +21781,9 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		},
 		onHit(target, source) {
 			// target = victim, source = aggressor
-			target.addVolatile('deathgrip', source);
+			// Guard the addVolatile return: Ghost targets are blocked centrally (onTryAddVolatile),
+			// so bail before touching the (now-absent) victim volatile.
+			if (!target.addVolatile('deathgrip', source)) return;
 			(target.volatiles['deathgrip'] as any).isVictim = true;
 			source.addVolatile('deathgrip', target);
 			// source's copy: isVictim stays falsy — no chip damage
