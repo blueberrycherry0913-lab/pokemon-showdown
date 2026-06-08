@@ -1156,17 +1156,8 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			} else {
 				this.add('-status', target, 'stun');
 			}
-			// First-action lockout: the Pokémon loses its next possible action.
-			// Persists through switching — fires on the Pokémon's next onBeforeMove.
-			target.statusState.lockoutPending = true;
 		},
 		onBeforeMove(pokemon, target, move) {
-			// Serve pending lockout first (takes precedence over everything else)
-			if (pokemon.statusState.lockoutPending) {
-				pokemon.statusState.lockoutPending = false;
-				this.add('cant', pokemon, 'stun');
-				return false;
-			}
 			// Ongoing pivot block: Stunned Pokémon cannot use switching moves
 			if (move.selfSwitch) {
 				this.add('cant', pokemon, 'stun');
