@@ -97,11 +97,16 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	airslash: {
 		name: "Air Slash",
 		desc: "Has a 30% chance to make the target flinch.",
-		shortDesc: "30% chance to make the target flinch.",
+		shortDesc: "10% chance to make the target flinch.",
 	},
 	alloutpummeling: {
 		name: "All-Out Pummeling",
 		shortDesc: "Power is equal to the base move's Z-Power.",
+	},
+	alloyspark: {
+		name: "alloyspark",
+		desc: "No additional effect.",
+		shortDesc: "No additional effect.",
 	},
 	alluringvoice: {
 		name: "Alluring Voice",
@@ -243,7 +248,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	astonish: {
 		name: "Astonish",
 		desc: "Has a 30% chance to make the target flinch.",
-		shortDesc: "30% chance to make the target flinch.",
+		shortDesc: "10% chance to make the target flinch.",
 		gen3: {
 			desc: "Has a 30% chance to make the target flinch. Damage doubles if the target has used Minimize while active.",
 		},
@@ -288,7 +293,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	aurorabeam: {
 		name: "Aurora Beam",
 		desc: "Has a 10% chance to lower the target's Attack by 1 stage.",
-		shortDesc: "10% chance to lower the target's Attack by 1.",
+		shortDesc: "25% chance to lower the target's Attack by 1.",
 		gen1: {
 			desc: "Has a 33% chance to lower the target's Attack by 1 stage.",
 			shortDesc: "33% chance to lower the target's Attack by 1.",
@@ -316,7 +321,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	avalanche: {
 		name: "Avalanche",
 		desc: "Power doubles if the user was hit by the target this turn.",
-		shortDesc: "Power doubles if user is damaged by the target.",
+		shortDesc: "10% chance to make the target flinch. Hits adjacent foes.",
 		gen4: {
 			desc: "Power doubles if the user was hit by a Pokemon in the target's position this turn.",
 		},
@@ -528,7 +533,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	bittermalice: {
 		name: "Bitter Malice",
 		desc: "Has a 100% chance to lower the target's Attack by 1 stage.",
-		shortDesc: "100% chance to lower the target's Attack by 1.",
+		shortDesc: "25% chance to lower the target's Attack by 1.",
 	},
 	blackholeeclipse: {
 		name: "Black Hole Eclipse",
@@ -553,6 +558,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 		name: "Bleakwind Storm",
 		desc: "Has a 30% chance to lower the target's Speed by 1 stage. If the weather is Primordial Sea or Rain Dance, this move does not check accuracy. If this move is used against a Pokemon holding Utility Umbrella, this move's accuracy remains at 80%.",
 		shortDesc: "30% to lower foe(s) Speed by 1. Rain: can't miss.",
+	},
+	blightbrush: {
+		name: "blightbrush",
+		desc: "Has a 10% chance to poison the target.",
+		shortDesc: "10% chance to poison the target.",
 	},
 	blizzard: {
 		name: "Blizzard",
@@ -608,7 +618,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	bodyslam: {
 		name: "Body Slam",
 		desc: "Has a 30% chance to paralyze the target. Damage doubles and no accuracy check is done if the target has used Minimize while active.",
-		shortDesc: "30% chance to paralyze the target.",
+		shortDesc: "25% chance to stun the target.",
 		gen5: {
 			desc: "Has a 30% chance to paralyze the target.",
 		},
@@ -699,11 +709,16 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	breakingswipe: {
 		name: "Breaking Swipe",
 		desc: "Has a 100% chance to lower the target's Attack by 1 stage.",
-		shortDesc: "100% chance to lower the foe(s) Attack by 1.",
+		shortDesc: "25% chance to lower the foe(s) Attack by 1.",
 	},
 	breakneckblitz: {
 		name: "Breakneck Blitz",
 		shortDesc: "Power is equal to the base move's Z-Power.",
+	},
+	breezeboost: {
+		name: "breezeboost",
+		desc: "Has a 30% chance to raise the user's Speed by 1 stage.",
+		shortDesc: "30% chance to raise the user's Speed by 1.",
 	},
 	brickbreak: {
 		name: "Brick Break",
@@ -766,7 +781,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	bugbuzz: {
 		name: "Bug Buzz",
 		desc: "Has a 10% chance to lower the target's Special Defense by 1 stage.",
-		shortDesc: "10% chance to lower the target's Sp. Def by 1.",
+		shortDesc: "25% chance to lower the target's Sp. Def by 1.",
 	},
 	bulkup: {
 		name: "Bulk Up",
@@ -776,7 +791,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	bulldoze: {
 		name: "Bulldoze",
 		desc: "Has a 100% chance to lower the target's Speed by 1 stage.",
-		shortDesc: "100% chance lower adjacent Pkmn Speed by 1.",
+		shortDesc: "25% chance to lower adjacent Pokémon's Speed by 1.",
 	},
 	bulletpunch: {
 		name: "Bullet Punch",
@@ -926,6 +941,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 		desc: "If this move is successful, the user loses 1/2 of its maximum HP, rounded up, unless the user has the Magic Guard or Rock Head Abilities.",
 		shortDesc: "User loses 50% max HP.",
 	},
+	chstrike: {
+		name: "chstrike",
+		desc: "Has a 25% chance to lower the target's Special Defense by 1 stage.",
+		shortDesc: "25% chance to lower the target's Sp. Def by 1.",
+	},
 	circlethrow: {
 		name: "Circle Throw",
 		desc: "If both the user and the target have not fainted, the target is forced to switch out and be replaced with a random unfainted ally. This effect fails if the target is under the effect of Ingrain, has the Suction Cups Ability, or this move hit a substitute.",
@@ -1035,7 +1055,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	confusion: {
 		name: "Confusion",
 		desc: "Has a 10% chance to confuse the target.",
-		shortDesc: "10% chance to confuse the target.",
+		shortDesc: "25% chance to confuse the target.",
 	},
 	constrict: {
 		name: "Constrict",
@@ -1211,7 +1231,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	crosspoison: {
 		name: "Cross Poison",
 		desc: "Has a 10% chance to poison the target and a higher chance for a critical hit.",
-		shortDesc: "High critical hit ratio. 10% chance to poison.",
+		shortDesc: "High critical hit ratio.",
 	},
 	crunch: {
 		name: "Crunch",
@@ -1261,7 +1281,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	darkpulse: {
 		name: "Dark Pulse",
 		desc: "Has a 20% chance to make the target flinch.",
-		shortDesc: "20% chance to make the target flinch.",
+		shortDesc: "10% chance to make adjacent Pokémon flinch.",
 	},
 	darkvoid: {
 		name: "Dark Void",
@@ -1394,6 +1414,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 		desc: "Has a 50% chance to cause the target to either fall asleep, become poisoned, or become paralyzed.",
 		shortDesc: "50% chance to sleep, poison, or paralyze target.",
 	},
+	dirtdozer: {
+		name: "dirtdozer",
+		desc: "No additional effect.",
+		shortDesc: "No additional effect.",
+	},
 	disable: {
 		name: "Disable",
 		desc: "For 4 turns, the target's last move used becomes disabled. Fails if one of the target's moves is already disabled, if the target has not made a move, if the target no longer knows the move, or if the move was a Max or G-Max Move.",
@@ -1438,7 +1463,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	dive: {
 		name: "Dive",
 		desc: "This attack charges on the first turn and executes on the second. On the first turn, the user avoids all attacks other than Surf and Whirlpool but takes double damage from them, and is also unaffected by weather. If the user is holding a Power Herb, the move completes in one turn.",
-		shortDesc: "Dives underwater turn 1, strikes turn 2.",
+		shortDesc: "No additional effect.",
 		gen4: {
 			desc: "This attack charges on the first turn and executes on the second. On the first turn, the user avoids all attacks other than Surf and Whirlpool, which have doubled power when used against it, and is also unaffected by weather. If the user is holding a Power Herb, the move completes in one turn.",
 		},
@@ -1676,7 +1701,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	earthpower: {
 		name: "Earth Power",
 		desc: "Has a 10% chance to lower the target's Special Defense by 1 stage.",
-		shortDesc: "10% chance to lower the target's Sp. Def by 1.",
+		shortDesc: "25% chance to lower the target's Sp. Def by 1.",
 	},
 	earthquake: {
 		name: "Earthquake",
@@ -1919,6 +1944,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 			desc: "Power doubles if the user is burned, paralyzed, or poisoned.",
 		},
 	},
+	faecurrent: {
+		name: "faecurrent",
+		desc: "Has a higher chance for a critical hit.",
+		shortDesc: "High critical hit ratio.",
+	},
 	fairylock: {
 		name: "Fairy Lock",
 		desc: "Prevents all active Pokemon from switching next turn. A Pokemon can still switch out if it is holding Shed Shell or uses Baton Pass, Flip Turn, Parting Shot, Teleport, U-turn, or Volt Switch. Fails if the effect is already active.",
@@ -1931,7 +1961,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	fairywind: {
 		name: "Fairy Wind",
-		shortDesc: "No additional effect.",
+		shortDesc: "No additional effect. Hits adjacent foes.",
 	},
 	fakeout: {
 		name: "Fake Out",
@@ -2003,6 +2033,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 		desc: "Has a 20% chance to make the target flinch.",
 		shortDesc: "20% chance to make the foe(s) flinch.",
 	},
+	fightingspirit: {
+		name: "fightingspirit",
+		desc: "Has a 25% chance to lower the target's Special Defense by 1 stage.",
+		shortDesc: "25% chance to lower the target's Sp. Def by 1.",
+	},
 	filletaway: {
 		name: "Fillet Away",
 		desc: "Raises the user's Attack, Special Attack, and Speed by 2 stages in exchange for the user losing 1/2 of its maximum HP, rounded down. Fails if the user would faint or if its Attack, Special Attack, and Speed stat stages would not change.",
@@ -2033,7 +2068,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	firelash: {
 		name: "Fire Lash",
 		desc: "Has a 100% chance to lower the target's Defense by 1 stage.",
-		shortDesc: "100% chance to lower the target's Defense by 1.",
+		shortDesc: "25% chance to lower the target's Defense by 1.",
 	},
 	firepledge: {
 		name: "Fire Pledge",
@@ -2100,6 +2135,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 			shortDesc: "Deals 65535 damage. Fails if target is faster.",
 		},
 	},
+	fizzle: {
+		name: "fizzle",
+		desc: "Has a 10% chance to burn or stun the target (50/50 each).",
+		shortDesc: "10% chance to burn or stun the target.",
+	},
 	flail: {
 		name: "Flail",
 		desc: "The power of this move is 20 if X is 33 to 48, 40 if X is 17 to 32, 80 if X is 10 to 16, 100 if X is 5 to 9, 150 if X is 2 to 4, and 200 if X is 0 or 1, where X is equal to (user's current HP * 48 / user's maximum HP), rounded down.",
@@ -2137,7 +2177,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	flamewheel: {
 		name: "Flame Wheel",
 		desc: "Has a 10% chance to burn the target.",
-		shortDesc: "10% chance to burn the target. Thaws user.",
+		shortDesc: "10% chance to burn the target.",
 	},
 	flareblitz: {
 		name: "Flare Blitz",
@@ -2167,6 +2207,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 		name: "Fleur Cannon",
 		desc: "Lowers the user's Special Attack by 2 stages.",
 		shortDesc: "Lowers the user's Sp. Atk by 2.",
+	},
+	flicker: {
+		name: "flicker",
+		desc: "Has a 10% chance to confuse the target.",
+		shortDesc: "10% chance to confuse the target.",
 	},
 	fling: {
 		name: "Fling",
@@ -2350,6 +2395,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 		desc: "Power is equal to the greater of ((255 - user's Happiness) * 2/5), rounded down, or 1.",
 		shortDesc: "Max 102 power at minimum Happiness.",
 	},
+	fury: {
+		name: "fury",
+		desc: "Has a 25% chance to lower the target's Defense by 1 stage.",
+		shortDesc: "25% chance to lower the target's Defense by 1.",
+	},
 	furyattack: {
 		name: "Fury Attack",
 		desc: "Hits two to five times. Has a 35% chance to hit two or three times and a 15% chance to hit four or five times. If one of the hits breaks the target's substitute, it will take damage for the remaining hits. If the user has the Skill Link Ability, this move will always hit five times. If the user is holding Loaded Dice, this move will hit 4-5 times.",
@@ -2429,6 +2479,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 
 		start: "  [POKEMON]'s Ability was suppressed!",
 	},
+	gavelpuff: {
+		name: "gavelpuff",
+		desc: "Has a 25% chance to lower each target's accuracy by 1 stage. Hits adjacent foes.",
+		shortDesc: "25% chance to lower the foe(s) accuracy by 1.",
+	},
 	geargrind: {
 		name: "Gear Grind",
 		desc: "Hits twice. If the first hit breaks the target's substitute, it will take damage for the second hit.",
@@ -2500,6 +2555,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 		gen1: {
 			desc: "Paralyzes the target.",
 		},
+	},
+	glimmeringrush: {
+		name: "glimmeringrush",
+		desc: "Has a 30% chance to raise the user's Speed by 1 stage.",
+		shortDesc: "30% chance to raise the user's Speed by 1.",
 	},
 	glitzyglow: {
 		name: "Glitzy Glow",
@@ -2744,6 +2804,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 			desc: "For 5 turns, the evasiveness of all active Pokemon is multiplied by 0.6. At the time of use, Bounce, Fly, and Magnet Rise end immediately for all active Pokemon. During the effect, Bounce, Fly, High Jump Kick, Jump Kick, Magnet Rise, and Splash are prevented from being used by all active Pokemon. Ground-type attacks, Spikes, Toxic Spikes, and the Arena Trap Ability can affect Flying types or Pokemon with the Levitate Ability. Fails if this move is already in effect.",
 		},
 	},
+	gravwell: {
+		name: "gravwell",
+		desc: "Removes the target's Flying-type immunity to Ground and its ability to levitate.",
+		shortDesc: "Forces the target into a grounded state.",
+	},
 	growl: {
 		name: "Growl",
 		desc: "Lowers the target's Attack by 1 stage.",
@@ -2774,7 +2839,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	grudge: {
 		name: "Grudge",
 		desc: "Until the user's next turn, if an opposing Pokemon's attack knocks the user out, that move loses all its remaining PP.",
-		shortDesc: "If the user faints, the attack used loses all its PP.",
+		shortDesc: "Lowers the target's last-used move PP by 2.",
 
 		activate: "  [POKEMON]'s [MOVE] lost all of its PP due to the grudge!",
 		start: "[POKEMON] wants its target to bear a grudge!",
@@ -2816,7 +2881,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	gust: {
 		name: "Gust",
 		desc: "Power doubles if the target is using Bounce, Fly, or Sky Drop, or is under the effect of Sky Drop.",
-		shortDesc: "Power doubles during Bounce, Fly, and Sky Drop.",
+		shortDesc: "No additional effect. Hits adjacent foes.",
 		gen4: {
 			desc: "Power doubles if the target is using Bounce or Fly.",
 			shortDesc: "Power doubles during Bounce and Fly.",
@@ -2994,6 +3059,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 		gen5: {
 			desc: "The power of this move depends on (user's weight / target's weight), rounded down. Power is equal to 120 if the result is 5 or more, 100 if 4, 80 if 3, 60 if 2, and 40 if 1 or less.",
 		},
+	},
+	heater: {
+		name: "heater",
+		desc: "Has a 10% chance to burn the target.",
+		shortDesc: "10% chance to burn the target.",
 	},
 	heatwave: {
 		name: "Heat Wave",
@@ -3229,7 +3299,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	iceball: {
 		name: "Ice Ball",
 		desc: "If this move is successful, the user is locked into this move and cannot make another move until it misses, 5 turns have passed, or the attack cannot be used. Power doubles with each successful hit of this move and doubles again if Defense Curl was used previously by the user. If this move is called by Sleep Talk, the move is used for one turn.",
-		shortDesc: "Power doubles with each hit. Repeats for 5 turns.",
+		shortDesc: "10% chance to frostbite the target.",
 		gen7: {
 			desc: "If this move is successful, the user is locked into this move and cannot make another move until it misses, 5 turns have passed, or the attack cannot be used. Power doubles with each successful hit of this move and doubles again if Defense Curl was used previously by the user. If this move is called by Sleep Talk, the move is used for one turn. If this move hits an active Disguise during the effect, the power multiplier is paused but the turn counter is not, potentially allowing the multiplier to be used on the user's next move after this effect ends.",
 		},
@@ -3240,7 +3310,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	icebeam: {
 		name: "Ice Beam",
 		desc: "Has a 10% chance to freeze the target.",
-		shortDesc: "10% chance to freeze the target.",
+		shortDesc: "10% chance to frostbite the target.",
 	},
 	iceburn: {
 		name: "Ice Burn",
@@ -3277,7 +3347,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	iciclecrash: {
 		name: "Icicle Crash",
 		desc: "Has a 30% chance to make the target flinch.",
-		shortDesc: "30% chance to make the target flinch.",
+		shortDesc: "10% chance to frostbite the target.",
 	},
 	iciclespear: {
 		name: "Icicle Spear",
@@ -3397,6 +3467,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 		shortDesc: "Normal moves become Electric type this turn.",
 
 		activate: "  A deluge of ions showers the battlefield!",
+	},
+	ironclad: {
+		name: "ironclad",
+		desc: "Has a 30% chance to raise the user's Defense by 1 stage.",
+		shortDesc: "30% chance to raise the user's Defense by 1.",
 	},
 	irondefense: {
 		name: "Iron Defense",
@@ -3656,7 +3731,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	liquidation: {
 		name: "Liquidation",
 		desc: "Has a 20% chance to lower the target's Defense by 1 stage.",
-		shortDesc: "20% chance to lower the target's Defense by 1.",
+		shortDesc: "10% chance to lower the target's Defense by 1.",
 	},
 	lockon: {
 		name: "Lock-On",
@@ -3725,7 +3800,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	lunge: {
 		name: "Lunge",
 		desc: "Has a 100% chance to lower the target's Attack by 1 stage.",
-		shortDesc: "100% chance to lower the target's Attack by 1.",
+		shortDesc: "25% chance to lower the target's Attack by 1.",
 	},
 	lusterpurge: {
 		name: "Luster Purge",
@@ -3739,7 +3814,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	magicalleaf: {
 		name: "Magical Leaf",
-		shortDesc: "This move does not check accuracy.",
+		shortDesc: "This move does not check accuracy. Hits adjacent foes.",
 	},
 	magicaltorque: {
 		name: "Magical Torque",
@@ -4075,7 +4150,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	meteormash: {
 		name: "Meteor Mash",
 		desc: "Has a 20% chance to raise the user's Attack by 1 stage.",
-		shortDesc: "20% chance to raise the user's Attack by 1.",
+		shortDesc: "No additional effect.",
 	},
 	metronome: {
 		name: "Metronome",
@@ -4287,7 +4362,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	moonblast: {
 		name: "Moonblast",
 		desc: "Has a 30% chance to lower the target's Special Attack by 1 stage.",
-		shortDesc: "30% chance to lower the target's Sp. Atk by 1.",
+		shortDesc: "25% chance to lower the target's Sp. Atk by 1.",
 	},
 	moongeistbeam: {
 		name: "Moongeist Beam",
@@ -4357,12 +4432,12 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	mudshot: {
 		name: "Mud Shot",
 		desc: "Has a 100% chance to lower the target's Speed by 1 stage.",
-		shortDesc: "100% chance to lower the target's Speed by 1.",
+		shortDesc: "25% chance to lower the target's Speed by 1.",
 	},
 	mudslap: {
 		name: "Mud-Slap",
 		desc: "Has a 100% chance to lower the target's accuracy by 1 stage.",
-		shortDesc: "100% chance to lower the target's accuracy by 1.",
+		shortDesc: "25% chance to lower the target's accuracy by 1.",
 	},
 	mudsport: {
 		name: "Mud Sport",
@@ -4440,6 +4515,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 			desc: "Has a 30% chance to make the target flinch. Damage doubles if the target has used Minimize while active.",
 		},
 	},
+	neutralburst: {
+		name: "neutralburst",
+		desc: "No additional effect. Hits all adjacent foes.",
+		shortDesc: "No additional effect. Hits adjacent foes.",
+	},
 	neverendingnightmare: {
 		name: "Never-Ending Nightmare",
 		shortDesc: "Power is equal to the base move's Z-Power.",
@@ -4447,7 +4527,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	nightdaze: {
 		name: "Night Daze",
 		desc: "Has a 40% chance to lower the target's accuracy by 1 stage.",
-		shortDesc: "40% chance to lower the target's accuracy by 1.",
+		shortDesc: "25% chance to lower the foe(s) accuracy by 1.",
 	},
 	nightmare: {
 		name: "Nightmare",
@@ -4582,6 +4662,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 
 		activate: "  The battlers shared their pain!",
 	},
+	paleorbit: {
+		name: "paleorbit",
+		desc: "No additional effect.",
+		shortDesc: "No additional effect.",
+	},
 	paleowave: {
 		name: "Paleo Wave",
 		desc: "Has a 20% chance to lower the target's Attack by 1 stage.",
@@ -4662,7 +4747,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	phantomforce: {
 		name: "Phantom Force",
 		desc: "If this move is successful, it breaks through the target's Baneful Bunker, Detect, King's Shield, Protect, or Spiky Shield for this turn, allowing other Pokemon to attack the target normally. If the target's side is protected by Crafty Shield, Mat Block, Quick Guard, or Wide Guard, that protection is also broken for this turn and other Pokemon may attack the target's side normally. This attack charges on the first turn and executes on the second. On the first turn, the user avoids all attacks. If the user is holding a Power Herb, the move completes in one turn.",
-		shortDesc: "Disappears turn 1. Hits turn 2. Breaks protection.",
+		shortDesc: "10% chance to make the target flinch.",
 		gen6: {
 			desc: "If this move is successful, it breaks through the target's Detect, King's Shield, Protect, or Spiky Shield for this turn, allowing other Pokemon to attack the target normally. If the target's side is protected by Crafty Shield, Mat Block, Quick Guard, or Wide Guard, that protection is also broken for this turn and other Pokemon may attack the target's side normally. This attack charges on the first turn and executes on the second. On the first turn, the user avoids all attacks. If the user is holding a Power Herb, the move completes in one turn. Damage doubles and no accuracy check is done if the target has used Minimize while active.",
 		},
@@ -4697,6 +4782,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 			desc: "Hits two to five times. Has a 3/8 chance to hit two or three times, and a 1/8 chance to hit four or five times. Damage is calculated once for the first hit and used for every hit. If one of the hits breaks the target's substitute, the move ends.",
 		},
 	},
+	pixiewelt: {
+		name: "pixiewelt",
+		desc: "No additional effect.",
+		shortDesc: "No additional effect.",
+	},
 	plasmafists: {
 		name: "Plasma Fists",
 		desc: "If this move is successful, causes Normal-type moves to become Electric type this turn.",
@@ -4710,7 +4800,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	playrough: {
 		name: "Play Rough",
 		desc: "Has a 10% chance to lower the target's Attack by 1 stage.",
-		shortDesc: "10% chance to lower the target's Attack by 1.",
+		shortDesc: "25% chance to lower the target's Attack by 1.",
 	},
 	pluck: {
 		name: "Pluck",
@@ -4752,7 +4842,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	poisonsting: {
 		name: "Poison Sting",
 		desc: "Has a 30% chance to poison the target.",
-		shortDesc: "30% chance to poison the target.",
+		shortDesc: "25% chance to poison the target.",
 		gen1: {
 			desc: "Has a 20% chance to poison the target.",
 			shortDesc: "20% chance to poison the target.",
@@ -4807,7 +4897,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	powdersnow: {
 		name: "Powder Snow",
 		desc: "Has a 10% chance to freeze the target.",
-		shortDesc: "10% chance to freeze the foe(s).",
+		shortDesc: "10% chance to frostbite the foe(s).",
 		gen2: {
 			shortDesc: "10% chance to freeze the target.",
 		},
@@ -4822,6 +4912,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 		shortDesc: "Averages Attack and Sp. Atk stats with target.",
 
 		activate: "  [POKEMON] shared its power with the target!",
+	},
+	powersurge: {
+		name: "powersurge",
+		desc: "No additional effect.",
+		shortDesc: "No additional effect.",
 	},
 	powerswap: {
 		name: "Power Swap",
@@ -4905,6 +5000,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 		start: "  [POKEMON] protected itself!",
 		block: "  [POKEMON] protected itself!",
 	},
+	psinudge: {
+		name: "psinudge",
+		desc: "No additional effect.",
+		shortDesc: "No additional effect.",
+	},
 	psybeam: {
 		name: "Psybeam",
 		desc: "Has a 10% chance to confuse the target.",
@@ -4914,6 +5014,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 		name: "Psyblade",
 		desc: "If the current terrain is Electric Terrain, this move's power is multiplied by 1.5.",
 		shortDesc: "During Electric Terrain: 1.5x power.",
+	},
+	psycheslam: {
+		name: "psycheslam",
+		desc: "Has a 10% chance to confuse the target.",
+		shortDesc: "10% chance to confuse the target.",
 	},
 	psychic: {
 		name: "Psychic",
@@ -5309,10 +5414,20 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 
 		heal: "  [POKEMON] was revived and is ready to fight again!",
 	},
+	ripple: {
+		name: "ripple",
+		desc: "No additional effect. Hits all adjacent Pokémon.",
+		shortDesc: "No additional effect. Hits all adjacent Pokémon.",
+	},
 	risingvoltage: {
 		name: "Rising Voltage",
 		desc: "If the current terrain is Electric Terrain and the target is grounded, this move's power is doubled.",
 		shortDesc: "2x power if target is grounded in Electric Terrain.",
+	},
+	rivetshot: {
+		name: "rivetshot",
+		desc: "No additional effect.",
+		shortDesc: "No additional effect.",
 	},
 	roar: {
 		name: "Roar",
@@ -5361,7 +5476,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	rockslide: {
 		name: "Rock Slide",
 		desc: "Has a 30% chance to make the target flinch.",
-		shortDesc: "30% chance to make the foe(s) flinch.",
+		shortDesc: "10% chance to make the foe(s) flinch.",
 		gen1: {
 			desc: "No additional effect.",
 			shortDesc: "No additional effect.",
@@ -5373,7 +5488,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	rocksmash: {
 		name: "Rock Smash",
 		desc: "Has a 50% chance to lower the target's Defense by 1 stage.",
-		shortDesc: "50% chance to lower the target's Defense by 1.",
+		shortDesc: "25% chance to lower the target's Defense by 1.",
 	},
 	rockthrow: {
 		name: "Rock Throw",
@@ -5457,6 +5572,16 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 		name: "Ruination",
 		desc: "Deals damage to the target equal to half of its current HP, rounded down, but not less than 1 HP.",
 		shortDesc: "Does damage equal to 1/2 target's current HP.",
+	},
+	rumble: {
+		name: "rumble",
+		desc: "No additional effect.",
+		shortDesc: "No additional effect.",
+	},
+	rumor: {
+		name: "rumor",
+		desc: "Has a 10% chance to confuse the target.",
+		shortDesc: "10% chance to confuse the target.",
 	},
 	sacredfire: {
 		name: "Sacred Fire",
@@ -5584,7 +5709,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	searingshot: {
 		name: "Searing Shot",
 		desc: "Has a 30% chance to burn the target.",
-		shortDesc: "30% chance to burn adjacent Pokemon.",
+		shortDesc: "25% chance to burn the target.",
 	},
 	searingsunrazesmash: {
 		name: "Searing Sunraze Smash",
@@ -5651,7 +5776,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	shadowball: {
 		name: "Shadow Ball",
 		desc: "Has a 20% chance to lower the target's Special Defense by 1 stage.",
-		shortDesc: "20% chance to lower the target's Sp. Def by 1.",
+		shortDesc: "25% chance to lower the target's Sp. Def by 1.",
 	},
 	shadowbone: {
 		name: "Shadow Bone",
@@ -5689,7 +5814,17 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	shadowstrike: {
 		name: "Shadow Strike",
 		desc: "Has a 50% chance to lower the target's Defense by 1 stage.",
-		shortDesc: "50% chance to lower the target's Defense by 1.",
+		shortDesc: "No additional effect.",
+	},
+	shaleburst: {
+		name: "shaleburst",
+		desc: "Has a 30% chance to raise the user's Speed by 1 stage.",
+		shortDesc: "30% chance to raise the user's Speed by 1.",
+	},
+	shallowslam: {
+		name: "shallowslam",
+		desc: "No additional effect.",
+		shortDesc: "No additional effect.",
 	},
 	sharpen: {
 		name: "Sharpen",
@@ -5843,10 +5978,15 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 
 		activate: "  [POKEMON] swapped Abilities with its target!",
 	},
+	skippingstone: {
+		name: "skippingstone",
+		desc: "Has a 10% chance to confuse the target.",
+		shortDesc: "10% chance to confuse the target.",
+	},
 	skittersmack: {
 		name: "Skitter Smack",
 		desc: "Has a 100% chance to lower the target's Special Attack by 1 stage.",
-		shortDesc: "100% chance to lower target's Sp. Atk by 1.",
+		shortDesc: "50% chance to lower the target's Sp. Atk by 1.",
 	},
 	skullbash: {
 		name: "Skull Bash",
@@ -5888,6 +6028,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 		end: "  [POKEMON] was freed from the Sky Drop!",
 		failSelect: "Sky Drop won't let [POKEMON] go!",
 		failTooHeavy: "  [POKEMON] is too heavy to be lifted!",
+	},
+	skystrike: {
+		name: "skystrike",
+		desc: "Has a higher chance for a critical hit.",
+		shortDesc: "High critical hit ratio.",
 	},
 	skyuppercut: {
 		name: "Sky Uppercut",
@@ -5948,7 +6093,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	sludge: {
 		name: "Sludge",
 		desc: "Has a 30% chance to poison the target.",
-		shortDesc: "30% chance to poison the target.",
+		shortDesc: "10% chance to poison the target.",
 		gen1: {
 			desc: "Has a 40% chance to poison the target.",
 			shortDesc: "40% chance to poison the target.",
@@ -5957,7 +6102,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	sludgebomb: {
 		name: "Sludge Bomb",
 		desc: "Has a 30% chance to poison the target.",
-		shortDesc: "30% chance to poison the target.",
+		shortDesc: "10% chance to poison the target.",
 	},
 	sludgewave: {
 		name: "Sludge Wave",
@@ -5990,7 +6135,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	smog: {
 		name: "Smog",
 		desc: "Has a 40% chance to poison the target.",
-		shortDesc: "40% chance to poison the target.",
+		shortDesc: "25% chance to poison adjacent Pokémon.",
 	},
 	smokescreen: {
 		name: "Smokescreen",
@@ -6105,6 +6250,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 
 		prepare: "#solarbeam",
 	},
+	solidsmash: {
+		name: "solidsmash",
+		desc: "Has a 10% chance to confuse the target.",
+		shortDesc: "10% chance to confuse the target.",
+	},
 	sonicboom: {
 		name: "Sonic Boom",
 		desc: "Deals 20 HP of damage to the target.",
@@ -6126,6 +6276,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 		name: "Spark",
 		desc: "Has a 30% chance to paralyze the target.",
 		shortDesc: "30% chance to paralyze the target.",
+	},
+	sparking: {
+		name: "sparking",
+		desc: "Has a 25% chance to stun the target.",
+		shortDesc: "25% chance to stun the target.",
 	},
 	sparklingaria: {
 		name: "Sparkling Aria",
@@ -6471,7 +6626,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	strugglebug: {
 		name: "Struggle Bug",
 		desc: "Has a 100% chance to lower the target's Special Attack by 1 stage.",
-		shortDesc: "100% chance to lower the foe(s) Sp. Atk by 1.",
+		shortDesc: "50% chance to lower the foe(s) Sp. Atk by 1.",
 	},
 	stuffcheeks: {
 		name: "Stuff Cheeks",
@@ -6555,7 +6710,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	supercellslam: {
 		name: "Supercell Slam",
 		desc: "If this attack is not successful, the user loses half of its maximum HP, rounded down, as crash damage. Pokemon with the Magic Guard Ability are unaffected by crash damage. Damage doubles and no accuracy check is done if the target has used Minimize while active.",
-		shortDesc: "User is hurt by 50% of its max HP if it misses.",
+		shortDesc: "10% chance to stun the target.",
 
 		damage: "#crash",
 	},
@@ -6584,7 +6739,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	surf: {
 		name: "Surf",
 		desc: "Damage doubles if the target is using Dive.",
-		shortDesc: "Hits adjacent Pokemon. Double damage on Dive.",
+		shortDesc: "No additional effect. Hits adjacent foes.",
 		gen4: {
 			desc: "Power doubles if the target is using Dive.",
 			shortDesc: "Hits adjacent Pokemon. Power doubles on Dive.",
@@ -6640,7 +6795,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	swift: {
 		name: "Swift",
 		desc: "This move does not check accuracy.",
-		shortDesc: "This move does not check accuracy. Hits foes.",
+		shortDesc: "No additional effect. Hits adjacent foes.",
 		gen1: {
 			desc: "This move does not check accuracy and hits even if the target is using Dig or Fly.",
 			shortDesc: "Never misses, even against Dig and Fly.",
@@ -6958,7 +7113,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	thunderbolt: {
 		name: "Thunderbolt",
 		desc: "Has a 10% chance to paralyze the target.",
-		shortDesc: "10% chance to paralyze the target.",
+		shortDesc: "10% chance to stun the target.",
 	},
 	thundercage: {
 		name: "Thunder Cage",
@@ -6993,7 +7148,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	thundershock: {
 		name: "Thunder Shock",
 		desc: "Has a 10% chance to paralyze the target.",
-		shortDesc: "10% chance to paralyze the target.",
+		shortDesc: "10% chance to stun the target.",
 	},
 	thunderwave: {
 		name: "Thunder Wave",
@@ -7345,7 +7500,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	waterpulse: {
 		name: "Water Pulse",
 		desc: "Has a 20% chance to confuse the target.",
-		shortDesc: "20% chance to confuse the target.",
+		shortDesc: "10% chance to confuse the target.",
 	},
 	watershuriken: {
 		name: "Water Shuriken",
@@ -7475,7 +7630,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	wildcharge: {
 		name: "Wild Charge",
 		desc: "If the target lost HP, the user takes recoil damage equal to 1/4 the HP lost by the target, rounded half up, but not less than 1 HP.",
-		shortDesc: "Has 1/4 recoil.",
+		shortDesc: "No additional effect.",
 	},
 	willowisp: {
 		name: "Will-O-Wisp",
@@ -7576,6 +7731,11 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 		gen4: {
 			desc: "Power is equal to 120 * (target's current HP / target's maximum HP) + 1, rounded down.",
 		},
+	},
+	wyrmsurge: {
+		name: "wyrmsurge",
+		desc: "Has a 30% chance to lower each target's Special Attack by 1 stage. Hits adjacent foes.",
+		shortDesc: "30% chance to lower the foe(s) Sp. Atk by 1.",
 	},
 	xscissor: {
 		name: "X-Scissor",
