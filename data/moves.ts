@@ -168,13 +168,13 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	aerialace: {
 		num: 332,
 		accuracy: true,
-		basePower: 60,
+		basePower: 90,
 		category: "Physical",
 		name: "Aerial Ace",
-		pp: 20,
+		pp: 10,
 		priority: 0,
-		flags: { contact: 1, protect: 1, mirror: 1, distance: 1, metronome: 1, slicing: 1 },
-		target: "any",
+		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1, slicing: 1 },
+		target: "normal",
 		type: "Flying",
 		contestType: "Cool",
 	},
@@ -235,11 +235,11 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	aircutter: {
 		num: 314,
-		accuracy: 95,
-		basePower: 60,
+		accuracy: 100,
+		basePower: 55,
 		category: "Special",
 		name: "Air Cutter",
-		pp: 25,
+		pp: 20,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1, slicing: 1, wind: 1 },
 		critRatio: 2,
@@ -249,18 +249,18 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	airslash: {
 		num: 403,
-		accuracy: 95,
-		basePower: 75,
+		accuracy: 100,
+		basePower: 85,
 		category: "Special",
 		name: "Air Slash",
-		pp: 15,
+		pp: 10,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, distance: 1, metronome: 1, slicing: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, slicing: 1, wind: 1 },
 		secondary: {
-			chance: 30,
+			chance: 10,
 			volatileStatus: 'flinch',
 		},
-		target: "any",
+		target: "normal",
 		type: "Flying",
 		contestType: "Cool",
 	},
@@ -643,7 +643,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	assurance: {
 		num: 372,
 		accuracy: 100,
-		basePower: 60,
+		basePower: 55,
 		basePowerCallback(pokemon, target, move) {
 			if (target.hurtThisTurn) {
 				this.debug('BP doubled on damaged target');
@@ -653,7 +653,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		},
 		category: "Physical",
 		name: "Assurance",
-		pp: 10,
+		pp: 20,
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		target: "normal",
@@ -663,14 +663,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	astonish: {
 		num: 310,
 		accuracy: 100,
-		basePower: 30,
+		basePower: 40,
 		category: "Physical",
 		name: "Astonish",
-		pp: 15,
+		pp: 30,
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
-			chance: 30,
+			chance: 10,
 			volatileStatus: 'flinch',
 		},
 		target: "normal",
@@ -721,13 +721,13 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	aurasphere: {
 		num: 396,
 		accuracy: true,
-		basePower: 80,
+		basePower: 85,
 		category: "Special",
 		name: "Aura Sphere",
-		pp: 20,
+		pp: 10,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, distance: 1, metronome: 1, bullet: 1, pulse: 1 },
-		target: "any",
+		flags: { protect: 1, mirror: 1, metronome: 1, ball: 1 },
+		target: "normal",
 		type: "Fighting",
 		contestType: "Beautiful",
 	},
@@ -770,21 +770,20 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	aurorabeam: {
 		num: 62,
 		accuracy: 100,
-		basePower: 65,
+		basePower: 60,
 		category: "Special",
 		name: "Aurora Beam",
 		pp: 20,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
-			chance: 10,
+			chance: 25,
 			boosts: {
 				atk: -1,
 			},
 		},
-		target: "normal",
+		target: "allAdjacentFoes",
 		type: "Ice",
-		contestType: "Beautiful",
 	},
 	auroraveil: {
 		num: 694,
@@ -867,25 +866,18 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	avalanche: {
 		num: 419,
 		accuracy: 100,
-		basePower: 60,
-		basePowerCallback(pokemon, target, move) {
-			const damagedByTarget = pokemon.attackedBy.some(
-				p => p.source === target && p.damage > 0 && p.thisTurn
-			);
-			if (damagedByTarget) {
-				this.debug(`BP doubled for getting hit by ${target}`);
-				return move.basePower * 2;
-			}
-			return move.basePower;
-		},
+		basePower: 55,
 		category: "Physical",
 		name: "Avalanche",
-		pp: 10,
-		priority: -4,
-		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
-		target: "normal",
+		pp: 20,
+		priority: 0,
+		flags: { protect: 1, mirror: 1, metronome: 1 },
+		secondary: {
+			chance: 10,
+			volatileStatus: 'flinch',
+		},
+		target: "allAdjacentFoes",
 		type: "Ice",
-		contestType: "Beautiful",
 	},
 	axekick: {
 		num: 853,
@@ -1353,14 +1345,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	bittermalice: {
 		num: 841,
 		accuracy: 100,
-		basePower: 75,
+		basePower: 60,
 		category: "Special",
 		name: "Bitter Malice",
-		pp: 10,
+		pp: 20,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
-			chance: 100,
+			chance: 25,
 			boosts: {
 				atk: -1,
 			},
@@ -1557,19 +1549,18 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	bodyslam: {
 		num: 34,
 		accuracy: 100,
-		basePower: 85,
+		basePower: 95,
 		category: "Physical",
 		name: "Body Slam",
-		pp: 15,
+		pp: 10,
 		priority: 0,
-		flags: { contact: 1, protect: 1, mirror: 1, nonsky: 1, metronome: 1, minimize: 1 },
+		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
-			chance: 30,
+			chance: 25,
 			status: 'stun',
 		},
 		target: "normal",
 		type: "Normal",
-		contestType: "Tough",
 	},
 	boltbeak: {
 		num: 754,
@@ -1761,14 +1752,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	breakingswipe: {
 		num: 784,
 		accuracy: 100,
-		basePower: 60,
+		basePower: 65,
 		category: "Physical",
 		name: "Breaking Swipe",
-		pp: 15,
+		pp: 20,
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1 },
 		secondary: {
-			chance: 100,
+			chance: 25,
 			boosts: {
 				atk: -1,
 			},
@@ -1907,19 +1898,19 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	bugbuzz: {
 		num: 405,
 		accuracy: 100,
-		basePower: 90,
+		basePower: 40,
 		category: "Special",
 		name: "Bug Buzz",
-		pp: 10,
+		pp: 30,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, sound: 1, metronome: 1 },
 		secondary: {
-			chance: 10,
+			chance: 25,
 			boosts: {
 				spd: -1,
 			},
 		},
-		target: "normal",
+		target: "allAdjacent",
 		type: "Bug",
 		contestType: "Beautiful",
 	},
@@ -1951,7 +1942,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		priority: 0,
 		flags: { protect: 1, mirror: 1, nonsky: 1, metronome: 1 },
 		secondary: {
-			chance: 100,
+			chance: 25,
 			boosts: {
 				spe: -1,
 			},
@@ -2714,19 +2705,18 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	confusion: {
 		num: 93,
 		accuracy: 100,
-		basePower: 50,
+		basePower: 35,
 		category: "Special",
 		name: "Confusion",
-		pp: 25,
+		pp: 30,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
-			chance: 10,
+			chance: 25,
 			volatileStatus: 'confusion',
 		},
 		target: "normal",
 		type: "Psychic",
-		contestType: "Clever",
 	},
 	constrict: {
 		num: 132,
@@ -3159,16 +3149,12 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	crosspoison: {
 		num: 440,
 		accuracy: 100,
-		basePower: 70,
+		basePower: 90,
 		category: "Physical",
 		name: "Cross Poison",
-		pp: 20,
+		pp: 10,
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1, slicing: 1 },
-		secondary: {
-			chance: 10,
-			status: 'psn',
-		},
 		critRatio: 2,
 		target: "normal",
 		type: "Poison",
@@ -3310,17 +3296,17 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	darkpulse: {
 		num: 399,
 		accuracy: 100,
-		basePower: 80,
+		basePower: 85,
 		category: "Special",
 		name: "Dark Pulse",
-		pp: 15,
+		pp: 10,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, distance: 1, metronome: 1, pulse: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, pulse: 1 },
 		secondary: {
-			chance: 20,
+			chance: 10,
 			volatileStatus: 'flinch',
 		},
-		target: "any",
+		target: "allAdjacent",
 		type: "Dark",
 		contestType: "Cool",
 	},
@@ -3350,12 +3336,12 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	dazzlinggleam: {
 		num: 605,
 		accuracy: 100,
-		basePower: 80,
+		basePower: 95,
 		category: "Special",
 		name: "Dazzling Gleam",
 		pp: 10,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, metronome: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, light: 1 },
 		target: "allAdjacentFoes",
 		type: "Fairy",
 		contestType: "Beautiful",
@@ -3719,50 +3705,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	dive: {
 		num: 291,
 		accuracy: 100,
-		basePower: 80,
+		basePower: 70,
 		category: "Physical",
 		name: "Dive",
-		pp: 10,
+		pp: 20,
 		priority: 0,
-		flags: {
-			contact: 1, charge: 1, protect: 1, mirror: 1,
-			nonsky: 1, allyanim: 1, metronome: 1, nosleeptalk: 1, noassist: 1, failinstruct: 1,
-		},
-		onTryMove(attacker, defender, move) {
-			if (attacker.removeVolatile(move.id)) {
-				return;
-			}
-			if (attacker.hasAbility('gulpmissile') && attacker.species.name === 'Cramorant' && !attacker.transformed) {
-				const forme = attacker.hp <= attacker.maxhp / 2 ? 'cramorantgorging' : 'cramorantgulping';
-				attacker.formeChange(forme, move);
-			}
-			this.add('-prepare', attacker, move.name);
-			if (!this.runEvent('ChargeMove', attacker, defender, move)) {
-				return;
-			}
-			attacker.addVolatile('twoturnmove', defender);
-			return null;
-		},
-		condition: {
-			duration: 2,
-			onImmunity(type, pokemon) {
-				if (type === 'sandstorm' || type === 'hail') return false;
-			},
-			onInvulnerability(target, source, move) {
-				if (['surf', 'whirlpool'].includes(move.id)) {
-					return;
-				}
-				return false;
-			},
-			onSourceModifyDamage(damage, source, target, move) {
-				if (move.id === 'surf' || move.id === 'whirlpool') {
-					return this.chainModify(2);
-				}
-			},
-		},
+		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		target: "normal",
 		type: "Water",
-		contestType: "Beautiful",
 	},
 	dizzypunch: {
 		num: 146,
@@ -4122,10 +4072,10 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	dragonhammer: {
 		num: 692,
 		accuracy: 100,
-		basePower: 90,
+		basePower: 100,
 		category: "Physical",
 		name: "Dragon Hammer",
-		pp: 15,
+		pp: 10,
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		target: "normal",
@@ -4135,13 +4085,13 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	dragonpulse: {
 		num: 406,
 		accuracy: 100,
-		basePower: 85,
+		basePower: 95,
 		category: "Special",
 		name: "Dragon Pulse",
 		pp: 10,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, distance: 1, metronome: 1, pulse: 1 },
-		target: "any",
+		flags: { protect: 1, mirror: 1, metronome: 1, pulse: 1 },
+		target: "normal",
 		type: "Dragon",
 		contestType: "Beautiful",
 	},
@@ -4350,7 +4300,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		priority: 0,
 		flags: { protect: 1, mirror: 1, nonsky: 1, metronome: 1 },
 		secondary: {
-			chance: 10,
+			chance: 25,
 			boosts: {
 				spd: -1,
 			},
@@ -4682,7 +4632,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		basePower: 40,
 		category: "Special",
 		name: "Ember",
-		pp: 25,
+		pp: 30,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
@@ -4817,7 +4767,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		name: "Energy Ball",
 		pp: 10,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, metronome: 1, bullet: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, ball: 1 },
 		secondary: {
 			chance: 10,
 			boosts: {
@@ -4952,7 +4902,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	extrasensory: {
 		num: 326,
 		accuracy: 100,
-		basePower: 80,
+		basePower: 55,
 		category: "Special",
 		name: "Extrasensory",
 		pp: 20,
@@ -4964,7 +4914,6 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		},
 		target: "normal",
 		type: "Psychic",
-		contestType: "Cool",
 	},
 	extremeevoboost: {
 		num: 702,
@@ -5046,13 +4995,13 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	fairywind: {
 		num: 584,
 		accuracy: 100,
-		basePower: 40,
+		basePower: 45,
 		category: "Special",
 		name: "Fairy Wind",
 		pp: 30,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1, wind: 1 },
-		target: "normal",
+		target: "allAdjacentFoes",
 		type: "Fairy",
 		contestType: "Beautiful",
 	},
@@ -5160,11 +5109,10 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	feintattack: {
 		num: 185,
 		accuracy: true,
-		basePower: 60,
+		basePower: 40,
 		category: "Physical",
-		isNonstandard: "Past",
 		name: "Feint Attack",
-		pp: 20,
+		pp: 30,
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		target: "normal",
@@ -5332,14 +5280,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	firelash: {
 		num: 680,
 		accuracy: 100,
-		basePower: 80,
+		basePower: 90,
 		category: "Physical",
 		name: "Fire Lash",
-		pp: 15,
+		pp: 10,
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
-			chance: 100,
+			chance: 25,
 			boosts: {
 				def: -1,
 			},
@@ -5583,7 +5531,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		basePower: 90,
 		category: "Special",
 		name: "Flamethrower",
-		pp: 15,
+		pp: 10,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
@@ -5597,10 +5545,10 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	flamewheel: {
 		num: 172,
 		accuracy: 100,
-		basePower: 60,
+		basePower: 65,
 		category: "Physical",
 		name: "Flame Wheel",
-		pp: 25,
+		pp: 20,
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, defrost: 1, metronome: 1 },
 		secondary: {
@@ -5650,12 +5598,12 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	flashcannon: {
 		num: 430,
 		accuracy: 100,
-		basePower: 80,
+		basePower: 90,
 		category: "Special",
 		name: "Flash Cannon",
 		pp: 10,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, metronome: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, beam: 1 },
 		secondary: {
 			chance: 10,
 			boosts: {
@@ -7856,43 +7804,22 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	grudge: {
 		num: 288,
-		accuracy: true,
-		basePower: 0,
-		category: "Status",
-		isNonstandard: "Past",
+		accuracy: 100,
+		basePower: 40,
+		category: "Special",
 		name: "Grudge",
-		pp: 5,
+		pp: 30,
 		priority: 0,
-		flags: { bypasssub: 1, metronome: 1 },
-		volatileStatus: 'grudge',
-		condition: {
-			onStart(pokemon) {
-				this.add('-singlemove', pokemon, 'Grudge');
-			},
-			onFaint(target, source, effect) {
-				if (!source || source.fainted || !effect) return;
-				if (effect.effectType === 'Move' && !effect.flags['futuremove'] && source.lastMove) {
-					let move: Move = source.lastMove;
-					if (move.isMax && move.baseMove) move = this.dex.moves.get(move.baseMove);
-
-					for (const moveSlot of source.moveSlots) {
-						if (moveSlot.id === move.id) {
-							moveSlot.pp = 0;
-							this.add('-activate', source, 'move: Grudge', move.name);
-						}
-					}
-				}
-			},
-			onBeforeMovePriority: 100,
-			onBeforeMove(pokemon) {
-				this.debug('removing Grudge before attack');
-				pokemon.removeVolatile('grudge');
-			},
+		flags: { protect: 1, mirror: 1, metronome: 1 },
+		onHit(target) {
+			const lastMove = target.lastMove;
+			if (lastMove) {
+				const slot = target.moveSlots.find((s: { id: string }) => s.id === lastMove.id);
+				if (slot) slot.pp = Math.max(0, slot.pp - 2);
+			}
 		},
-		target: "self",
+		target: "normal",
 		type: "Ghost",
-		zMove: { effect: 'redirect' },
-		contestType: "Tough",
 	},
 	guardianofalola: {
 		num: 698,
@@ -8008,13 +7935,13 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	gust: {
 		num: 16,
 		accuracy: 100,
-		basePower: 40,
+		basePower: 45,
 		category: "Special",
 		name: "Gust",
-		pp: 35,
+		pp: 30,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, distance: 1, metronome: 1, wind: 1 },
-		target: "any",
+		flags: { protect: 1, mirror: 1, metronome: 1, wind: 1 },
+		target: "allAdjacentFoes",
 		type: "Flying",
 		contestType: "Clever",
 	},
@@ -8858,8 +8785,8 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	highhorsepower: {
 		num: 667,
-		accuracy: 95,
-		basePower: 95,
+		accuracy: 100,
+		basePower: 100,
 		category: "Physical",
 		name: "High Horsepower",
 		pp: 10,
@@ -8867,7 +8794,6 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		target: "normal",
 		type: "Ground",
-		contestType: "Tough",
 	},
 	highjumpkick: {
 		num: 136,
@@ -9208,70 +9134,19 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	iceball: {
 		num: 301,
-		accuracy: 90,
-		basePower: 30,
-		basePowerCallback(pokemon, target, move) {
-			let bp = move.basePower;
-			const iceballData = pokemon.volatiles['iceball'];
-			if (iceballData?.hitCount) {
-				bp *= 2 ** iceballData.contactHitCount;
-			}
-			if (iceballData && pokemon.status !== 'slp') {
-				iceballData.hitCount++;
-				iceballData.contactHitCount++;
-				if (iceballData.hitCount < 5) {
-					iceballData.duration = 2;
-				}
-			}
-			if (pokemon.volatiles['defensecurl']) {
-				bp *= 2;
-			}
-			this.debug(`BP: ${bp}`);
-			return bp;
-		},
+		accuracy: 100,
+		basePower: 40,
 		category: "Physical",
-		isNonstandard: "Past",
 		name: "Ice Ball",
-		pp: 20,
+		pp: 30,
 		priority: 0,
-		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1, failinstruct: 1, bullet: 1, noparentalbond: 1 },
-		onModifyMove(move, pokemon, target) {
-			if (pokemon.volatiles['iceball'] || pokemon.status === 'slp' || !target) return;
-			pokemon.addVolatile('iceball');
-			if (move.sourceEffect) pokemon.lastMoveTargetLoc = pokemon.getLocOf(target);
-		},
-		onAfterMove(source, target, move) {
-			const iceballData = source.volatiles["iceball"];
-			if (
-				iceballData &&
-				iceballData.hitCount === 5 &&
-				iceballData.contactHitCount < 5
-				// this conditions can only be met in gen7 and gen8dlc1
-				// see `disguise` and `iceface` abilities in the resp mod folders
-			) {
-				source.addVolatile("rolloutstorage");
-				source.volatiles["rolloutstorage"].contactHitCount =
-				iceballData.contactHitCount;
-			}
-		},
-
-		condition: {
-			duration: 1,
-			onLockMove: 'iceball',
-			onStart() {
-				this.effectState.hitCount = 0;
-				this.effectState.contactHitCount = 0;
-			},
-			onResidual(target) {
-				if (target.lastMove && target.lastMove.id === 'struggle') {
-					// don't lock
-					delete target.volatiles['iceball'];
-				}
-			},
+		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1, ball: 1 },
+		secondary: {
+			chance: 10,
+			status: 'frb',
 		},
 		target: "normal",
 		type: "Ice",
-		contestType: "Beautiful",
 	},
 	icebeam: {
 		num: 58,
@@ -9410,20 +9285,19 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	iciclecrash: {
 		num: 556,
-		accuracy: 90,
-		basePower: 85,
+		accuracy: 100,
+		basePower: 90,
 		category: "Physical",
 		name: "Icicle Crash",
 		pp: 10,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
-			chance: 30,
-			volatileStatus: 'flinch',
+			chance: 10,
+			status: 'frb',
 		},
 		target: "normal",
 		type: "Ice",
-		contestType: "Beautiful",
 	},
 	iciclespear: {
 		num: 333,
@@ -10022,10 +9896,10 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	lashout: {
 		num: 808,
 		accuracy: 100,
-		basePower: 75,
+		basePower: 90,
 		category: "Physical",
 		name: "Lash Out",
-		pp: 5,
+		pp: 10,
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		onBasePower(basePower, source) {
@@ -10097,15 +9971,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	leafage: {
 		num: 670,
 		accuracy: 100,
-		basePower: 40,
-		category: "Physical",
+		basePower: 45,
+		category: "Special",
 		name: "Leafage",
-		pp: 40,
+		pp: 30,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		target: "normal",
 		type: "Grass",
-		contestType: "Tough",
 	},
 	leafblade: {
 		num: 348,
@@ -10348,21 +10221,20 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	liquidation: {
 		num: 710,
 		accuracy: 100,
-		basePower: 85,
+		basePower: 95,
 		category: "Physical",
 		name: "Liquidation",
 		pp: 10,
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
-			chance: 20,
+			chance: 10,
 			boosts: {
 				def: -1,
 			},
 		},
 		target: "normal",
 		type: "Water",
-		contestType: "Cool",
 	},
 	lockon: {
 		num: 199,
@@ -10580,16 +10452,16 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	lunge: {
 		num: 679,
 		accuracy: 100,
-		basePower: 80,
+		basePower: 45,
 		category: "Physical",
 		name: "Lunge",
-		pp: 15,
+		pp: 30,
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
-			chance: 100,
+			chance: 25,
 			boosts: {
-				atk: -1,
+				spe: -1,
 			},
 		},
 		target: "normal",
@@ -10631,15 +10503,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	magicalleaf: {
 		num: 345,
 		accuracy: true,
-		basePower: 60,
+		basePower: 55,
 		category: "Special",
 		name: "Magical Leaf",
 		pp: 20,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1 },
-		target: "normal",
+		target: "allAdjacentFoes",
 		type: "Grass",
-		contestType: "Beautiful",
 	},
 	magicaltorque: {
 		num: 900,
@@ -10785,16 +10656,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	magnetbomb: {
 		num: 443,
 		accuracy: true,
-		basePower: 60,
-		category: "Physical",
-		isNonstandard: "Past",
+		basePower: 55,
+		category: "Special",
 		name: "Magnet Bomb",
 		pp: 20,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, metronome: 1, bullet: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, ball: 1 },
 		target: "normal",
 		type: "Steel",
-		contestType: "Cool",
 	},
 	magneticflux: {
 		num: 602,
@@ -11735,23 +11604,15 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	meteormash: {
 		num: 309,
-		accuracy: 90,
-		basePower: 90,
+		accuracy: 100,
+		basePower: 100,
 		category: "Physical",
 		name: "Meteor Mash",
 		pp: 10,
 		priority: 0,
-		flags: { contact: 1, protect: 1, mirror: 1, punch: 1, metronome: 1 },
-		secondary: {
-			chance: 20,
-			self: {
-				boosts: {
-					atk: 1,
-				},
-			},
-		},
+		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		target: "normal",
-		type: "Steel",
+		type: "Cosmic",
 		contestType: "Cool",
 	},
 	metronome: {
@@ -12187,20 +12048,20 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	moonblast: {
 		num: 585,
 		accuracy: 100,
-		basePower: 95,
+		basePower: 90,
 		category: "Special",
 		name: "Moonblast",
-		pp: 15,
+		pp: 10,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, metronome: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, heavyprojectile: 1 },
 		secondary: {
-			chance: 30,
+			chance: 25,
 			boosts: {
 				spa: -1,
 			},
 		},
 		target: "normal",
-		type: "Fairy",
+		type: "Cosmic",
 		contestType: "Beautiful",
 	},
 	moongeistbeam: {
@@ -12394,34 +12255,33 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	mudshot: {
 		num: 341,
-		accuracy: 95,
-		basePower: 55,
+		accuracy: 100,
+		basePower: 60,
 		category: "Special",
 		name: "Mud Shot",
-		pp: 15,
+		pp: 20,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
-			chance: 100,
+			chance: 25,
 			boosts: {
 				spe: -1,
 			},
 		},
 		target: "normal",
 		type: "Ground",
-		contestType: "Tough",
 	},
 	mudslap: {
 		num: 189,
 		accuracy: 100,
-		basePower: 20,
+		basePower: 35,
 		category: "Special",
 		name: "Mud-Slap",
-		pp: 10,
+		pp: 30,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
-			chance: 100,
+			chance: 25,
 			boosts: {
 				accuracy: -1,
 			},
@@ -12654,20 +12514,20 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	nightdaze: {
 		num: 539,
-		accuracy: 95,
-		basePower: 85,
+		accuracy: 100,
+		basePower: 55,
 		category: "Special",
 		name: "Night Daze",
-		pp: 10,
+		pp: 20,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
-			chance: 40,
+			chance: 25,
 			boosts: {
 				accuracy: -1,
 			},
 		},
-		target: "normal",
+		target: "allAdjacentFoes",
 		type: "Dark",
 		contestType: "Cool",
 	},
@@ -13290,22 +13150,10 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		name: "Phantom Force",
 		pp: 10,
 		priority: 0,
-		flags: { contact: 1, charge: 1, mirror: 1, metronome: 1, nosleeptalk: 1, noassist: 1, failinstruct: 1 },
-		breaksProtect: true,
-		onTryMove(attacker, defender, move) {
-			if (attacker.removeVolatile(move.id)) {
-				return;
-			}
-			this.add('-prepare', attacker, move.name);
-			if (!this.runEvent('ChargeMove', attacker, defender, move)) {
-				return;
-			}
-			attacker.addVolatile('twoturnmove', defender);
-			return null;
-		},
-		condition: {
-			duration: 2,
-			onInvulnerability: false,
+		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
+		secondary: {
+			chance: 10,
+			volatileStatus: 'flinch',
 		},
 		target: "normal",
 		type: "Ghost",
@@ -13397,15 +13245,15 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	playrough: {
 		num: 583,
-		accuracy: 90,
-		basePower: 90,
+		accuracy: 100,
+		basePower: 95,
 		category: "Physical",
 		name: "Play Rough",
 		pp: 10,
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
-			chance: 10,
+			chance: 25,
 			boosts: {
 				atk: -1,
 			},
@@ -13505,19 +13353,18 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	poisonsting: {
 		num: 40,
 		accuracy: 100,
-		basePower: 15,
+		basePower: 35,
 		category: "Physical",
 		name: "Poison Sting",
-		pp: 35,
+		pp: 30,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
-			chance: 30,
+			chance: 25,
 			status: 'psn',
 		},
 		target: "normal",
 		type: "Poison",
-		contestType: "Clever",
 	},
 	poisontail: {
 		num: 342,
@@ -13671,7 +13518,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		basePower: 40,
 		category: "Special",
 		name: "Powder Snow",
-		pp: 25,
+		pp: 30,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
@@ -13680,20 +13527,18 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		},
 		target: "allAdjacentFoes",
 		type: "Ice",
-		contestType: "Beautiful",
 	},
 	powergem: {
 		num: 408,
 		accuracy: 100,
-		basePower: 80,
+		basePower: 95,
 		category: "Special",
 		name: "Power Gem",
-		pp: 20,
+		pp: 10,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		target: "normal",
 		type: "Rock",
-		contestType: "Beautiful",
 	},
 	powershift: {
 		num: 829,
@@ -14151,16 +13996,15 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	psychocut: {
 		num: 427,
 		accuracy: 100,
-		basePower: 70,
+		basePower: 85,
 		category: "Physical",
 		name: "Psycho Cut",
-		pp: 20,
+		pp: 10,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1, slicing: 1 },
 		critRatio: 2,
 		target: "normal",
 		type: "Psychic",
-		contestType: "Cool",
 	},
 	psychoshift: {
 		num: 375,
@@ -14724,17 +14568,16 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	razorleaf: {
 		num: 75,
-		accuracy: 95,
+		accuracy: 100,
 		basePower: 55,
 		category: "Physical",
 		name: "Razor Leaf",
-		pp: 25,
+		pp: 20,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1, slicing: 1 },
 		critRatio: 2,
 		target: "allAdjacentFoes",
 		type: "Grass",
-		contestType: "Cool",
 	},
 	razorshell: {
 		num: 534,
@@ -15216,32 +15059,31 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	rockslide: {
 		num: 157,
-		accuracy: 90,
-		basePower: 75,
+		accuracy: 100,
+		basePower: 85,
 		category: "Physical",
 		name: "Rock Slide",
 		pp: 10,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
-			chance: 30,
+			chance: 10,
 			volatileStatus: 'flinch',
 		},
 		target: "allAdjacentFoes",
 		type: "Rock",
-		contestType: "Tough",
 	},
 	rocksmash: {
 		num: 249,
 		accuracy: 100,
-		basePower: 40,
+		basePower: 45,
 		category: "Physical",
-		name: "Rock Smash",
-		pp: 15,
+		name: "Smash",
+		pp: 30,
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
-			chance: 50,
+			chance: 25,
 			boosts: {
 				def: -1,
 			},
@@ -15252,16 +15094,15 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	rockthrow: {
 		num: 88,
-		accuracy: 90,
-		basePower: 50,
+		accuracy: 100,
+		basePower: 65,
 		category: "Physical",
 		name: "Rock Throw",
-		pp: 15,
+		pp: 20,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		target: "normal",
 		type: "Rock",
-		contestType: "Tough",
 	},
 	rocktomb: {
 		num: 317,
@@ -15842,18 +15683,17 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	searingshot: {
 		num: 545,
 		accuracy: 100,
-		basePower: 100,
+		basePower: 55,
 		category: "Special",
-		isNonstandard: "Past",
 		name: "Searing Shot",
-		pp: 5,
+		pp: 20,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, metronome: 1, bullet: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, ball: 1 },
 		secondary: {
-			chance: 30,
+			chance: 25,
 			status: 'brn',
 		},
-		target: "allAdjacent",
+		target: "normal",
 		type: "Fire",
 		contestType: "Cool",
 	},
@@ -15937,15 +15777,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	seedbomb: {
 		num: 402,
 		accuracy: 100,
-		basePower: 80,
+		basePower: 95,
 		category: "Physical",
 		name: "Seed Bomb",
-		pp: 15,
+		pp: 10,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, metronome: 1, bullet: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, bursting: 1 },
 		target: "normal",
 		type: "Grass",
-		contestType: "Tough",
 	},
 	seedflare: {
 		num: 465,
@@ -15998,14 +15837,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	shadowball: {
 		num: 247,
 		accuracy: 100,
-		basePower: 80,
+		basePower: 90,
 		category: "Special",
 		name: "Shadow Ball",
-		pp: 15,
+		pp: 10,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, metronome: 1, bullet: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, ball: 1 },
 		secondary: {
-			chance: 20,
+			chance: 25,
 			boosts: {
 				spd: -1,
 			},
@@ -16326,7 +16165,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	shockwave: {
 		num: 351,
 		accuracy: true,
-		basePower: 60,
+		basePower: 55,
 		category: "Special",
 		name: "Shock Wave",
 		pp: 20,
@@ -16365,13 +16204,12 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	signalbeam: {
 		num: 324,
 		accuracy: 100,
-		basePower: 75,
+		basePower: 90,
 		category: "Special",
-		isNonstandard: "Past",
 		name: "Signal Beam",
-		pp: 15,
+		pp: 10,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, metronome: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, beam: 1 },
 		secondary: {
 			chance: 10,
 			volatileStatus: 'confusion',
@@ -16584,17 +16422,17 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	skittersmack: {
 		num: 806,
-		accuracy: 90,
-		basePower: 70,
+		accuracy: 100,
+		basePower: 60,
 		category: "Physical",
 		name: "Skitter Smack",
-		pp: 10,
+		pp: 20,
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
-			chance: 100,
+			chance: 50,
 			boosts: {
-				spa: -1,
+				atk: -1,
 			},
 		},
 		target: "normal",
@@ -16800,16 +16638,15 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	slam: {
 		num: 21,
-		accuracy: 75,
-		basePower: 80,
+		accuracy: 100,
+		basePower: 75,
 		category: "Physical",
 		name: "Slam",
 		pp: 20,
 		priority: 0,
-		flags: { contact: 1, protect: 1, mirror: 1, nonsky: 1, metronome: 1 },
+		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		target: "normal",
 		type: "Normal",
-		contestType: "Tough",
 	},
 	slash: {
 		num: 163,
@@ -16880,19 +16717,18 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	sludge: {
 		num: 124,
 		accuracy: 100,
-		basePower: 65,
+		basePower: 60,
 		category: "Special",
 		name: "Sludge",
 		pp: 20,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
-			chance: 30,
+			chance: 10,
 			status: 'psn',
 		},
 		target: "normal",
 		type: "Poison",
-		contestType: "Tough",
 	},
 	sludgebomb: {
 		num: 188,
@@ -16902,14 +16738,13 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		name: "Sludge Bomb",
 		pp: 10,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, metronome: 1, bullet: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, bursting: 1 },
 		secondary: {
-			chance: 30,
+			chance: 10,
 			status: 'psn',
 		},
 		target: "normal",
 		type: "Poison",
-		contestType: "Tough",
 	},
 	sludgewave: {
 		num: 482,
@@ -17013,20 +16848,19 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	smog: {
 		num: 123,
-		accuracy: 70,
-		basePower: 30,
+		accuracy: 100,
+		basePower: 35,
 		category: "Special",
 		name: "Smog",
-		pp: 20,
+		pp: 30,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, metronome: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, wind: 1 },
 		secondary: {
-			chance: 40,
+			chance: 25,
 			status: 'psn',
 		},
-		target: "normal",
+		target: "allAdjacent",
 		type: "Poison",
-		contestType: "Tough",
 	},
 	smokescreen: {
 		num: 108,
@@ -18167,14 +18001,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	strength: {
 		num: 70,
 		accuracy: 100,
-		basePower: 80,
+		basePower: 100,
 		category: "Physical",
-		name: "Strength",
-		pp: 15,
+		name: "True Strength",
+		pp: 10,
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		target: "normal",
-		type: "Normal",
+		type: "Fighting",
 		contestType: "Tough",
 	},
 	strengthsap: {
@@ -18239,14 +18073,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	strugglebug: {
 		num: 522,
 		accuracy: 100,
-		basePower: 50,
+		basePower: 55,
 		category: "Special",
 		name: "Struggle Bug",
 		pp: 20,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
-			chance: 100,
+			chance: 50,
 			boosts: {
 				spa: -1,
 			},
@@ -18459,16 +18293,16 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	supercellslam: {
 		num: 916,
-		accuracy: 95,
-		basePower: 100,
+		accuracy: 100,
+		basePower: 95,
 		category: "Physical",
 		name: "Supercell Slam",
-		pp: 15,
+		pp: 10,
 		priority: 0,
-		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1, minimize: 1 },
-		hasCrashDamage: true,
-		onMoveFail(target, source, move) {
-			this.damage(source.baseMaxhp / 2, source, source, this.dex.conditions.get('Supercell Slam'));
+		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
+		secondary: {
+			chance: 10,
+			status: 'stun',
 		},
 		target: "normal",
 		type: "Electric",
@@ -18541,15 +18375,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	surf: {
 		num: 57,
 		accuracy: 100,
-		basePower: 90,
+		basePower: 95,
 		category: "Special",
 		name: "Surf",
-		pp: 15,
+		pp: 10,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, nonsky: 1, metronome: 1 },
-		target: "allAdjacent",
+		flags: { protect: 1, mirror: 1, metronome: 1 },
+		target: "allAdjacentFoes",
 		type: "Water",
-		contestType: "Beautiful",
 	},
 	surgingstrikes: {
 		num: 818,
@@ -18646,14 +18479,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	swift: {
 		num: 129,
 		accuracy: true,
-		basePower: 60,
+		basePower: 55,
 		category: "Special",
 		name: "Swift",
 		pp: 20,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, metronome: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, bullet: 1 },
 		target: "allAdjacentFoes",
-		type: "Normal",
+		type: "Cosmic",
 		contestType: "Cool",
 	},
 	switcheroo: {
@@ -18827,15 +18660,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	tackle: {
 		num: 33,
 		accuracy: 100,
-		basePower: 40,
+		basePower: 55,
 		category: "Physical",
 		name: "Tackle",
-		pp: 35,
+		pp: 30,
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		target: "normal",
 		type: "Normal",
-		contestType: "Tough",
 	},
 	tailglow: {
 		num: 294,
@@ -19485,7 +19317,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		basePower: 90,
 		category: "Special",
 		name: "Thunderbolt",
-		pp: 15,
+		pp: 10,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		secondary: {
@@ -19591,7 +19423,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		accuracy: 100,
 		basePower: 40,
 		category: "Special",
-		name: "Thunder Shock",
+		name: "Shock",
 		pp: 30,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1 },
@@ -20417,12 +20249,11 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		basePower: 45,
 		category: "Physical",
 		name: "Vine Whip",
-		pp: 25,
+		pp: 30,
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, vine: 1, metronome: 1 },
 		target: "normal",
 		type: "Grass",
-		contestType: "Cool",
 	},
 	visegrip: {
 		num: 11,
@@ -20527,15 +20358,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	watergun: {
 		num: 55,
 		accuracy: 100,
-		basePower: 40,
+		basePower: 45,
 		category: "Special",
 		name: "Water Gun",
-		pp: 25,
+		pp: 30,
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		target: "normal",
 		type: "Water",
-		contestType: "Cute",
 	},
 	waterpledge: {
 		num: 518,
@@ -20616,14 +20446,13 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		name: "Water Pulse",
 		pp: 20,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, distance: 1, metronome: 1, pulse: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, pulse: 1 },
 		secondary: {
-			chance: 20,
+			chance: 10,
 			volatileStatus: 'confusion',
 		},
-		target: "any",
+		target: "normal",
 		type: "Water",
-		contestType: "Beautiful",
 	},
 	watershuriken: {
 		num: 594,
@@ -20895,13 +20724,12 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	wildcharge: {
 		num: 528,
 		accuracy: 100,
-		basePower: 90,
+		basePower: 70,
 		category: "Physical",
 		name: "Wild Charge",
-		pp: 15,
+		pp: 20,
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
-		recoil: [1, 4],
 		target: "normal",
 		type: "Electric",
 		contestType: "Tough",
@@ -21153,10 +20981,10 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	xscissor: {
 		num: 404,
 		accuracy: 100,
-		basePower: 80,
+		basePower: 100,
 		category: "Physical",
 		name: "X-Scissor",
-		pp: 15,
+		pp: 10,
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1, slicing: 1 },
 		target: "normal",
@@ -21293,23 +21121,15 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	shadowstrike: {
 		num: -2,
-		accuracy: 95,
-		basePower: 80,
+		accuracy: 100,
+		basePower: 70,
 		category: "Physical",
-		isNonstandard: "CAP",
 		name: "Shadow Strike",
-		pp: 10,
+		pp: 20,
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1 },
-		secondary: {
-			chance: 50,
-			boosts: {
-				def: -1,
-			},
-		},
 		target: "normal",
 		type: "Ghost",
-		contestType: "Clever",
 	},
 	domainbug: {
 		num: -101,
@@ -21848,5 +21668,495 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		target: "all",
 		type: "Normal",
 		isNonstandard: "Custom",
+	},
+
+	// Standard Moves — new ** entries (nums -19 to -50)
+	flicker: {
+		num: -19,
+		accuracy: 100,
+		basePower: 45,
+		category: "Physical",
+		name: "Flicker",
+		pp: 30,
+		priority: 0,
+		flags: { contact: 1, protect: 1, mirror: 1 },
+		secondary: {
+			chance: 10,
+			volatileStatus: 'confusion',
+		},
+		target: "normal",
+		type: "Cosmic",
+	},
+	gravwell: {
+		num: -20,
+		accuracy: 100,
+		basePower: 60,
+		category: "Physical",
+		name: "Grav-Well",
+		pp: 20,
+		priority: 0,
+		flags: { protect: 1, mirror: 1 },
+		onHit(target) {
+			target.addVolatile('smackdown');
+		},
+		target: "normal",
+		type: "Cosmic",
+	},
+	paleorbit: {
+		num: -21,
+		accuracy: 100,
+		basePower: 45,
+		category: "Special",
+		name: "Pale Orbit",
+		pp: 30,
+		priority: 0,
+		flags: { protect: 1, mirror: 1 },
+		target: "normal",
+		type: "Cosmic",
+	},
+	rumor: {
+		num: -22,
+		accuracy: 100,
+		basePower: 40,
+		category: "Special",
+		name: "Rumor",
+		pp: 30,
+		priority: 0,
+		flags: { protect: 1, mirror: 1, sound: 1 },
+		secondary: {
+			chance: 10,
+			volatileStatus: 'confusion',
+		},
+		target: "normal",
+		type: "Dark",
+	},
+	rumble: {
+		num: -23,
+		accuracy: 100,
+		basePower: 45,
+		category: "Physical",
+		name: "Rumble",
+		pp: 30,
+		priority: 0,
+		flags: { protect: 1, mirror: 1 },
+		target: "normal",
+		type: "Dragon",
+	},
+	fizzle: {
+		num: -24,
+		accuracy: 100,
+		basePower: 40,
+		category: "Special",
+		name: "Fizzle",
+		pp: 30,
+		priority: 0,
+		flags: { protect: 1, mirror: 1 },
+		onHit(target, source) {
+			if (this.randomChance(1, 10)) {
+				this.trySetStatus(this.random(2) === 0 ? 'brn' : 'stun', target, source);
+			}
+		},
+		target: "normal",
+		type: "Dragon",
+	},
+	wyrmsurge: {
+		num: -25,
+		accuracy: 100,
+		basePower: 60,
+		category: "Special",
+		name: "Wyrm Surge",
+		pp: 20,
+		priority: 0,
+		flags: { protect: 1, mirror: 1 },
+		secondary: {
+			chance: 30,
+			boosts: {
+				spa: -1,
+			},
+		},
+		target: "allAdjacentFoes",
+		type: "Dragon",
+	},
+	sparking: {
+		num: -26,
+		accuracy: 100,
+		basePower: 40,
+		category: "Physical",
+		name: "Sparking",
+		pp: 30,
+		priority: 0,
+		flags: { contact: 1, protect: 1, mirror: 1, light: 1 },
+		secondary: {
+			chance: 25,
+			status: 'stun',
+		},
+		target: "normal",
+		type: "Electric",
+	},
+	pixiewelt: {
+		num: -27,
+		accuracy: 100,
+		basePower: 50,
+		category: "Physical",
+		name: "Pixie Welt",
+		pp: 30,
+		priority: 0,
+		flags: { contact: 1, protect: 1, mirror: 1 },
+		target: "normal",
+		type: "Fairy",
+	},
+	glimmeringrush: {
+		num: -28,
+		accuracy: 100,
+		basePower: 55,
+		category: "Physical",
+		name: "Glimmering Rush",
+		pp: 20,
+		priority: 0,
+		flags: { contact: 1, protect: 1, mirror: 1, light: 1 },
+		secondary: {
+			chance: 30,
+			self: {
+				boosts: {
+					spe: 1,
+				},
+			},
+		},
+		target: "normal",
+		type: "Fairy",
+	},
+	faecurrent: {
+		num: -29,
+		accuracy: 100,
+		basePower: 55,
+		category: "Special",
+		name: "Fae Current",
+		pp: 20,
+		priority: 0,
+		flags: { protect: 1, mirror: 1 },
+		critRatio: 2,
+		target: "normal",
+		type: "Fairy",
+	},
+	fury: {
+		num: -30,
+		accuracy: 100,
+		basePower: 65,
+		category: "Physical",
+		name: "Fury",
+		pp: 20,
+		priority: 0,
+		flags: { contact: 1, protect: 1, mirror: 1 },
+		secondary: {
+			chance: 25,
+			boosts: {
+				def: -1,
+			},
+		},
+		target: "normal",
+		type: "Fighting",
+	},
+	fightingspirit: {
+		num: -31,
+		accuracy: 100,
+		basePower: 45,
+		category: "Special",
+		name: "Fighting Spirit",
+		pp: 30,
+		priority: 0,
+		flags: { contact: 1, protect: 1, mirror: 1 },
+		secondary: {
+			chance: 25,
+			boosts: {
+				spd: -1,
+			},
+		},
+		target: "normal",
+		type: "Fighting",
+	},
+	chstrike: {
+		num: -32,
+		accuracy: 100,
+		basePower: 65,
+		category: "Special",
+		name: "Chi Strike",
+		pp: 20,
+		priority: 0,
+		flags: { contact: 1, protect: 1, mirror: 1 },
+		secondary: {
+			chance: 25,
+			boosts: {
+				spd: -1,
+			},
+		},
+		target: "normal",
+		type: "Fighting",
+	},
+	heater: {
+		num: -33,
+		accuracy: 100,
+		basePower: 45,
+		category: "Physical",
+		name: "Heater",
+		pp: 30,
+		priority: 0,
+		flags: { contact: 1, protect: 1, mirror: 1 },
+		secondary: {
+			chance: 10,
+			status: 'brn',
+		},
+		target: "normal",
+		type: "Fire",
+	},
+	breezeboost: {
+		num: -34,
+		accuracy: 100,
+		basePower: 35,
+		category: "Physical",
+		name: "Breeze Boost",
+		pp: 30,
+		priority: 0,
+		flags: { contact: 1, protect: 1, mirror: 1, wind: 1 },
+		secondary: {
+			chance: 30,
+			self: {
+				boosts: {
+					spe: 1,
+				},
+			},
+		},
+		target: "normal",
+		type: "Flying",
+	},
+	skystrike: {
+		num: -35,
+		accuracy: 100,
+		basePower: 60,
+		category: "Physical",
+		name: "Sky Strike",
+		pp: 20,
+		priority: 0,
+		flags: { contact: 1, protect: 1, mirror: 1 },
+		critRatio: 2,
+		target: "normal",
+		type: "Flying",
+	},
+	dirtdozer: {
+		num: -36,
+		accuracy: 100,
+		basePower: 45,
+		category: "Physical",
+		name: "Dirt Dozer",
+		pp: 30,
+		priority: 0,
+		flags: { protect: 1, mirror: 1 },
+		target: "normal",
+		type: "Ground",
+	},
+	skippingstone: {
+		num: -37,
+		accuracy: 100,
+		basePower: 40,
+		category: "Physical",
+		name: "Skipping Stone",
+		pp: 30,
+		priority: 0,
+		flags: { protect: 1, mirror: 1 },
+		secondary: {
+			chance: 10,
+			volatileStatus: 'confusion',
+		},
+		target: "normal",
+		type: "Rock",
+	},
+	gavelpuff: {
+		num: -38,
+		accuracy: 100,
+		basePower: 35,
+		category: "Special",
+		name: "Gavel Puff",
+		pp: 30,
+		priority: 0,
+		flags: { protect: 1, mirror: 1 },
+		secondary: {
+			chance: 25,
+			boosts: {
+				accuracy: -1,
+			},
+		},
+		target: "allAdjacentFoes",
+		type: "Rock",
+	},
+	shaleburst: {
+		num: -39,
+		accuracy: 100,
+		basePower: 50,
+		category: "Special",
+		name: "Shale Burst",
+		pp: 20,
+		priority: 0,
+		flags: { protect: 1, mirror: 1 },
+		secondary: {
+			chance: 30,
+			self: {
+				boosts: {
+					spe: 1,
+				},
+			},
+		},
+		target: "normal",
+		type: "Rock",
+	},
+	rivetshot: {
+		num: -40,
+		accuracy: 100,
+		basePower: 45,
+		category: "Physical",
+		name: "Rivet Shot",
+		pp: 30,
+		priority: 0,
+		flags: { protect: 1, mirror: 1, bullet: 1 },
+		target: "normal",
+		type: "Steel",
+	},
+	ironclad: {
+		num: -41,
+		accuracy: 100,
+		basePower: 60,
+		category: "Physical",
+		name: "Ironclad",
+		pp: 20,
+		priority: 0,
+		flags: { contact: 1, protect: 1, mirror: 1 },
+		secondary: {
+			chance: 30,
+			self: {
+				boosts: {
+					def: 1,
+				},
+			},
+		},
+		target: "normal",
+		type: "Steel",
+	},
+	solidsmash: {
+		num: -42,
+		accuracy: 100,
+		basePower: 95,
+		category: "Physical",
+		name: "Solid Smash",
+		pp: 10,
+		priority: 0,
+		flags: { contact: 1, protect: 1, mirror: 1 },
+		secondary: {
+			chance: 10,
+			volatileStatus: 'confusion',
+		},
+		target: "normal",
+		type: "Steel",
+	},
+	alloyspark: {
+		num: -43,
+		accuracy: 100,
+		basePower: 45,
+		category: "Special",
+		name: "Alloy Spark",
+		pp: 30,
+		priority: 0,
+		flags: { protect: 1, mirror: 1, light: 1 },
+		target: "normal",
+		type: "Steel",
+	},
+	shallowslam: {
+		num: -44,
+		accuracy: 100,
+		basePower: 45,
+		category: "Physical",
+		name: "Shallow Slam",
+		pp: 30,
+		priority: 0,
+		flags: { protect: 1, mirror: 1 },
+		target: "normal",
+		type: "Water",
+	},
+	ripple: {
+		num: -45,
+		accuracy: 100,
+		basePower: 50,
+		category: "Special",
+		name: "Ripple",
+		pp: 30,
+		priority: 0,
+		flags: { protect: 1, mirror: 1, sound: 1 },
+		target: "allAdjacent",
+		type: "Normal",
+	},
+	neutralburst: {
+		num: -46,
+		accuracy: 100,
+		basePower: 70,
+		category: "Special",
+		name: "Neutral Burst",
+		pp: 20,
+		priority: 0,
+		flags: { protect: 1, mirror: 1 },
+		target: "allAdjacentFoes",
+		type: "Normal",
+	},
+	powersurge: {
+		num: -47,
+		accuracy: 100,
+		basePower: 100,
+		category: "Special",
+		name: "Power Surge",
+		pp: 10,
+		priority: 0,
+		flags: { protect: 1, mirror: 1 },
+		target: "normal",
+		type: "Normal",
+	},
+	blightbrush: {
+		num: -48,
+		accuracy: 100,
+		basePower: 65,
+		category: "Physical",
+		name: "Blight Brush",
+		pp: 20,
+		priority: 0,
+		flags: { contact: 1, protect: 1, mirror: 1 },
+		secondary: {
+			chance: 10,
+			status: 'psn',
+		},
+		target: "normal",
+		type: "Poison",
+	},
+	psinudge: {
+		num: -49,
+		accuracy: 100,
+		basePower: 45,
+		category: "Physical",
+		name: "Psi Nudge",
+		pp: 30,
+		priority: 0,
+		flags: { protect: 1, mirror: 1 },
+		target: "normal",
+		type: "Psychic",
+	},
+	psycheslam: {
+		num: -50,
+		accuracy: 100,
+		basePower: 60,
+		category: "Physical",
+		name: "Psyche Slam",
+		pp: 20,
+		priority: 0,
+		flags: { protect: 1, mirror: 1 },
+		secondary: {
+			chance: 10,
+			volatileStatus: 'confusion',
+		},
+		target: "normal",
+		type: "Psychic",
 	},
 };
