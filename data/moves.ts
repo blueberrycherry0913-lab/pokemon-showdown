@@ -10661,7 +10661,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		name: "Magnet Bomb",
 		pp: 20,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, metronome: 1, ball: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, bursting: 1 },
 		target: "normal",
 		type: "Steel",
 	},
@@ -12577,7 +12577,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	nightslash: {
 		num: 400,
 		accuracy: 100,
-		basePower: 70,
+		basePower: 90,
 		category: "Physical",
 		name: "Night Slash",
 		pp: 15,
@@ -15688,7 +15688,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		name: "Searing Shot",
 		pp: 20,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, metronome: 1, ball: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, bullet: 1 },
 		secondary: {
 			chance: 25,
 			status: 'brn',
