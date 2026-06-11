@@ -111,6 +111,9 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		// Tera does NOT mutate attacker.types — getTypes() applies the mono-type override only
 		// for defense, so reading attacker.types here always gives the original offensive typing.
 		// Adaptability/Specialist keep their ability bonuses; the Tera +0.5 stacks additively.
+		onModifyMove(move) {
+			if (move.flags['piercing']) move.ignorePositiveDefensive = true;
+		},
 		onModifySTAB(stab, attacker, defender, move) {
 			if (stab <= 1) return stab; // engine: move matches neither an original type nor the Tera type → no STAB
 			const types = attacker.types; // ORIGINAL typing (pre-Tera)

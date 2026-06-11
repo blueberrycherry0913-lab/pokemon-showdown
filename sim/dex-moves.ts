@@ -82,7 +82,7 @@ interface MoveFlags {
 	bone?: 1; // Ignores ALL immunities: type-based (ignoreImmunity), ability-based (bypasses TryHit event including Wonder Guard), item-based (Air Balloon), and semi-invulnerability. Always deals at least neutral (1×) damage. (mechanics: hitStep* functions in sim/battle-actions.ts)
 	bursting?: 1; // On hit, also strikes each adjacent target at 25% of base power. Splash respects type chart and defenses normally. (mechanics: TODO)
 	corrosive?: 1; // Poison-type matchup overrides: no SE vs. Grass or Fairy (→ 1×); always 2× SE vs. Steel (ignores Steel's Poison immunity). Canon resistances unchanged. (mechanics: TODO)
-	piercing?: 1; // Bypasses Protect and Detect at 50% power rather than being fully blocked. (mechanics: checkMoveBypassesProtect in sim/battle.ts + getDamage in sim/battle-actions.ts)
+	piercing?: 1; // Ignores positive defensive stat boosts (Def/SpD) on the target. (mechanics: onModifyMove in config/formats.ts sets move.ignorePositiveDefensive)
 }
 
 export interface HitEffect {
@@ -322,11 +322,6 @@ interface MoveHitData {
 		 * (does 0.25x regular damage)
 		 */
 		bypassProtect: boolean | Effect,
-		/**
-		 * Did this Piercing move pierce through Protect/Detect?
-		 * (does 0.5x regular damage; set in checkMoveBypassesProtect)
-		 */
-		piercingHit?: boolean,
 		/**
 		 * Damage the move would deal at 1× type effectiveness, before chain
 		 * modifiers (Reflect, abilities, items). Captured in modifyDamage for

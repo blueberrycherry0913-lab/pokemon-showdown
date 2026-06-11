@@ -1899,11 +1899,6 @@ export class BattleActions {
 			this.battle.add('-zbroken', target);
 		}
 
-		// Piercing moves pierce Protect/Detect at 50% damage.
-		if (target.getMoveHitData(move).piercingHit) {
-			baseDamage = this.battle.modify(baseDamage, 0.5);
-		}
-
 		// Generation 6-7 moves the check for minimum 1 damage after the final modifier...
 		if (this.battle.gen !== 5 && !baseDamage) return 1;
 
