@@ -967,7 +967,16 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onAccuracy(accuracy, target, source, move) {
 			if (!this.effectState.source || source !== this.effectState.source) return;
 			if (move.category === 'Status') return;
+			if (move.ohko) return; // OHKO moves exempt (§4)
 			return true; // cannot miss
+		},
+		onAfterBoost(boost, target, source, effect) {
+			// Marked Pokémon successfully boosts own evasion → remove Mark (§4)
+			if (source !== target) return;
+			if (boost.evasion && boost.evasion > 0) {
+				delete (target as any).markedHunter;
+				target.removeVolatile('marked');
+			}
 		},
 	},
 

@@ -180,14 +180,44 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 				pokemon.addVolatile('marked', hunter);
 			}
 		},
-		// Mark is only cleared when the Marked Pokémon faints (§4).
-		onFaint(pokemon) {
-			if ((pokemon as any).markedHunter) {
-				delete (pokemon as any).markedHunter;
-				// volatile will already have been removed when the pokemon fainted,
-				// but guard in case the order differs.
-				if (pokemon.volatiles['marked']) pokemon.removeVolatile('marked');
+		// Mark faint logic (§4): removal conditions and transfer on Hunter/self-KO.
+		onFaint(pokemon, source, effect) {
+			// Case 1: the fainted Pokémon IS a Hunter — clear its Mark from the Marked Pokémon.
+			for (const side of this.sides) {
+				for (const p of side.pokemon) {
+					if ((p as any).markedHunter === pokemon) {
+						delete (p as any).markedHunter;
+						if (p.volatiles['marked']) p.removeVolatile('marked');
+					}
+				}
 			}
+			// Case 2: the fainted Pokémon IS Marked.
+			const hunter = (pokemon as any).markedHunter;
+			if (!hunter) return;
+			delete (pokemon as any).markedHunter;
+			// Determine transfer vs. removal.
+			// Transfer: killed by the Hunter OR self-KO (Explosion, Final Gambit, etc.)
+			const killedByHunter = source === hunter;
+			const selfKO = source === pokemon;
+			if (killedByHunter || selfKO) {
+				const teammates = pokemon.side.pokemon.filter(p => p !== pokemon && !p.fainted);
+				if (teammates.length > 0) {
+					const newTarget = this.sample(teammates);
+					(newTarget as any).markedHunter = hunter;
+					if (newTarget.isActive) newTarget.addVolatile('marked', hunter);
+					// If benched, onSwitchIn will re-add the volatile on entry.
+				}
+			}
+			// Third-party KO: mark ends entirely, no transfer.
+		},
+		// Marked accuracy-lowering-on-Hunter removal (§4).
+		onAfterBoost(boost, target, source, effect) {
+			if (!(boost.accuracy && boost.accuracy < 0)) return;
+			if (!source || source === target) return;
+			const hunter = (source as any).markedHunter;
+			if (!hunter || target !== hunter) return;
+			delete (source as any).markedHunter;
+			if (source.volatiles['marked']) source.removeVolatile('marked');
 		},
 		// ── Blanket type effects (§1.5) ──────────────────────────────────────────
 		// Fighting types are immune to flinching. Mirrors Inner Focus's canon pattern
