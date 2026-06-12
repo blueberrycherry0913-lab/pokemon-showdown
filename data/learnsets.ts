@@ -102693,7 +102693,6 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			kowtowcleave: ["9L1"],
 			landswrath: ["9L1"],
 			laserfocus: ["9L1"],
-			nightslash: ["9L1"],
 			lastresort: ["9L1"],
 			lastrespects: ["9L1"],
 			lavaplume: ["9L1"],
