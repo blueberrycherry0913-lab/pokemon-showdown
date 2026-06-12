@@ -37,6 +37,37 @@ function familyHasGen1Member(dex: any, species: any, seen: Set<string>): boolean
 	return false;
 }
 
+// True if `species` is part of one of the three Galar starter lines (nums 810-818:
+// Grookey/Thwackey/Rillaboom, Scorbunny/Raboot/Cinderace, Sobble/Drizzile/Inteleon).
+// Mirrored in the client's build-indexes.
+function isGen8StarterLineage(dex: any, species: any): boolean {
+	if (!species || !species.exists) return false;
+	if (species.baseSpecies && species.baseSpecies !== species.name) {
+		const base = dex.species.get(species.baseSpecies);
+		if (base.exists && base.id !== species.id && isGen8StarterLineage(dex, base)) return true;
+	}
+	let root = species;
+	let safety = 20;
+	while (root.prevo && safety-- > 0) {
+		const prev = dex.species.get(root.prevo);
+		if (!prev.exists) break;
+		root = prev;
+	}
+	return familyHasGen8StarterMember(dex, root, new Set<string>());
+}
+function familyHasGen8StarterMember(dex: any, species: any, seen: Set<string>): boolean {
+	if (seen.has(species.id)) return false;
+	seen.add(species.id);
+	if (species.num >= 810 && species.num <= 818) return true;
+	if (species.evos) {
+		for (const evoName of species.evos) {
+			const evo = dex.species.get(evoName);
+			if (evo.exists && familyHasGen8StarterMember(dex, evo, seen)) return true;
+		}
+	}
+	return false;
+}
+
 export const Rulesets: import('../../../sim/dex-formats').ModdedFormatDataTable = {
 	// Restrict Testing Standard to Gen 1 lineage Pokémon (Bulbasaur-Mew family,
 	// their forward/backward evolutions, and their Mega/Primal/Ultra-Burst/G-Max
@@ -45,11 +76,11 @@ export const Rulesets: import('../../../sim/dex-formats').ModdedFormatDataTable 
 	gen1only: {
 		effectType: 'ValidatorRule',
 		name: 'Gen 1 Only',
-		desc: "Only Pokémon descended from a Gen 1 species (Bulbasaur-Mew, num 1-151) and their Mega/Primal/Ultra/G-Max formes are legal.",
+		desc: "Only Pokémon from Gen 1 lineage (Bulbasaur-Mew) or the Galar starter lines (Grookey, Scorbunny, Sobble) are legal.",
 		onValidateSet(set) {
 			const species = this.dex.species.get(set.species);
 			if ((species as any).canLearnAnyMove) return; // utility test species, always legal
-			if (!isGen1Lineage(this.dex, species)) {
+			if (!isGen1Lineage(this.dex, species) && !isGen8StarterLineage(this.dex, species)) {
 				return [`${set.name || set.species} is not available yet.`];
 			}
 		},
@@ -152,7 +183,7 @@ export const Rulesets: import('../../../sim/dex-formats').ModdedFormatDataTable 
 				// gated. Keep Megas, custom species, and cosmetic 'Other'-bucket formes
 				// (Gmax / Cosplay / Cap / Starter / Spiky-eared) always legal — these
 				// mirror the teambuilder's Megas/Other/Custom buckets in build-indexes.
-				if (isGen1Lineage(this.dex, species)) {
+				if (isGen1Lineage(this.dex, species) || isGen8StarterLineage(this.dex, species)) {
 					if ((species as any).isMega) return;
 					if (species.isNonstandard === 'custom') return;
 					const otherFormes = [
