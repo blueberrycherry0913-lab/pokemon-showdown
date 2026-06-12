@@ -980,6 +980,34 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 	},
 
+	junglebeatvines: {
+		name: 'junglebeatvines',
+		noCopy: true,
+		duration: 1,
+		onResidualOrder: 15,
+		onResidual(target) {
+			this.damage(Math.floor(target.baseMaxhp / 12));
+		},
+	},
+
+	trainedassassinpending: {
+		onFieldResidualOrder: 5,
+		onFieldResidual() {
+			const source = this.effectState.source as any;
+			if (source) {
+				const opponents = (source.side.foe.pokemon as any[]).filter((p: any) => !p.fainted);
+				if (opponents.length > 0) {
+					const target = this.sample(opponents);
+					if (!target.volatiles['marked'] && !target.markedHunter) {
+						this.battle.add('-ability', source, 'Trained Assassin');
+						target.addVolatile('marked', source);
+					}
+				}
+			}
+			this.field.removePseudoWeather('trainedassassinpending');
+		},
+	},
+
 	// --- Status condition overrides ---
 	// §4 of the master reference: every status has both a damage component and a stat-reduction
 	// component.

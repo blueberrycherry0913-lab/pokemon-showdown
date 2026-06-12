@@ -6040,12 +6040,16 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 36,
 	},
 	trainedassassin: {
-		// Standby: once when first sent out, marks a random opponent.
-		shortDesc: "Once when first sent out, marks a random opponent.",
+		onStart(source) {
+			if (!this.battle.field.pseudoWeather['trainedassassinpending']) {
+				this.battle.field.addPseudoWeather('trainedassassinpending', source, source.getAbility());
+			}
+		},
+		shortDesc: "Once when first sent out, marks a random opponent at turn end.",
 		origin: 'Custom',
 		flags: {},
 		name: "Trained Assassin",
-		rating: 0,
+		rating: 2.5,
 		num: 10018,
 	},
 	transistor: {
@@ -8425,5 +8429,41 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		name: "Garbage Eater",
 		rating: 2.5,
 		num: 10118,
+	},
+
+	// --- Row 443: Jungle Beat ---
+	junglebeat: {
+		onModifyMovePriority: -1,
+		onModifyMove(move) {
+			if (!move.flags['sound']) return;
+			move.category = 'Physical';
+			if (!move.secondaries) move.secondaries = [];
+			move.secondaries.push({
+				chance: 100,
+				volatileStatus: 'junglebeatvines',
+			});
+		},
+		shortDesc: "Sound moves are Physical; targets take 1/12 HP vine damage at turn end.",
+		origin: 'Custom',
+		flags: {},
+		name: "Jungle Beat",
+		rating: 3,
+		num: 10119,
+	},
+
+	// --- Row 444: Striker ---
+	striker: {
+		onBasePowerPriority: 23,
+		onBasePower(basePower, attacker, defender, move) {
+			if (move.flags['ball']) {
+				return this.chainModify(1.5);
+			}
+		},
+		shortDesc: "Ball moves have 1.5x power.",
+		origin: 'Custom',
+		flags: {},
+		name: "Striker",
+		rating: 3,
+		num: 10120,
 	},
 };
