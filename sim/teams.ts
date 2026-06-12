@@ -114,6 +114,12 @@ export interface PokemonSet {
 	 * Tera Type
 	 */
 	teraType?: string;
+	/**
+	 * Awakened ability override (Champions mod).
+	 * When set, replaces the species's H-slot ability for this Pokémon.
+	 * Only valid values are Domain Setter abilities matching one of the species's types.
+	 */
+	ability2?: string;
 }
 
 export const Teams = new class Teams {
@@ -200,12 +206,13 @@ export const Teams = new class Teams {
 			}
 
 			if (set.pokeball || set.hpType || set.gigantamax ||
-				(set.dynamaxLevel !== undefined && set.dynamaxLevel !== 10) || set.teraType) {
+				(set.dynamaxLevel !== undefined && set.dynamaxLevel !== 10) || set.teraType || set.ability2) {
 				buf += `,${set.hpType || ''}`;
 				buf += `,${this.packName(set.pokeball || '')}`;
 				buf += `,${set.gigantamax ? 'G' : ''}`;
 				buf += `,${set.dynamaxLevel !== undefined && set.dynamaxLevel !== 10 ? set.dynamaxLevel : ''}`;
 				buf += `,${set.teraType || ''}`;
+				if (set.ability2) buf += `,${this.packName(set.ability2)}`;
 			}
 		}
 
@@ -326,9 +333,9 @@ export const Teams = new class Teams {
 			j = buf.indexOf(']', i);
 			let misc;
 			if (j < 0) {
-				if (i < buf.length) misc = buf.substring(i).split(',', 6);
+				if (i < buf.length) misc = buf.substring(i).split(',', 7);
 			} else {
-				if (i !== j) misc = buf.substring(i, j).split(',', 6);
+				if (i !== j) misc = buf.substring(i, j).split(',', 7);
 			}
 			if (misc) {
 				set.happiness = (misc[0] ? Number(misc[0]) : 255);
@@ -337,6 +344,7 @@ export const Teams = new class Teams {
 				set.gigantamax = !!misc[3];
 				set.dynamaxLevel = (misc[4] ? Number(misc[4]) : 10);
 				set.teraType = misc[5];
+				if (misc[6]) set.ability2 = this.unpackName(misc[6], Dex.abilities);
 			}
 			if (j < 0) break;
 			i = j + 1;
@@ -417,6 +425,9 @@ export const Teams = new class Teams {
 		}
 		if (set.teraType && !useStatPoints) {
 			out += `Tera Type: ${set.teraType}  \n`;
+		}
+		if (set.ability2) {
+			out += `Awakened: ${set.ability2}  \n`;
 		}
 
 		// stats
@@ -502,6 +513,9 @@ export const Teams = new class Teams {
 		} else if (line.startsWith('Tera Type: ')) {
 			line = line.slice(11);
 			set.teraType = aggressive ? line.replace(/[^a-zA-Z0-9]/g, '') : line;
+		} else if (line.startsWith('Awakened: ')) {
+			line = line.slice(10);
+			set.ability2 = aggressive ? toID(line) : line;
 		} else if (line === 'Gigantamax: Yes') {
 			set.gigantamax = true;
 		} else if (line.startsWith('EVs: ')) {

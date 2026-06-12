@@ -425,10 +425,12 @@ export class Pokemon {
 		this.ability = this.baseAbility;
 		this.abilityState = this.battle.initEffectState({ id: this.ability, target: this });
 
-		// Awakened ability: auto-assigned from H slot in champions mod; empty otherwise.
+		// Awakened ability: in champions mod, use the player's chosen ability2 override
+		// if present (domain-setter choice), otherwise fall back to the species H-slot.
 		if (this.battle.dex.currentMod === 'champions') {
 			const speciesData = this.battle.dex.species.get(set.species);
-			const hiddenAbilityName = speciesData.abilities['H'];
+			const override = (set as any).ability2 as string | undefined;
+			const hiddenAbilityName = (override && override !== '') ? override : speciesData.abilities['H'];
 			this.ability2 = hiddenAbilityName ? toID(hiddenAbilityName) : '' as ID;
 		} else {
 			this.ability2 = '' as ID;

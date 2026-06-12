@@ -8466,4 +8466,238 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		rating: 3,
 		num: 10120,
 	},
+
+	// --- Domain Setter abilities (10121–10139) ---
+	// Each sets the corresponding Domain pseudoWeather on switch-in.
+	// Duration scales with same-type team members (via the domain condition's
+	// durationCallback), exactly like the Domain move version. No onEnd —
+	// the domain persists after switch-out (Drought/Drizzle pattern).
+
+	domainsetternormal: {
+		onStart(pokemon) {
+			this.field.addPseudoWeather('normaldomain', pokemon, this.effect);
+		},
+		shortDesc: "On switch-in, sets Normal Domain. Duration scales with Normal-type allies.",
+		origin: 'Custom',
+		flags: {},
+		name: "Domain Setter: Normal",
+		rating: 3,
+		num: 10121,
+	},
+
+	domainsetterfire: {
+		onStart(pokemon) {
+			this.field.addPseudoWeather('firedomain', pokemon, this.effect);
+		},
+		shortDesc: "On switch-in, sets Fire Domain. Duration scales with Fire-type allies.",
+		origin: 'Custom',
+		flags: {},
+		name: "Domain Setter: Fire",
+		rating: 3,
+		num: 10122,
+	},
+
+	domainsetterwater: {
+		onStart(pokemon) {
+			this.field.addPseudoWeather('waterdomain', pokemon, this.effect);
+		},
+		shortDesc: "On switch-in, sets Water Domain. Duration scales with Water-type allies.",
+		origin: 'Custom',
+		flags: {},
+		name: "Domain Setter: Water",
+		rating: 3,
+		num: 10123,
+	},
+
+	domainsetterelectric: {
+		onStart(pokemon) {
+			this.field.addPseudoWeather('electricdomain', pokemon, this.effect);
+		},
+		shortDesc: "On switch-in, sets Electric Domain. Duration scales with Electric-type allies.",
+		origin: 'Custom',
+		flags: {},
+		name: "Domain Setter: Electric",
+		rating: 3,
+		num: 10124,
+	},
+
+	domainsettergrass: {
+		onStart(pokemon) {
+			this.field.addPseudoWeather('grassdomain', pokemon, this.effect);
+		},
+		shortDesc: "On switch-in, sets Grass Domain. Duration scales with Grass-type allies.",
+		origin: 'Custom',
+		flags: {},
+		name: "Domain Setter: Grass",
+		rating: 3,
+		num: 10125,
+	},
+
+	domainsetterice: {
+		onStart(pokemon) {
+			this.field.addPseudoWeather('icedomain', pokemon, this.effect);
+		},
+		shortDesc: "On switch-in, sets Ice Domain. Duration scales with Ice-type allies.",
+		origin: 'Custom',
+		flags: {},
+		name: "Domain Setter: Ice",
+		rating: 3,
+		num: 10126,
+	},
+
+	domainsetterfighting: {
+		onStart(pokemon) {
+			this.field.addPseudoWeather('fightingdomain', pokemon, this.effect);
+		},
+		shortDesc: "On switch-in, sets Fighting Domain. Duration scales with Fighting-type allies.",
+		origin: 'Custom',
+		flags: {},
+		name: "Domain Setter: Fighting",
+		rating: 3,
+		num: 10127,
+	},
+
+	domainsetterpoison: {
+		onStart(pokemon) {
+			this.field.addPseudoWeather('poisondomain', pokemon, this.effect);
+		},
+		shortDesc: "On switch-in, sets Poison Domain. Duration scales with Poison-type allies.",
+		origin: 'Custom',
+		flags: {},
+		name: "Domain Setter: Poison",
+		rating: 3,
+		num: 10128,
+	},
+
+	domainsetterground: {
+		onStart(pokemon) {
+			this.field.addPseudoWeather('grounddomain', pokemon, this.effect);
+		},
+		shortDesc: "On switch-in, sets Ground Domain. Duration scales with Ground-type allies.",
+		origin: 'Custom',
+		flags: {},
+		name: "Domain Setter: Ground",
+		rating: 3,
+		num: 10129,
+	},
+
+	domainsetterair: {
+		onStart(pokemon) {
+			this.field.addPseudoWeather('flyingdomain', pokemon, this.effect);
+		},
+		shortDesc: "On switch-in, sets Air Domain. Duration scales with Flying-type allies.",
+		origin: 'Custom',
+		flags: {},
+		name: "Domain Setter: Air",
+		rating: 3,
+		num: 10130,
+	},
+
+	domainsetterpsychic: {
+		onStart(pokemon) {
+			this.field.addPseudoWeather('psychicdomain', pokemon, this.effect);
+		},
+		shortDesc: "On switch-in, sets Psychic Domain. Duration scales with Psychic-type allies.",
+		origin: 'Custom',
+		flags: {},
+		name: "Domain Setter: Psychic",
+		rating: 3,
+		num: 10131,
+	},
+
+	domainsetterbug: {
+		onStart(pokemon) {
+			this.field.addPseudoWeather('bugdomain', pokemon, this.effect);
+		},
+		shortDesc: "On switch-in, sets Bug Domain. Duration scales with Bug-type allies.",
+		origin: 'Custom',
+		flags: {},
+		name: "Domain Setter: Bug",
+		rating: 3,
+		num: 10132,
+	},
+
+	domainsetterrock: {
+		onStart(pokemon) {
+			this.field.addPseudoWeather('rockdomain', pokemon, this.effect);
+		},
+		shortDesc: "On switch-in, sets Rock Domain. Duration scales with Rock-type allies.",
+		origin: 'Custom',
+		flags: {},
+		name: "Domain Setter: Rock",
+		rating: 3,
+		num: 10133,
+	},
+
+	domainsetterghost: {
+		onStart(pokemon) {
+			this.field.addPseudoWeather('ghostdomain', pokemon, this.effect);
+		},
+		shortDesc: "On switch-in, sets Ghost Domain. Duration scales with Ghost-type allies.",
+		origin: 'Custom',
+		flags: {},
+		name: "Domain Setter: Ghost",
+		rating: 3,
+		num: 10134,
+	},
+
+	domainsetterdragon: {
+		onStart(pokemon) {
+			this.field.addPseudoWeather('dragondomain', pokemon, this.effect);
+		},
+		shortDesc: "On switch-in, sets Dragon Domain. Duration scales with Dragon-type allies.",
+		origin: 'Custom',
+		flags: {},
+		name: "Domain Setter: Dragon",
+		rating: 3,
+		num: 10135,
+	},
+
+	domainsetterdark: {
+		onStart(pokemon) {
+			this.field.addPseudoWeather('darkdomain', pokemon, this.effect);
+		},
+		shortDesc: "On switch-in, sets Dark Domain. Duration scales with Dark-type allies.",
+		origin: 'Custom',
+		flags: {},
+		name: "Domain Setter: Dark",
+		rating: 3,
+		num: 10136,
+	},
+
+	domainsettersteel: {
+		onStart(pokemon) {
+			this.field.addPseudoWeather('steeldomain', pokemon, this.effect);
+		},
+		shortDesc: "On switch-in, sets Steel Domain. Duration scales with Steel-type allies.",
+		origin: 'Custom',
+		flags: {},
+		name: "Domain Setter: Steel",
+		rating: 3,
+		num: 10137,
+	},
+
+	domainsetterfairy: {
+		onStart(pokemon) {
+			this.field.addPseudoWeather('fairydomain', pokemon, this.effect);
+		},
+		shortDesc: "On switch-in, sets Fairy Domain. Duration scales with Fairy-type allies.",
+		origin: 'Custom',
+		flags: {},
+		name: "Domain Setter: Fairy",
+		rating: 3,
+		num: 10138,
+	},
+
+	domainsettercosmic: {
+		onStart(pokemon) {
+			this.field.addPseudoWeather('cosmicdomain', pokemon, this.effect);
+		},
+		shortDesc: "On switch-in, sets Cosmic Domain. Duration scales with Cosmic-type allies.",
+		origin: 'Custom',
+		flags: {},
+		name: "Domain Setter: Cosmic",
+		rating: 3,
+		num: 10139,
+	},
 };

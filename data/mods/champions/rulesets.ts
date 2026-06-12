@@ -119,7 +119,9 @@ export const Rulesets: import('../../../sim/dex-formats').ModdedFormatDataTable 
 		onValidateSet(set) {
 			const species = this.dex.species.get(set.species);
 			if ((species as any).canLearnAnyMove) return; // utility test species, skip dup check
-			const awakened = species.abilities['H'];
+			// The effective awakened ability is set.ability2 (player override) or species H-slot.
+			const ability2Override = (set as any).ability2 as string | undefined;
+			const awakened = (ability2Override && ability2Override !== '') ? ability2Override : species.abilities['H'];
 			if (awakened && this.toID(set.ability) === this.toID(awakened)) {
 				return [`${set.name || set.species} has duplicate abilities.`];
 			}

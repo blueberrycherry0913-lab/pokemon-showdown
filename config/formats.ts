@@ -28,6 +28,20 @@ const DOMAIN_TYPE_BY_ID: {[id: string]: string} = {
 	rockdomain: 'Rock', ghostdomain: 'Ghost', dragondomain: 'Dragon', darkdomain: 'Dark',
 	steeldomain: 'Steel', fairydomain: 'Fairy', cosmicdomain: 'Cosmic',
 };
+// Domain Setter abilities (§ domain-setter restructuring): maps each domain-setter ability ID
+// to the type it requires the Pokémon to have.  Used by onValidateTeam (one-per-team) and
+// onValidateSet (type-match check).
+const DOMAIN_SETTER_BY_TYPE: {[id: string]: string} = {
+	domainsetternormal: 'Normal', domainsetterfire: 'Fire', domainsetterwater: 'Water',
+	domainsetterelectric: 'Electric', domainsettergrass: 'Grass', domainsetterice: 'Ice',
+	domainsetterfighting: 'Fighting', domainsetterpoison: 'Poison', domainsetterground: 'Ground',
+	domainsetterair: 'Flying', domainsetterpsychic: 'Psychic', domainsetterbug: 'Bug',
+	domainsetterrock: 'Rock', domainsetterghost: 'Ghost', domainsetterdragon: 'Dragon',
+	domainsetterdark: 'Dark', domainsettersteel: 'Steel', domainsetterfairy: 'Fairy',
+	domainsettercosmic: 'Cosmic',
+};
+const DOMAIN_SETTER_IDS = new Set(Object.keys(DOMAIN_SETTER_BY_TYPE));
+
 function pokemonInActiveDomain(battle: any, pokemon: any): boolean {
 	if (battle.field.pseudoWeather['antidomain']) return false;
 	for (const id in DOMAIN_TYPE_BY_ID) {
@@ -289,6 +303,30 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			if (pokemon.statusState.waterPurge >= 2) {
 				this.add('-activate', pokemon, 'typeEffect', '[type]Water', '[msg]Status Purge');
 				pokemon.cureStatus();
+			}
+		},
+		// Domain Setter awakened ability validation (§ domain-setter restructuring):
+		//   onValidateSet: if ability2 is set, it must be a known Domain Setter ability and the
+		//     Pokémon must have the matching type. Uses 'Flying' internally (even though the
+		//     display name is 'Air') because species.types stores engine type names.
+		//   onValidateTeam: at most one Pokémon per team may have a Domain Setter awakened ability.
+		onValidateSet(set) {
+			const ability2 = (set as any).ability2 as string | undefined;
+			if (!ability2) return;
+			const id = this.toID(ability2);
+			if (!DOMAIN_SETTER_IDS.has(id)) {
+				return [`${set.name || set.species}'s Awakened ability "${ability2}" is not a valid Domain Setter ability.`];
+			}
+			const requiredType = DOMAIN_SETTER_BY_TYPE[id];
+			const species = this.dex.species.get(set.species);
+			if (!species.types.includes(requiredType as any)) {
+				return [`${set.name || set.species} cannot use ${ability2} (type mismatch: needs ${requiredType}).`];
+			}
+		},
+		onValidateTeam(team) {
+			const count = team.filter((set: any) => DOMAIN_SETTER_IDS.has(this.toID(set.ability2))).length;
+			if (count > 1) {
+				return ['Only one Pokémon per team may have a Domain Setter as their Awakened ability.'];
 			}
 		},
 	},
