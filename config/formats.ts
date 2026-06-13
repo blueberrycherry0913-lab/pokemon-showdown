@@ -203,6 +203,7 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 					if (!candidates.length) continue;
 					const target = this.sample(candidates);
 					(target as any).markedHunter = source;
+					this.add('-message', `${source.name}'s Trained Assassin has Marked ${target.name}!`);
 				}
 			}
 		},
@@ -241,6 +242,9 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 					(newTarget as any).markedHunter = hunter;
 					if (newTarget.isActive) newTarget.addVolatile('marked', hunter);
 					// If benched, onSwitchIn will re-add the volatile on entry.
+					this.add('-message', `${hunter.name}'s Mark has transferred to ${newTarget.name}!`);
+				} else {
+					this.add('-message', `${hunter.name}'s Mark fades — no targets remain.`);
 				}
 			}
 			// Third-party KO: mark ends entirely, no transfer.
