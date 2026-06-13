@@ -185,6 +185,26 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 				this.chainModify(0.9); // Soft Resistance
 			}
 		},
+		// Trained Assassin (§4): at the very start of the battle — before any switch-in —
+		// every Pokémon carrying Trained Assassin (in its basic OR awakened slot) marks one
+		// random target chosen from ALL Pokémon on the field: both teams, active or benched,
+		// and including the holder itself. Because this is a roster scan (not the ability's own
+		// onStart), it fires even when the holder is on the bench on turn 1. Nobody is active
+		// yet at this point, so we only set markedHunter; the onSwitchIn handler below adds the
+		// marked volatile (and its reveal) when the chosen target actually enters the field.
+		onBattleStart() {
+			for (const side of this.sides) {
+				for (const source of side.pokemon) {
+					if (source.ability !== 'trainedassassin' && source.ability2 !== 'trainedassassin') continue;
+					const candidates = this.getAllPokemon().filter(
+						p => !p.fainted && !(p as any).markedHunter && !p.volatiles['marked']
+					);
+					if (!candidates.length) continue;
+					const target = this.sample(candidates);
+					(target as any).markedHunter = source;
+				}
+			}
+		},
 		// Marked persistence (§4): the marked volatile is re-added when the Marked Pokémon
 		// switches back in, because Pokemon objects persist for the whole battle but volatiles
 		// are cleared on switch-out. markedHunter is set in the marked condition's onStart.

@@ -6045,12 +6045,10 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 36,
 	},
 	trainedassassin: {
-		onStart(source) {
-			if (!this.field.pseudoWeather['trainedassassinpending']) {
-				this.field.addPseudoWeather('trainedassassinpending', source, source.getAbility());
-			}
-		},
-		shortDesc: "Once when first sent out, marks a random opponent at turn end.",
+		// Marking is driven by the Testing Standard format's onBattleStart roster scan
+		// (config/formats.ts), so it fires at the start of round 1 even if this Pokémon is
+		// benched. The ability itself carries no event handlers.
+		shortDesc: "At the start of the battle, marks one random Pokémon (any side, including itself).",
 		origin: 'Custom',
 		flags: {},
 		name: "Trained Assassin",
