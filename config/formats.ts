@@ -187,16 +187,17 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		},
 		// Trained Assassin (§4): at the very start of the battle — before any switch-in —
 		// every Pokémon carrying Trained Assassin (in its basic OR awakened slot) marks one
-		// random target chosen from ALL Pokémon on the field: both teams, active or benched,
-		// and including the holder itself. Because this is a roster scan (not the ability's own
-		// onStart), it fires even when the holder is on the bench on turn 1. Nobody is active
-		// yet at this point, so we only set markedHunter; the onSwitchIn handler below adds the
-		// marked volatile (and its reveal) when the chosen target actually enters the field.
+		// random target chosen from the OPPOSING team (active or benched). The holder's own
+		// side — including the holder itself — is never eligible. Because this is a roster scan
+		// (not the ability's own onStart), it fires even when the holder is on the bench on
+		// turn 1. Nobody is active yet at this point, so we only set markedHunter; the
+		// onSwitchIn handler below adds the marked volatile (and its reveal) when the chosen
+		// target actually enters the field.
 		onBattleStart() {
 			for (const side of this.sides) {
 				for (const source of side.pokemon) {
 					if (source.ability !== 'trainedassassin' && source.ability2 !== 'trainedassassin') continue;
-					const candidates = this.getAllPokemon().filter(
+					const candidates = source.side.foe.pokemon.filter(
 						p => !p.fainted && !(p as any).markedHunter && !p.volatiles['marked']
 					);
 					if (!candidates.length) continue;

@@ -6048,7 +6048,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		// Marking is driven by the Testing Standard format's onBattleStart roster scan
 		// (config/formats.ts), so it fires at the start of round 1 even if this Pokémon is
 		// benched. The ability itself carries no event handlers.
-		shortDesc: "At the start of the battle, marks one random Pokémon (any side, including itself).",
+		shortDesc: "At the start of the first turn, a random opponent will be Marked.",
 		origin: 'Custom',
 		flags: {},
 		name: "Trained Assassin",
