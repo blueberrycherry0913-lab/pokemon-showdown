@@ -1998,14 +1998,10 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onDamagingHit(damage, target, source, move) {
 			if (this.checkMoveMakesContact(move, source, target, true)) {
 				this.add('-ability', target, 'Gooey');
-				this.boost({ spe: -1 }, source, target, null, true);
-				if (!source.volatiles['interlocked'] && !target.volatiles['interlocked']) {
-					source.addVolatile('interlocked', target);
-					target.addVolatile('interlocked', source);
-				}
+				this.boost({ spe: -1, atk: -1 }, source, target, null, true);
 			}
 		},
-		shortDesc: "When a foe makes contact with the Pokémon, they will become interlocked and slowed.",
+		shortDesc: "When a foe makes contact with the Pokémon, they will have their Speed and Attack dropped by -1 stage.",
 		origin: 'Buffed',
 		flags: {},
 		name: "Gooey",
@@ -2963,6 +2959,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onAfterMoveSecondarySelf(source, target, move) {
 			if (!move || source.switchFlag === true || !move.hitTargets || source.item || source.volatiles['gem'] ||
 				move.id === 'fling' || move.category === 'Status') return;
+			// Only steal when a chance secondary effect actually activated (not guaranteed effects like Knock Off)
+			if (!(move as any).magicianTrigger) return;
 			const hitTargets = move.hitTargets;
 			this.speedSort(hitTargets);
 			for (const pokemon of hitTargets) {
@@ -2979,6 +2977,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		flags: {},
+		shortDesc: "Steals a foe's held item when a chance secondary effect of this Pokémon's move activates.",
+		origin: 'Reworked',
 		name: "Magician",
 		rating: 1,
 		num: 170,
@@ -5385,12 +5385,12 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	steamengine: {
 		onDamagingHit(damage, target, source, move) {
 			if (['Water', 'Fire'].includes(move.type)) {
-				this.boost({ spe: 6 });
+				this.boost({ spe: 3 });
 			}
 		},
 		flags: {},
-		shortDesc: "Drastically raises Speed when hit by a Fire- or Water-type move.",
-		origin: 'Unchanged',
+		shortDesc: "Raises Speed by +3 stages when hit by a Fire- or Water-type move.",
+		origin: 'Nerfed',
 		name: "Steam Engine",
 		rating: 2,
 		num: 243,
@@ -5804,6 +5804,9 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 101,
 	},
 	telepathy: {
+		onStart(pokemon) {
+			pokemon.m.telepathyUsed = false;
+		},
 		onTryHit(target, source, move) {
 			if (target !== source && target.isAlly(source) && move.category !== 'Status') {
 				this.add('-activate', target, 'ability: Telepathy');
@@ -5811,8 +5814,10 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		flags: { breakable: 1 },
+		shortDesc: "Once per battle, Pokémon can act after already knowing what the opponent has chosen to do. Also immune to ally's damaging moves in doubles.",
+		origin: 'Buffed',
 		name: "Telepathy",
-		rating: 0,
+		rating: 3,
 		num: 140,
 	},
 	teraformzero: {

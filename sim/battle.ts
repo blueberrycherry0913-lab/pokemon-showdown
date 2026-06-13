@@ -153,6 +153,8 @@ export class Battle {
 	started: boolean;
 	ended: boolean;
 	winner?: string;
+	/** The side waiting to re-choose after Telepathy foresight revealed the opponent's move, or null */
+	telepathyForesightPending: Side | null;
 	/** True while the first of a speed-tied move pair is running; defers all faintMessages() calls */
 	speedTiePartnerPending: boolean;
 	/** True only while processing the deferred faint queue from a speed-tie; signals draw on double-KO */
@@ -257,6 +259,7 @@ export class Battle {
 		this.midTurn = false;
 		this.started = false;
 		this.ended = false;
+		this.telepathyForesightPending = null;
 		this.speedTiePartnerPending = false;
 		this.speedTieDoubleKO = false;
 		this.speedTieFirstMoveLogCheckpoint = null;
@@ -3446,6 +3449,30 @@ export class Battle {
 	choose(sideid: SideID, input: string) {
 		const side = this.getSide(sideid);
 
+		// Telepathy foresight re-choice: this side was given a second chance after seeing the opponent's move
+		if (this.telepathyForesightPending === side) {
+			this.telepathyForesightPending = null;
+			if (!side.choose(input)) {
+				if (!side.choice.error) {
+					side.emitChoiceError(`Unknown error for choice: ${input}. If you're not using a custom client, please report this as a bug.`);
+				}
+				return false;
+			}
+			if (!side.isChoiceDone()) {
+				side.emitChoiceError(`Incomplete choice: ${input} - missing other pokemon`);
+				return false;
+			}
+			// Mark the Telepathy Pokémon's foresight as used for this battle
+			for (const p of side.active) {
+				if (p && !p.fainted && (p.ability === 'telepathy' || p.ability2 === 'telepathy')) {
+					p.m.telepathyUsed = true;
+					break;
+				}
+			}
+			this.commitChoices();
+			return true;
+		}
+
 		if (!side.choose(input)) {
 			if (!side.choice.error) {
 				side.emitChoiceError(`Unknown error for choice: ${input}. If you're not using a custom client, please report this as a bug.`);
@@ -3457,8 +3484,55 @@ export class Battle {
 			side.emitChoiceError(`Incomplete choice: ${input} - missing other pokemon`);
 			return false;
 		}
-		if (this.allChoicesDone()) this.commitChoices();
+		if (this.allChoicesDone()) {
+			// Check for Telepathy foresight before committing
+			const foresightSide = this.checkTelepathyForesight();
+			if (foresightSide) {
+				this.telepathyForesightPending = foresightSide;
+				const foresightPokemon = foresightSide.active.find(p =>
+					p && !p.fainted && !p.m.telepathyUsed &&
+					(p.ability === 'telepathy' || p.ability2 === 'telepathy')
+				)!;
+				// Get opponent's committed move name
+				const oppSide = this.sides.find(s => s !== foresightSide)!;
+				const oppAction = oppSide.choice.actions[0];
+				let opponentMoveName = '(unknown)';
+				if (oppAction?.choice === 'move' && oppAction.moveid) {
+					opponentMoveName = this.dex.moves.get(oppAction.moveid).name;
+				}
+				// Announce and re-request
+				this.add('-activate', foresightPokemon, 'ability: Telepathy');
+				foresightSide.clearChoice();
+				const moveReqData = foresightPokemon.getMoveRequestData() as any;
+				if (moveReqData) moveReqData.opponentMove = opponentMoveName;
+				const foresightReq = { active: [moveReqData], side: foresightSide.getRequestData() } as any;
+				foresightSide.activeRequest = foresightReq;
+				foresightSide.emitRequest(foresightReq);
+				// Tell opponent to wait
+				const waitReq = { wait: true, side: oppSide.getRequestData() } as any;
+				oppSide.activeRequest = waitReq;
+				oppSide.emitRequest(waitReq);
+				return true;
+			}
+			this.commitChoices();
+		}
 		return true;
+	}
+
+	/** Returns the side whose active Pokémon has unused Telepathy foresight this turn, or null. */
+	checkTelepathyForesight(): Side | null {
+		if (this.requestState !== 'move') return null;
+		for (const side of this.sides) {
+			for (const p of side.active) {
+				if (p && !p.fainted && !p.m.telepathyUsed &&
+					(p.ability === 'telepathy' || p.ability2 === 'telepathy')) {
+					// Only foresight if this Pokémon is making a regular move (not forced switch)
+					const action = side.choice.actions[0];
+					if (action?.choice === 'move') return side;
+				}
+			}
+		}
+		return null;
 	}
 
 	/**

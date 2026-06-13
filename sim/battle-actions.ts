@@ -1389,6 +1389,10 @@ export class BattleActions {
 				if (typeof secondary.chance === 'undefined' ||
 					secondaryRoll < (secondaryOverflow ? secondary.chance % 256 : secondary.chance)) {
 					this.moveHit(target, source, move, secondary, true, isSelf);
+					// Tag move for Magician: a chance secondary fired on the target (not a self-effect)
+					if (!isSelf && typeof secondary.chance !== 'undefined' && secondary.chance < 100) {
+						(move as any).magicianTrigger = true;
+					}
 				}
 			}
 		}
