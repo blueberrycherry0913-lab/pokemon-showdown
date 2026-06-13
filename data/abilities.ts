@@ -6046,8 +6046,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	trainedassassin: {
 		onStart(source) {
-			if (!this.battle.field.pseudoWeather['trainedassassinpending']) {
-				this.battle.field.addPseudoWeather('trainedassassinpending', source, source.getAbility());
+			if (!this.field.pseudoWeather['trainedassassinpending']) {
+				this.field.addPseudoWeather('trainedassassinpending', source, source.getAbility());
 			}
 		},
 		shortDesc: "Once when first sent out, marks a random opponent at turn end.",
