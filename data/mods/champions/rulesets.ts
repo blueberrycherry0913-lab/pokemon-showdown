@@ -186,7 +186,7 @@ export const Rulesets: import('../../../sim/dex-formats').ModdedFormatDataTable 
 				// gated. Keep Megas, custom species, and cosmetic 'Other'-bucket formes
 				// (Gmax / Cosplay / Cap / Starter / Spiky-eared) always legal — these
 				// mirror the teambuilder's Megas/Other/Custom buckets in build-indexes.
-				if (isGen1Lineage(this.dex, species) || isGen8StarterLineage(this.dex, species)) {
+				if (isGen1Lineage(this.dex, species) || isGen8Lineage(this.dex, species)) {
 					if ((species as any).isMega) return;
 					if (species.isNonstandard === 'custom') return;
 					const otherFormes = [
