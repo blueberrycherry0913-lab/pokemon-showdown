@@ -1285,7 +1285,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			}
 			// Dream Guide: holder and active allies can attack despite sleep lockout (turns still accumulate)
 			if (pokemon.hasAbility('dreamguide') ||
-				pokemon.alliesActive().some(p => !p.fainted && p.hasAbility('dreamguide'))) return;
+				pokemon.allies().some(p => p.hasAbility('dreamguide'))) return;
 			this.add('cant', pokemon, 'slp');
 			return false;
 		},
