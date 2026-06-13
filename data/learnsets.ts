@@ -83657,6 +83657,9 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	},
 	grookey: {
 		learnset: {
+			vinewhip: ["9L1"],
+			leafage: ["9L1"],
+
 			acrobatics: ["9M", "8M"],
 			assurance: ["8M"],
 			attract: ["8M"],
@@ -83719,6 +83722,9 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	},
 	thwackey: {
 		learnset: {
+			vinewhip: ["9L1"],
+			leafage: ["9L1"],
+
 			acrobatics: ["9M", "8M"],
 			assurance: ["8M"],
 			attract: ["8M"],
@@ -83777,6 +83783,9 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	},
 	rillaboom: {
 		learnset: {
+			vinewhip: ["9L1"],
+			leafage: ["9L1"],
+
 			acrobatics: ["9M", "8M"],
 			assurance: ["8M"],
 			attract: ["8M"],
@@ -83858,6 +83867,11 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	},
 	scorbunny: {
 		learnset: {
+			heater: ["9L1"],
+			flamewheel: ["9L1"],
+			firelash: ["9L1"],
+			searingshot: ["9L1"],
+
 			acrobatics: ["9M", "8M"],
 			agility: ["9M", "9L20", "8M", "8L20"],
 			allyswitch: ["8M"],
@@ -83871,7 +83885,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			doubleedge: ["9M", "9L36", "8L36"],
 			doublekick: ["9L12", "8L12"],
 			electroball: ["9M", "8M"],
-			ember: ["9L6", "8L6"],
+			ember: ["9L1", "9L6", "8L6"],
 			endure: ["9M", "8M"],
 			facade: ["9M", "8M"],
 			fireblast: ["9M", "8M"],
@@ -83918,6 +83932,11 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	},
 	raboot: {
 		learnset: {
+			heater: ["9L1"],
+			flamewheel: ["9L1"],
+			firelash: ["9L1"],
+			searingshot: ["9L1"],
+
 			acrobatics: ["9M", "8M"],
 			agility: ["9M", "9L24", "8M", "8L24"],
 			allyswitch: ["8M"],
@@ -83978,6 +83997,11 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	},
 	cinderace: {
 		learnset: {
+			heater: ["9L1"],
+			flamewheel: ["9L1"],
+			firelash: ["9L1"],
+			searingshot: ["9L1"],
+
 			acrobatics: ["9M", "8M"],
 			agility: ["9M", "9L24", "8M", "8L24"],
 			allyswitch: ["8M"],
@@ -84057,6 +84081,8 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	},
 	sobble: {
 		learnset: {
+			shallowslam: ["9L1"],
+
 			aquajet: ["9E", "8E"],
 			aquaring: ["9E", "8E"],
 			attract: ["8M"],
@@ -84107,6 +84133,8 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	},
 	drizzile: {
 		learnset: {
+			shallowslam: ["9L1"],
+
 			attract: ["8M"],
 			batonpass: ["9M", "8M"],
 			bind: ["9L1", "8L1"],
@@ -84152,6 +84180,8 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	},
 	inteleon: {
 		learnset: {
+			shallowslam: ["9L1"],
+
 			acrobatics: ["9M", "9L1", "8M", "8L1"],
 			agility: ["9M", "8M"],
 			aircutter: ["9M"],
