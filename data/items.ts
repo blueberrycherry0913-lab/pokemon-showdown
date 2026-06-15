@@ -8226,10 +8226,8 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
 			const base = pokemon.baseSpecies.baseSpecies;
 			if (['Cubone', 'Marowak', 'Osteokhan'].includes(base)) {
 				pokemon.setItem('thickclubweapon');
-				this.add('-item', pokemon, 'Thick Club', '[from] item: Weapon');
 			} else if (['Tinkatink', 'Tinkatuff', 'Tinkaton'].includes(base)) {
 				pokemon.setItem('gigatonhammer');
-				this.add('-item', pokemon, 'Gigaton Hammer', '[from] item: Weapon');
 			}
 		},
 		num: -8,
