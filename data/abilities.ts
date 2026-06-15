@@ -4564,7 +4564,14 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	regenerator: {
 		onSwitchOut(pokemon) {
-			pokemon.m.regenTurnOut = this.battle.turn;
+			if (pokemon.baseAbility !== 'regenerator') {
+				// Temporary Regenerator (Trace, Imposter, etc.): ability reverts to the
+				// base ability when the Pokémon enters the ball, so the deferred system
+				// can never fire on switch-in. Apply canon's immediate 1/3 heal instead.
+				pokemon.heal(Math.floor(pokemon.baseMaxhp / 3));
+			} else {
+				pokemon.m.regenTurnOut = this.battle.turn;
+			}
 		},
 		onSwitchIn(pokemon) {
 			if (pokemon.m.regenTurnOut !== undefined) {
