@@ -3320,6 +3320,16 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
 			basePower: 60,
 		},
 		spritenum: 475,
+		shortDesc: "Boosts Contact move power by 50% for Farfetch'd/Sirfetch'd; raises crit chance. Protective Pads effect.",
+		desc: "When held by Farfetch'd or Sirfetch'd: boosts the power of contact moves by 50% and raises critical hit ratio by 2 stages. Also protects the holder from negative effects triggered by contact moves (Rocky Helmet, Rough Skin, Static, etc.).",
+		onModifyBasePowerPriority: 1,
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (["farfetchd", "sirfetchd"].includes(this.toID(attacker.baseSpecies.baseSpecies))) {
+				if (move.flags['contact']) {
+					return this.chainModify(1.5);
+				}
+			}
+		},
 		onModifyCritRatio(critRatio, user) {
 			if (["farfetchd", "sirfetchd"].includes(this.toID(user.baseSpecies.baseSpecies))) {
 				return critRatio + 2;
