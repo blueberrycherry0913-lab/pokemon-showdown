@@ -482,11 +482,17 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	battlearmor: {
 		onCriticalHit: false,
-		shortDesc: "The Pokémon is protected against critical hits.",
-		origin: 'Unchanged',
+		onModifySecondaries(secondaries) {
+			return secondaries.map(effect => {
+				if (!effect.self) return {...effect, chance: Math.ceil((effect.chance || 100) / 2)};
+				return effect;
+			});
+		},
+		shortDesc: "Protected from crits; secondary effects against this Pokémon have halved chances.",
+		origin: 'Buffed',
 		flags: { breakable: 1 },
 		name: "Battle Armor",
-		rating: 1,
+		rating: 2,
 		num: 4,
 	},
 	battlebond: {
@@ -6686,305 +6692,25 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 
 	// --- Rows 324–338: LowHP type abilities ---
-	laststand: {
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker, defender, move) {
-			if (move.type === 'Normal' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(atk, attacker, defender, move) {
-			if (move.type === 'Normal' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		shortDesc: "Powers up Normal-type moves by x1.5 when below 1/3 MaxHP.",
-		origin: 'Custom',
-		flags: {},
-		name: "Last Stand",
-		rating: 2,
-		num: 10022,
-	},
-	shortingout: {
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker, defender, move) {
-			if (move.type === 'Electric' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(atk, attacker, defender, move) {
-			if (move.type === 'Electric' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		shortDesc: "Powers up Electric-type moves by x1.5 when below 1/3 MaxHP.",
-		origin: 'Custom',
-		flags: {},
-		name: "Shorting Out",
-		rating: 2,
-		num: 10023,
-	},
-	nearzero: {
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker, defender, move) {
-			if (move.type === 'Ice' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(atk, attacker, defender, move) {
-			if (move.type === 'Ice' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		shortDesc: "Powers up Ice-type moves by x1.5 when below 1/3 MaxHP.",
-		origin: 'Custom',
-		flags: {},
-		name: "Near-Zero",
-		rating: 2,
-		num: 10024,
-	},
-	adrenaline: {
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker, defender, move) {
-			if (move.type === 'Fighting' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(atk, attacker, defender, move) {
-			if (move.type === 'Fighting' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		shortDesc: "Powers up Fighting-type moves by x1.5 when below 1/3 MaxHP.",
-		origin: 'Custom',
-		flags: {},
-		name: "Adrenaline",
-		rating: 2,
-		num: 10025,
-	},
-	finalinjection: {
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker, defender, move) {
-			if (move.type === 'Poison' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(atk, attacker, defender, move) {
-			if (move.type === 'Poison' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		shortDesc: "Powers up Poison-type moves by x1.5 when below 1/3 MaxHP.",
-		origin: 'Custom',
-		flags: {},
-		name: "Final Injection",
-		rating: 2,
-		num: 10026,
-	},
-	standingground: {
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker, defender, move) {
-			if (move.type === 'Ground' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(atk, attacker, defender, move) {
-			if (move.type === 'Ground' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		shortDesc: "Powers up Ground-type moves by x1.5 when below 1/3 MaxHP.",
-		origin: 'Custom',
-		flags: {},
-		name: "Standing Ground",
-		rating: 2,
-		num: 10027,
-	},
-	headwind: {
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker, defender, move) {
-			if (move.type === 'Flying' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(atk, attacker, defender, move) {
-			if (move.type === 'Flying' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		shortDesc: "Powers up Flying-type moves by x1.5 when below 1/3 MaxHP.",
-		origin: 'Custom',
-		flags: {},
-		name: "Headwind",
-		rating: 2,
-		num: 10028,
-	},
-	mindsedge: {
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker, defender, move) {
-			if (move.type === 'Psychic' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(atk, attacker, defender, move) {
-			if (move.type === 'Psychic' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		shortDesc: "Powers up Psychic-type moves by x1.5 when below 1/3 MaxHP.",
-		origin: 'Custom',
-		flags: {},
-		name: "Mind's Edge",
-		rating: 2,
-		num: 10029,
-	},
 	breakingpoint: {
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker, defender, move) {
-			if (move.type === 'Rock' && attacker.hp <= attacker.maxhp / 3) {
+			if (attacker.hasType(move.type) && attacker.hp <= attacker.maxhp / 3) {
 				return this.chainModify(1.5);
 			}
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(atk, attacker, defender, move) {
-			if (move.type === 'Rock' && attacker.hp <= attacker.maxhp / 3) {
+			if (attacker.hasType(move.type) && attacker.hp <= attacker.maxhp / 3) {
 				return this.chainModify(1.5);
 			}
 		},
-		shortDesc: "Powers up Rock-type moves by x1.5 when below 1/3 MaxHP.",
+		shortDesc: "Powers up Same-type moves by x1.5 when at or below 1/3 MaxHP.",
 		origin: 'Custom',
 		flags: {},
 		name: "Breaking Point",
 		rating: 2,
-		num: 10030,
-	},
-	unfinishedbusiness: {
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker, defender, move) {
-			if (move.type === 'Ghost' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(atk, attacker, defender, move) {
-			if (move.type === 'Ghost' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		shortDesc: "Powers up Ghost-type moves by x1.5 when below 1/3 MaxHP.",
-		origin: 'Custom',
-		flags: {},
-		name: "Unfinished Business",
-		rating: 2,
-		num: 10031,
-	},
-	draconic: {
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker, defender, move) {
-			if (move.type === 'Dragon' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(atk, attacker, defender, move) {
-			if (move.type === 'Dragon' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		shortDesc: "Powers up Dragon-type moves by x1.5 when below 1/3 MaxHP.",
-		origin: 'Custom',
-		flags: {},
-		name: "Draconic",
-		rating: 2,
-		num: 10032,
-	},
-	oldesttrick: {
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker, defender, move) {
-			if (move.type === 'Dark' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(atk, attacker, defender, move) {
-			if (move.type === 'Dark' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		shortDesc: "Powers up Dark-type moves by x1.5 when below 1/3 MaxHP.",
-		origin: 'Custom',
-		flags: {},
-		name: "Oldest Trick",
-		rating: 2,
-		num: 10033,
-	},
-	tempered: {
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker, defender, move) {
-			if (move.type === 'Steel' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(atk, attacker, defender, move) {
-			if (move.type === 'Steel' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		shortDesc: "Powers up Steel-type moves by x1.5 when below 1/3 MaxHP.",
-		origin: 'Custom',
-		flags: {},
-		name: "Tempered",
-		rating: 2,
-		num: 10034,
-	},
-	happyending: {
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker, defender, move) {
-			if (move.type === 'Fairy' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(atk, attacker, defender, move) {
-			if (move.type === 'Fairy' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		shortDesc: "Powers up Fairy-type moves by x1.5 when below 1/3 MaxHP.",
-		origin: 'Custom',
-		flags: {},
-		name: "Happy Ending",
-		rating: 2,
-		num: 10035,
-	},
-	eventhorizon: {
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker, defender, move) {
-			if ((move.type as string) === 'Cosmic' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		onModifySpAPriority: 5,
-		onModifySpA(atk, attacker, defender, move) {
-			if ((move.type as string) === 'Cosmic' && attacker.hp <= attacker.maxhp / 3) {
-				return this.chainModify(1.5);
-			}
-		},
-		shortDesc: "Powers up Cosmic-type moves by x1.5 when below 1/3 MaxHP.",
-		origin: 'Custom',
-		flags: {},
-		name: "Event Horizon",
-		rating: 2,
-		num: 10036,
+		num: 10022,
 	},
 
 	// --- Rows 339–351: Type-change abilities (Normal → X, ×1.2 boost) ---
@@ -8707,5 +8433,20 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		name: "Domain Setter: Cosmic",
 		rating: 3,
 		num: 10139,
+	},
+
+	// --- Row 446: Charged Spines ---
+	chargedspines: {
+		onDamagingHit(damage, target, source, move) {
+			if (this.checkMoveMakeContact(move, source, target, true)) {
+				source.addVolatile('chargedspineselectrify');
+			}
+		},
+		shortDesc: "When hit by a contact move, gives the attacker Electrify for 2 turns.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Charged Spines",
+		rating: 2,
+		num: 10140,
 	},
 };

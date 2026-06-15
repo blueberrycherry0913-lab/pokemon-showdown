@@ -1780,4 +1780,21 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 	},
 
+	// Charged Spines (ability 10140): attacker's moves become Electric-type for 2 turns
+	chargedspineselectrify: {
+		duration: 3,
+		onStart(target) {
+			this.add('-start', target, 'Charged Spines');
+		},
+		onModifyTypePriority: -1,
+		onModifyType(move, pokemon) {
+			if (move.category === 'Status') return;
+			if (move.type === 'Electric') return;
+			move.type = 'Electric';
+		},
+		onEnd(target) {
+			this.add('-end', target, 'Charged Spines');
+		},
+	},
+
 };
