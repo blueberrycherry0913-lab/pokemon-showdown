@@ -1074,13 +1074,11 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	cutecharm: {
 		onDamagingHit(damage, target, source, move) {
-			if (this.checkMoveMakesContact(move, source, target)) {
-				if (this.randomChance(3, 10)) {
-					source.addVolatile('charmed', this.effectState.target);
-				}
+			if (this.randomChance(3, 10)) {
+				source.addVolatile('charmed', this.effectState.target);
 			}
 		},
-		shortDesc: "30% chance to inflict Charmed on the foe when hit by a contact move.",
+		shortDesc: "Attacking the Pokémon has a 30% chance to Charm its attacker.",
 		origin: 'Buffed',
 		flags: {},
 		name: "Cute Charm",
