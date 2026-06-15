@@ -2290,17 +2290,17 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onModifyBasePowerPriority: 5,
 		onModifyBasePower(basePower, attacker, defender, move) {
 			if (move.category !== 'Status') {
-				return this.modify(basePower, 1.5);
+				return this.modify(basePower, 1.3);
 			}
 		},
 		onSourceModifyAccuracyPriority: -1,
 		onSourceModifyAccuracy(accuracy, target, source, move) {
 			if (move.category !== 'Status' && typeof accuracy === 'number') {
-				return this.chainModify([3277, 4096]);
+				return this.chainModify([3686, 4096]);
 			}
 		},
-		shortDesc: "Boosts offensive move power by ×1.5, but all offensive moves have ×0.8 accuracy.",
-		origin: 'Buffed',
+		shortDesc: "Boosts offensive move power by ×1.3, but all offensive moves have ×0.9 accuracy.",
+		origin: 'Reworked',
 		flags: {},
 		name: "Hustle",
 		rating: 3.5,
@@ -3135,14 +3135,16 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 300,
 	},
 	minus: {
-		onModifySpAPriority: 5,
-		onModifySpA(spa, pokemon) {
-			for (const allyActive of pokemon.allies()) {
-				if (allyActive.hasAbility(['minus', 'plus'])) {
-					return this.chainModify(1.5);
-				}
-			}
+		onModifyBasePowerPriority: 5,
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.type !== 'Electric' || move.category === 'Status') return;
+			const triggered = this.battle.getAllActive().some(
+				p => p !== attacker && p.hasAbility(['plus', 'magnetpull', 'magnetismpulse'])
+			);
+			return this.chainModify(triggered ? 1.5 : 1.1);
 		},
+		shortDesc: "Boosts Electric moves by ×1.1; ×1.5 if any Pokémon on field has Plus, Magnet Pull, or Magnetism Pulse.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Minus",
 		rating: 0,
@@ -3913,14 +3915,16 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 182,
 	},
 	plus: {
-		onModifySpAPriority: 5,
-		onModifySpA(spa, pokemon) {
-			for (const allyActive of pokemon.allies()) {
-				if (allyActive.hasAbility(['minus', 'plus'])) {
-					return this.chainModify(1.5);
-				}
-			}
+		onModifyBasePowerPriority: 5,
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.type !== 'Electric' || move.category === 'Status') return;
+			const triggered = this.battle.getAllActive().some(
+				p => p !== attacker && p.hasAbility(['minus', 'magnetpull', 'magnetismpulse'])
+			);
+			return this.chainModify(triggered ? 1.5 : 1.1);
 		},
+		shortDesc: "Boosts Electric moves by ×1.1; ×1.5 if any Pokémon on field has Minus, Magnet Pull, or Magnetism Pulse.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Plus",
 		rating: 0,
