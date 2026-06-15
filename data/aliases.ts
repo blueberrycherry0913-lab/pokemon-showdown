@@ -1526,7 +1526,7 @@ export const Aliases: import('../sim/dex').AliasesTable = {
 	steelsurge: "G-Max Steelsurge",
 	stonesurge: "G-Max Stonesurge",
 	stunshock: "G-Max Stun Shock",
-	sweetness: "G-Max Sweetness",
+	gmaxsweetness: "G-Max Sweetness",
 	tartness: "G-Max Tartness",
 	terror: "G-Max Terror",
 	vinelash: "G-Max Vine Lash",

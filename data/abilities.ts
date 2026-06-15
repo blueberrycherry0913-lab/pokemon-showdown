@@ -1075,12 +1075,12 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	cutecharm: {
 		onDamagingHit(damage, target, source, move) {
 			if (this.checkMoveMakesContact(move, source, target)) {
-				if (this.randomChance(1, 2)) {
+				if (this.randomChance(3, 10)) {
 					source.addVolatile('charmed', this.effectState.target);
 				}
 			}
 		},
-		shortDesc: "50% chance to inflict Charmed on the foe when hit by a contact move.",
+		shortDesc: "30% chance to inflict Charmed on the foe when hit by a contact move.",
 		origin: 'Buffed',
 		flags: {},
 		name: "Cute Charm",
@@ -5683,6 +5683,34 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		rating: 2,
 		num: 175,
 	},
+	sweetness: {
+		onSetStatus(status, target, source, effect) {
+			this.debug('Sweetness interrupts status');
+			const effectHolder = this.effectState.target;
+			this.add('-block', target, 'ability: Sweetness', `[of] ${effectHolder}`);
+			return null;
+		},
+		onAllySetStatus(status, target, source, effect) {
+			this.debug('Sweetness interrupts ally status');
+			const effectHolder = this.effectState.target;
+			this.add('-block', target, 'ability: Sweetness', `[of] ${effectHolder}`);
+			return null;
+		},
+		onAllyTryAddVolatile(status, target) {
+			if (status.id === 'yawn') {
+				this.debug('Sweetness blocking yawn');
+				const effectHolder = this.effectState.target;
+				this.add('-block', target, 'ability: Sweetness', `[of] ${effectHolder}`);
+				return null;
+			}
+		},
+		shortDesc: "Protects user and allies on the field from all non-volatile status conditions.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Sweetness",
+		rating: 3,
+		num: 10140,
+	},
 	swiftswim: {
 		onModifySpe(spe, pokemon) {
 			if (['raindance', 'primordialsea'].includes(pokemon.effectiveWeather())) {
@@ -5789,14 +5817,10 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onDamagingHit(damage, target, source, move) {
 			if (this.checkMoveMakesContact(move, source, target, true)) {
 				this.add('-ability', target, 'Tangling Vines');
-				this.boost({ spe: -1 }, source, target, null, true);
-				if (!source.volatiles['interlocked'] && !target.volatiles['interlocked']) {
-					source.addVolatile('interlocked', target);
-					target.addVolatile('interlocked', source);
-				}
+				this.boost({ atk: -1, spe: -1 }, source, target, null, true);
 			}
 		},
-		shortDesc: "On contact: lowers the attacker's Speed by 1 stage and Interlocks it with this Pokémon.",
+		shortDesc: "On contact: lowers the attacker's Speed and Attack by 1 stage.",
 		origin: 'Custom',
 		flags: {},
 		name: "Tangling Vines",

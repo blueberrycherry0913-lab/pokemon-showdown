@@ -1964,7 +1964,11 @@ export const AbilitiesText: { [id: IDEntry]: AbilityText } = {
 	},
 	tanglingvines: {
 		name: "Tangling Vines",
-		shortDesc: "On contact: lowers the attacker's Speed by 1 stage and Interlocks it with this Pokemon.",
+		shortDesc: "On contact: lowers the attacker's Speed and Attack by 1 stage.",
+	},
+	sweetness: {
+		name: "Sweetness",
+		shortDesc: "Protects user and allies from all non-volatile status conditions.",
 	},
 	technician: {
 		name: "Technician",
