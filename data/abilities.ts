@@ -4564,13 +4564,22 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	regenerator: {
 		onSwitchOut(pokemon) {
-			pokemon.heal(pokemon.baseMaxhp / 3);
+			pokemon.m.regenTurnOut = this.battle.turn;
 		},
-		shortDesc: "Restores 1/3 MaxHP when withdrawn from battle.",
-		origin: 'Unchanged',
+		onSwitchIn(pokemon) {
+			if (pokemon.m.regenTurnOut !== undefined) {
+				const turns = Math.min(3, this.battle.turn - pokemon.m.regenTurnOut);
+				if (turns > 0) {
+					this.heal(Math.floor(pokemon.baseMaxhp * 0.10 * turns), pokemon, pokemon);
+				}
+				delete pokemon.m.regenTurnOut;
+			}
+		},
+		shortDesc: "Heals 10% MaxHP per turn while inactive, up to 30% after 3 turns.",
+		origin: 'Nerfed',
 		flags: {},
 		name: "Regenerator",
-		rating: 4.5,
+		rating: 3.5,
 		num: 144,
 	},
 	ripen: {
