@@ -1327,7 +1327,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		shortDesc: "Raises Atk or SpA based on the foe's lower defensive stat upon entering battle.",
 		origin: 'Unchanged',
 		flags: {},
-		name: "Download",
+		name: "Download: Offense",
 		rating: 3.5,
 		num: 88,
 	},
@@ -3887,11 +3887,17 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 53,
 	},
 	piercingdrill: {
-		onBasePowerPriority: 22,
-		onBasePower(basePower, attacker, defender, move) {
-			if (move.flags['drill']) return this.chainModify(1.5);
+		onModifyMove(move) {
+			if (!move.flags['contact']) return;
+			delete move.flags['protect'];
+			move.flags['bypasssub'] = 1;
 		},
-		shortDesc: "Boosts the power of drill moves by x1.5.",
+		onHit(target, source, move) {
+			if (move.flags['contact'] && target.volatiles['substitute']) {
+				target.removeVolatile('substitute');
+			}
+		},
+		shortDesc: "Contact moves bypass Protect and Substitute; destroys the Substitute.",
 		origin: 'Custom',
 		flags: {},
 		name: "Piercing Drill",
@@ -5336,8 +5342,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			move.tracksTarget = move.target !== 'scripted';
 		},
 		flags: {},
-		shortDesc: "Ignores moves and abilities that draw in moves.",
-		origin: 'Unchanged',
+		shortDesc: "Ignores redirection. If foe attempts to redirect, both original target and redirector are hit.",
+		origin: 'Buffed',
 		name: "Stalwart",
 		rating: 0,
 		num: 242,
@@ -5733,11 +5739,20 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 10142,
 	},
 	skewer: {
-		shortDesc: "Details pending.",
-		origin: 'Standby',
+		onModifyMove(move) {
+			if (move.flags['piercing']) {
+				move.flags['bypasssub'] = 1;
+			}
+		},
+		onBasePowerPriority: 22,
+		onBasePower(basePower, attacker, defender, move) {
+			if (move.flags['piercing']) return this.chainModify(1.5);
+		},
+		shortDesc: "Piercing moves have +50% power and bypass Substitute.",
+		origin: 'Custom',
 		flags: {},
 		name: "Skewer",
-		rating: 1,
+		rating: 3,
 		num: 10144,
 	},
 	swiftswim: {
@@ -5841,6 +5856,20 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		name: "Tangled Feet",
 		rating: 1,
 		num: 77,
+	},
+	tanglinghair: {
+		onDamagingHit(damage, target, source, move) {
+			if (this.checkMoveMakesContact(move, source, target, true)) {
+				this.add('-ability', target, 'Tangling Hair');
+				this.boost({ atk: -1, spe: -1 }, source, target, null, true);
+			}
+		},
+		shortDesc: "On contact: lowers the attacker's Speed and Attack by 1 stage.",
+		origin: 'Buffed',
+		flags: {},
+		name: "Tangling Hair",
+		rating: 2,
+		num: 233,
 	},
 	tanglingvines: {
 		onDamagingHit(damage, target, source, move) {
@@ -7567,62 +7596,63 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 10083,
 	},
 
-	// --- Row 388: Harder They Fall ---
+	// --- Row 388: Hero (renamed + reworked from Harder They Fall) ---
 	hardertheyfall: {
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk, attacker) {
-			const foeSide = this.sides.find(s => s !== attacker.side);
-			const foe = foeSide?.active.find(p => !!p && !p.fainted) ?? null;
+		onStart(pokemon) {
+			this.effectState.heroBoostStages = 0;
+			this.effectState.heroTrackedFoe = null;
+			const foe = pokemon.foes()[0];
 			if (!foe) return;
-			const userBST = (Object.values(attacker.species.baseStats) as number[]).reduce((a, b) => a + b, 0);
-			const foeBST = (Object.values(foe.species.baseStats) as number[]).reduce((a, b) => a + b, 0);
-			const boost = Math.min(Math.floor(Math.max(0, foeBST - userBST) * 0.4), 50);
-			if (boost > 0) return atk + boost;
+			const foeBST = (Object.values(foe.species.baseStats) as number[]).reduce((a: number, b: number) => a + b, 0);
+			let stages = 0;
+			if (foeBST >= 650) stages = 2;
+			else if (foeBST >= 500) stages = 1;
+			if (stages > 0) {
+				this.effectState.heroTrackedFoe = foe;
+				this.effectState.heroBoostStages = stages;
+				this.add('-ability', pokemon, 'Hero');
+				this.boost({ atk: stages, def: stages, spa: stages, spd: stages, spe: stages }, pokemon);
+			}
 		},
-		onModifyDefPriority: 6,
-		onModifyDef(def, target) {
-			const foeSide = this.sides.find(s => s !== target.side);
-			const foe = foeSide?.active.find(p => !!p && !p.fainted) ?? null;
+		onAnySwitchIn() {
+			const pokemon = this.effectState.target;
+			if (!pokemon.isActive) return;
+			const foe = pokemon.foes()[0];
+			if (foe === this.effectState.heroTrackedFoe) return; // ally switched in, no foe change
+			// Foe changed — remove old boost
+			if (this.effectState.heroBoostStages > 0) {
+				const old = this.effectState.heroBoostStages as number;
+				this.boost({ atk: -old, def: -old, spa: -old, spd: -old, spe: -old }, pokemon);
+				this.effectState.heroBoostStages = 0;
+				this.effectState.heroTrackedFoe = null;
+			}
 			if (!foe) return;
-			const userBST = (Object.values(target.species.baseStats) as number[]).reduce((a, b) => a + b, 0);
-			const foeBST = (Object.values(foe.species.baseStats) as number[]).reduce((a, b) => a + b, 0);
-			const boost = Math.min(Math.floor(Math.max(0, foeBST - userBST) * 0.4), 50);
-			if (boost > 0) return def + boost;
+			const foeBST = (Object.values(foe.species.baseStats) as number[]).reduce((a: number, b: number) => a + b, 0);
+			let stages = 0;
+			if (foeBST >= 650) stages = 2;
+			else if (foeBST >= 500) stages = 1;
+			if (stages > 0) {
+				this.effectState.heroTrackedFoe = foe;
+				this.effectState.heroBoostStages = stages;
+				this.add('-ability', pokemon, 'Hero');
+				this.boost({ atk: stages, def: stages, spa: stages, spd: stages, spe: stages }, pokemon);
+			}
 		},
-		onModifySpAPriority: 5,
-		onModifySpA(spa, attacker) {
-			const foeSide = this.sides.find(s => s !== attacker.side);
-			const foe = foeSide?.active.find(p => !!p && !p.fainted) ?? null;
-			if (!foe) return;
-			const userBST = (Object.values(attacker.species.baseStats) as number[]).reduce((a, b) => a + b, 0);
-			const foeBST = (Object.values(foe.species.baseStats) as number[]).reduce((a, b) => a + b, 0);
-			const boost = Math.min(Math.floor(Math.max(0, foeBST - userBST) * 0.4), 50);
-			if (boost > 0) return spa + boost;
+		onAnyFaint(fainted: Pokemon) {
+			const pokemon = this.effectState.target;
+			if (!pokemon.isActive) return;
+			if (fainted !== this.effectState.heroTrackedFoe) return;
+			if (this.effectState.heroBoostStages > 0) {
+				const old = this.effectState.heroBoostStages as number;
+				this.boost({ atk: -old, def: -old, spa: -old, spd: -old, spe: -old }, pokemon);
+				this.effectState.heroBoostStages = 0;
+				this.effectState.heroTrackedFoe = null;
+			}
 		},
-		onModifySpDPriority: 6,
-		onModifySpD(spd, target) {
-			const foeSide = this.sides.find(s => s !== target.side);
-			const foe = foeSide?.active.find(p => !!p && !p.fainted) ?? null;
-			if (!foe) return;
-			const userBST = (Object.values(target.species.baseStats) as number[]).reduce((a, b) => a + b, 0);
-			const foeBST = (Object.values(foe.species.baseStats) as number[]).reduce((a, b) => a + b, 0);
-			const boost = Math.min(Math.floor(Math.max(0, foeBST - userBST) * 0.4), 50);
-			if (boost > 0) return spd + boost;
-		},
-		onModifySpePriority: 5,
-		onModifySpe(spe, pokemon) {
-			const foeSide = this.sides.find(s => s !== pokemon.side);
-			const foe = foeSide?.active.find(p => !!p && !p.fainted) ?? null;
-			if (!foe) return;
-			const userBST = (Object.values(pokemon.species.baseStats) as number[]).reduce((a, b) => a + b, 0);
-			const foeBST = (Object.values(foe.species.baseStats) as number[]).reduce((a, b) => a + b, 0);
-			const boost = Math.min(Math.floor(Math.max(0, foeBST - userBST) * 0.4), 50);
-			if (boost > 0) return spe + boost;
-		},
-		shortDesc: "Boosts all stats by up to +50 flat pts based on how much lower this BST is vs. the foe's.",
+		shortDesc: "vs. ≥500 BST foe: +1 Omniboost; vs. ≥650 BST: +2 Omniboost. Boost lost when foe leaves.",
 		origin: 'Custom',
 		flags: {},
-		name: "Harder They Fall",
+		name: "Hero",
 		rating: 3,
 		num: 10084,
 	},

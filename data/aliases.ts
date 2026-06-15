@@ -2598,6 +2598,8 @@ export const Aliases: import('../sim/dex').AliasesTable = {
 	// galvenut is now a real dex key; electrodehisui alias above handles backward compat
 	reactivelevitation: "Levitate",
 	solarbattery: "Mega Sol",
+	downloadoffense: "Download",
+	hero: "Harder They Fall",
 	// Standard move renames
 	shock: "Thunder Shock",
 	smash: "Rock Smash",
