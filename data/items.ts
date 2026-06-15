@@ -8213,6 +8213,71 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
 		gen: 9,
 	},
 
+	// Custom fan-game: Weapon — a morphing item that becomes Thick Club for the Marowak line
+	// (Cubone / Marowak / Osteokhan) and Gigaton Hammer for the Tinkaton line. All three
+	// entries share onTakeItem: false (unremovable). The morph happens in onSwitchIn;
+	// thickclubweapon/gigatonhammer revert to weapon if held by the wrong species.
+	weapon: {
+		name: "Weapon",
+		spritenum: 258,
+		onTakeItem: false,
+		onSwitchInPriority: -1,
+		onSwitchIn(pokemon) {
+			const base = pokemon.baseSpecies.baseSpecies;
+			if (['Cubone', 'Marowak', 'Osteokhan'].includes(base)) {
+				pokemon.setItem('thickclubweapon');
+			} else if (['Tinkatink', 'Tinkatuff', 'Tinkaton'].includes(base)) {
+				pokemon.setItem('gigatonhammer');
+			}
+		},
+		num: -8,
+		gen: 9,
+	},
+
+	thickclubweapon: {
+		name: "Thick Club",
+		spritenum: 491,
+		onTakeItem: false,
+		onSwitchInPriority: -1,
+		onSwitchIn(pokemon) {
+			const base = pokemon.baseSpecies.baseSpecies;
+			if (!['Cubone', 'Marowak', 'Osteokhan'].includes(base)) {
+				pokemon.setItem('weapon');
+			}
+		},
+		onModifyBasePowerPriority: 1,
+		onModifyBasePower(basePower, attacker, defender, move) {
+			// Boosts Contact and Bone moves by 20%. OR logic prevents stacking for
+			// moves that carry both flags (they still only get one ×1.2).
+			if (move.flags['contact'] || move.flags['bone']) {
+				return this.chainModify(1.2);
+			}
+		},
+		num: -9,
+		gen: 9,
+	},
+
+	gigatonhammer: {
+		name: "Gigaton Hammer",
+		spritenum: 258,
+		onTakeItem: false,
+		onSwitchInPriority: -1,
+		onSwitchIn(pokemon) {
+			const base = pokemon.baseSpecies.baseSpecies;
+			if (!['Tinkatink', 'Tinkatuff', 'Tinkaton'].includes(base)) {
+				pokemon.setItem('weapon');
+			}
+		},
+		onModifyBasePowerPriority: 1,
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.flags['contact']) {
+				return this.chainModify(1.2);
+			}
+		},
+		num: -10,
+		gen: 9,
+	},
+
 	// CAP items
 
 	crucibellite: {
