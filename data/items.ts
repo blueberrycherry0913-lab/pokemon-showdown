@@ -8226,8 +8226,10 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
 			const base = pokemon.baseSpecies.baseSpecies;
 			if (['Cubone', 'Marowak', 'Osteokhan'].includes(base)) {
 				pokemon.setItem('thickclubweapon');
+				this.add('-item', pokemon, 'Thick Club', '[from] item: Weapon');
 			} else if (['Tinkatink', 'Tinkatuff', 'Tinkaton'].includes(base)) {
 				pokemon.setItem('gigatonhammer');
+				this.add('-item', pokemon, 'Gigaton Hammer', '[from] item: Weapon');
 			}
 		},
 		num: -8,
@@ -8247,10 +8249,10 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
 		},
 		onModifyBasePowerPriority: 1,
 		onModifyBasePower(basePower, attacker, defender, move) {
-			// Boosts Contact and Bone moves by 20%. OR logic prevents stacking for
-			// moves that carry both flags (they still only get one ×1.2).
+			// Boosts Contact and Bone moves by 50%. OR logic prevents stacking for
+			// moves that carry both flags (they still only get one ×1.5).
 			if (move.flags['contact'] || move.flags['bone']) {
-				return this.chainModify(1.2);
+				return this.chainModify(1.5);
 			}
 		},
 		num: -9,
@@ -8271,7 +8273,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
 		onModifyBasePowerPriority: 1,
 		onModifyBasePower(basePower, attacker, defender, move) {
 			if (move.flags['contact']) {
-				return this.chainModify(1.2);
+				return this.chainModify(1.5);
 			}
 		},
 		num: -10,
