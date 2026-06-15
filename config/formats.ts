@@ -79,15 +79,11 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		mod: 'champions',
 		ruleset: [
 			'Standard NatDex',
-			// Keep 'Obtainable Moves' on (the default via Standard NatDex) so Pokemon
-			// can only use moves in their NatDex AG learnset. Custom moves the user
-			// adds via data/learnsets.ts will pass; canon moves not in a species's
-			// learnset (e.g. Venusaur with Light That Burns the Sky) will be rejected.
-			// We do still lift Abilities and Formes since the user has custom abilities
-			// (e.g. Burning Soul on Charizard) and custom formes that wouldn't pass the
-			// canon checks otherwise.
+			// Abilities and Formes lifted for custom abilities/formes.
+			// Moves lifted temporarily — all moves pass regardless of learnset.
 			'!Obtainable Abilities',
 			'!Obtainable Formes',
+			'!Obtainable Moves',
 			// All IVs forced to 0 silently; champions/scripts.ts:statModify switches to
 			// 0-IV baseline constants when this clause is in the rule table.
 			'Force IV 0',
