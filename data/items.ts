@@ -8219,6 +8219,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
 		name: "Weapon",
 		spritenum: 698,
 		shortDesc: "This item has unique effects when given to certain Pokémon.",
+		desc: "Transforms based on the holder. On Marowak, Cubone, or Osteokhan: becomes a Thick Club, boosting the power of contact and bone moves by 50%, and protects the holder from negative effects triggered by using contact moves (like Rocky Helmet recoil or Rough Skin damage). On Tinkaton, Tinkatuff, or Tinkatink: becomes a Gigaton Hammer, boosting the power of contact moves by 50%, with the same contact protection. Has no effect on other Pokémon. Cannot be removed.",
 		onTakeItem: false,
 		onSwitchInPriority: -1,
 		onSwitchIn(pokemon) {
