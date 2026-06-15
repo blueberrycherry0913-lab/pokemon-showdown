@@ -211,6 +211,16 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			if (hunter && !pokemon.volatiles['marked']) {
 				pokemon.addVolatile('marked', hunter);
 			}
+			// Regenerator accumulating heal (§ abilities): fires here rather than in
+			// the ability's own onSwitchIn so it works for Trace/Imposter users whose
+			// ability reverts to Trace/Imposter by the time they re-enter.
+			if (pokemon.m.regenTurnOut !== undefined) {
+				const turns = Math.min(3, this.battle.turn - pokemon.m.regenTurnOut);
+				if (turns > 0) {
+					this.heal(Math.floor(pokemon.baseMaxhp * 0.10 * turns), pokemon, pokemon);
+				}
+				delete pokemon.m.regenTurnOut;
+			}
 		},
 		// Mark faint logic (§4): removal conditions and transfer on Hunter/self-KO.
 		onFaint(pokemon, source, effect) {

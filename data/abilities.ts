@@ -4564,23 +4564,11 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	regenerator: {
 		onSwitchOut(pokemon) {
-			if (pokemon.baseAbility !== 'regenerator') {
-				// Temporary Regenerator (Trace, Imposter, etc.): ability reverts to the
-				// base ability when the Pokémon enters the ball, so the deferred system
-				// can never fire on switch-in. Apply canon's immediate 1/3 heal instead.
-				pokemon.heal(Math.floor(pokemon.baseMaxhp / 3));
-			} else {
-				pokemon.m.regenTurnOut = this.battle.turn;
-			}
-		},
-		onSwitchIn(pokemon) {
-			if (pokemon.m.regenTurnOut !== undefined) {
-				const turns = Math.min(3, this.battle.turn - pokemon.m.regenTurnOut);
-				if (turns > 0) {
-					this.heal(Math.floor(pokemon.baseMaxhp * 0.10 * turns), pokemon, pokemon);
-				}
-				delete pokemon.m.regenTurnOut;
-			}
+			// Record turn for the accumulating heal system. Applies to both native
+			// and borrowed Regenerator (Trace/Imposter). The actual healing is applied
+			// by the format-level onSwitchIn in config/formats.ts so it fires even
+			// when the ability has reverted to Trace/Imposter by re-entry.
+			pokemon.m.regenTurnOut = this.battle.turn;
 		},
 		shortDesc: "Heals 10% MaxHP per turn while inactive, up to 30% after 3 turns.",
 		origin: 'Nerfed',
