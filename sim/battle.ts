@@ -1346,8 +1346,7 @@ export class Battle {
 	checkMoveMakesContact(move: ActiveMove, attacker: Pokemon, defender: Pokemon, announcePads = false) {
 		if (move.flags['contact'] && (
 			attacker.hasItem('protectivepads') ||
-			attacker.hasItem('thickclubweapon') ||
-			attacker.hasItem('gigatonhammer')
+			attacker.hasItem('thickclub')
 		)) {
 			if (announcePads) {
 				this.add('-activate', defender, this.effect.fullname);

@@ -6286,21 +6286,30 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
 		num: 879,
 		gen: 7,
 	},
-	// thickclub: superseded by the fan-game Weapon item (thickclubweapon, num -9).
-	// Preserved here for reference; commented out so it is not obtainable.
-	// thickclub: {
-	// 	name: "Thick Club",
-	// 	spritenum: 491,
-	// 	fling: { basePower: 90 },
-	// 	onModifyAtkPriority: 1,
-	// 	onModifyAtk(atk, pokemon) {
-	// 		if (pokemon.baseSpecies.baseSpecies === 'Cubone' || pokemon.baseSpecies.baseSpecies === 'Marowak') {
-	// 			return this.chainModify(2);
-	// 		}
-	// 	},
-	// 	itemUser: ["Marowak", "Marowak-Alola", "Marowak-Alola-Totem", "Cubone"],
-	// 	num: 258, gen: 2, isNonstandard: "Past",
-	// },
+	thickclub: {
+		name: "Thick Club",
+		spritenum: 491,
+		fling: {
+			basePower: 90,
+		},
+		shortDesc: "Boosts Contact and Bone move power by 50% for Marowak/Cubone/Osteokhan. Protective Pads effect.",
+		desc: "When held by Marowak, Cubone, or Osteokhan: boosts the power of contact and bone moves by 50% (OR logic — no stacking for moves with both flags). Also protects the holder from negative effects triggered by contact moves (Rocky Helmet, Rough Skin, Static, etc.).",
+		onModifyBasePowerPriority: 1,
+		onModifyBasePower(basePower, attacker, defender, move) {
+			const base = attacker.baseSpecies.baseSpecies;
+			if (['Cubone', 'Marowak', 'Osteokhan'].includes(base)) {
+				if (move.flags['contact'] || move.flags['bone']) {
+					return this.chainModify(1.5);
+				}
+			}
+		},
+		onTakeItem(item, source) {
+			return !['Cubone', 'Marowak', 'Osteokhan'].includes(source.baseSpecies.baseSpecies);
+		},
+		itemUser: ["Marowak", "Marowak-Alola", "Marowak-Alola-Totem", "Cubone"],
+		num: 258,
+		gen: 2,
+	},
 	throatspray: {
 		name: "Throat Spray",
 		spritenum: 713,
@@ -8208,73 +8217,6 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
 		teraCrystal: true,
 		onTakeItem: false,
 		num: -7,
-		gen: 9,
-	},
-
-	// Custom fan-game: Weapon — a morphing item that becomes Thick Club for the Marowak line
-	// (Cubone / Marowak / Osteokhan) and Gigaton Hammer for the Tinkaton line. All three
-	// entries share onTakeItem: false (unremovable). The morph happens in onSwitchIn;
-	// thickclubweapon/gigatonhammer revert to weapon if held by the wrong species.
-	weapon: {
-		name: "Weapon",
-		spritenum: 698,
-		shortDesc: "This item has unique effects when given to certain Pokémon.",
-		desc: "Transforms based on the holder. On Marowak, Cubone, or Osteokhan: becomes a Thick Club, boosting the power of contact and bone moves by 50%, and protects the holder from negative effects triggered by using contact moves (like Rocky Helmet recoil or Rough Skin damage). On Tinkaton, Tinkatuff, or Tinkatink: becomes a Gigaton Hammer, boosting the power of contact moves by 50%, with the same contact protection. Has no effect on other Pokémon. Cannot be removed.",
-		onTakeItem: false,
-		onSwitchInPriority: -1,
-		onSwitchIn(pokemon) {
-			const base = pokemon.baseSpecies.baseSpecies;
-			if (['Cubone', 'Marowak', 'Osteokhan'].includes(base)) {
-				pokemon.setItem('thickclubweapon');
-			} else if (['Tinkatink', 'Tinkatuff', 'Tinkaton'].includes(base)) {
-				pokemon.setItem('gigatonhammer');
-			}
-		},
-		num: -8,
-		gen: 9,
-	},
-
-	thickclubweapon: {
-		name: "Thick Club",
-		spritenum: 491,
-		onTakeItem: false,
-		onSwitchInPriority: -1,
-		onSwitchIn(pokemon) {
-			const base = pokemon.baseSpecies.baseSpecies;
-			if (!['Cubone', 'Marowak', 'Osteokhan'].includes(base)) {
-				pokemon.setItem('weapon');
-			}
-		},
-		onModifyBasePowerPriority: 1,
-		onModifyBasePower(basePower, attacker, defender, move) {
-			// Boosts Contact and Bone moves by 50%. OR logic prevents stacking for
-			// moves that carry both flags (they still only get one ×1.5).
-			if (move.flags['contact'] || move.flags['bone']) {
-				return this.chainModify(1.5);
-			}
-		},
-		num: -9,
-		gen: 9,
-	},
-
-	gigatonhammer: {
-		name: "Gigaton Hammer",
-		spritenum: 258,
-		onTakeItem: false,
-		onSwitchInPriority: -1,
-		onSwitchIn(pokemon) {
-			const base = pokemon.baseSpecies.baseSpecies;
-			if (!['Tinkatink', 'Tinkatuff', 'Tinkaton'].includes(base)) {
-				pokemon.setItem('weapon');
-			}
-		},
-		onModifyBasePowerPriority: 1,
-		onModifyBasePower(basePower, attacker, defender, move) {
-			if (move.flags['contact']) {
-				return this.chainModify(1.5);
-			}
-		},
-		num: -10,
 		gen: 9,
 	},
 
