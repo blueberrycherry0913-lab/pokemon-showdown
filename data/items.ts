@@ -6303,9 +6303,6 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
 				}
 			}
 		},
-		onTakeItem(item, source) {
-			return !['Cubone', 'Marowak', 'Osteokhan'].includes(source.baseSpecies.baseSpecies);
-		},
 		itemUser: ["Marowak", "Marowak-Alola", "Marowak-Alola-Totem", "Cubone"],
 		num: 258,
 		gen: 2,
