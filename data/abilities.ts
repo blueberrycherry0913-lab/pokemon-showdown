@@ -3686,10 +3686,10 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onResidualSubOrder: 2,
 		onResidual(pokemon) {
 			if (!pokemon.activeTurns) return;
-			// Single activation banner, then the boost + recoil as plain result lines
-			// (previously both effects each carried [from] ability, showing twice).
-			this.add('-ability', pokemon, 'Overthinker');
-			const boosted = this.boost({ spa: 1 }, pokemon);
+			// Single Overthinker banner: suppress the boost's own ability banner
+			// (isSecondary=true → plain -boost) so only the HP-cost line carries
+			// [from] ability. Previously the boost AND damage each showed it (twice).
+			const boosted = this.boost({ spa: 1 }, pokemon, pokemon, null, true);
 			if (boosted) {
 				this.damage(pokemon.baseMaxhp / 8, pokemon, pokemon);
 			}

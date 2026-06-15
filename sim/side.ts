@@ -457,12 +457,13 @@ export class Side {
 		return this.sideConditions[status.id] || null;
 	}
 
-	removeSideCondition(status: string | Effect): boolean {
+	removeSideCondition(status: string | Effect, source: Pokemon | null = null): boolean {
 		status = this.battle.dex.conditions.get(status) as Effect;
 		if (!this.sideConditions[status.id]) return false;
-		// Analytics: credit the clearer (the Pokémon whose move/turn is executing).
+		// Analytics: credit the explicit clearer (e.g. a type-absorber on switch-in,
+		// when no move is executing) else the Pokémon whose move/turn is executing.
 		if (ANALYTICS_HAZARD_IDS.has(status.id)) {
-			const clearer = this.battle.activePokemon;
+			const clearer = source || this.battle.activePokemon;
 			if (clearer?.species) {
 				this.battle.add('analytic', 'hazardclear', JSON.stringify({
 					ip: clearer.species.name, ipl: clearer.side.id, hz: status.id,

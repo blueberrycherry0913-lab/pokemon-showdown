@@ -17342,7 +17342,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 					this.add('-activate', pokemon, 'typeEffect', '[type]Ground', '[msg]Absorbed Spikes');
 					this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Ground'}));
 					this.add('-sideend', pokemon.side, 'Spikes', `[of] ${pokemon}`);
-					pokemon.side.removeSideCondition('spikes');
+					pokemon.side.removeSideCondition('spikes', pokemon);
 					return;
 				}
 				const damageAmounts = [0, 3, 4, 6]; // 1/8, 1/6, 1/4
@@ -17664,7 +17664,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 					this.add('-activate', pokemon, 'typeEffect', '[type]Rock', '[msg]Absorbed Stealth Rock');
 					this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Rock'}));
 					this.add('-sideend', pokemon.side, 'move: Stealth Rock', `[of] ${pokemon}`);
-					pokemon.side.removeSideCondition('stealthrock');
+					pokemon.side.removeSideCondition('stealthrock', pokemon);
 					return;
 				}
 				const typeMod = this.clampIntRange(pokemon.runEffectiveness(this.dex.getActiveMove('stealthrock')), -6, 6);
@@ -19630,7 +19630,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 					this.add('-activate', pokemon, 'typeEffect', '[type]Poison', '[msg]Absorbed Toxic Spikes');
 					this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Poison'}));
 					this.add('-sideend', pokemon.side, 'move: Toxic Spikes', `[of] ${pokemon}`);
-					pokemon.side.removeSideCondition('toxicspikes');
+					pokemon.side.removeSideCondition('toxicspikes', pokemon);
 				} else if (pokemon.hasType('Steel') || pokemon.hasItem('heavydutyboots') || pokemon.hasAbility('lightfooted') || pokemon.hasAbility('tinyfeet')) {
 					// do nothing
 				} else if (this.effectState.layers >= 2) {
