@@ -5019,11 +5019,17 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	shellarmor: {
 		onCriticalHit: false,
+		onModifySecondaries(secondaries) {
+			return secondaries.map(effect => {
+				if (!effect.self) return {...effect, chance: Math.ceil((effect.chance || 100) / 2)};
+				return effect;
+			});
+		},
+		shortDesc: "Protected from crits; secondary effects against this Pokémon have halved chances.",
+		origin: 'Buffed',
 		flags: { breakable: 1 },
-		shortDesc: "This Pokémon is protected against critical hits.",
-		origin: 'Unchanged',
 		name: "Shell Armor",
-		rating: 1,
+		rating: 2,
 		num: 75,
 	},
 	shielddust: {
