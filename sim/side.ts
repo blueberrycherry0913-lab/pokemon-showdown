@@ -45,6 +45,7 @@ export interface ChosenAction {
 	zmove?: string; // if zmoving, the name of the zmove
 	maxMove?: string; // if dynamaxed, the name of the max move
 	terastallize?: string; // if terastallizing, tera type
+	useTelepathy?: boolean; // if true, Telepathy foresight was player-activated this action
 	priority?: number; // priority of the action
 	externalMove?: boolean; // if true, skip PP deduction when resolving (Mind Control self-hit)
 }
@@ -62,6 +63,7 @@ export interface Choice {
 	ultra: boolean; // true if an ultra burst has already been selected
 	dynamax: boolean; // true if a dynamax has already been selected
 	terastallize: boolean; // true if a terastallization has already been inputted
+	telepathy: boolean; // true if Telepathy foresight was activated this turn
 	/** Actions chosen for Mind Controlled opponent Pokémon (separate from own actions) */
 	controlledActions: ChosenAction[];
 }
@@ -121,6 +123,7 @@ export interface PokemonMoveRequestData {
 	canDynamax?: boolean;
 	maxMoves?: DynamaxOptions;
 	canTerastallize?: string;
+	canTelepathy?: boolean;
 }
 export interface DynamaxOptions {
 	maxMoves: ({ move: string, target: MoveTarget, disabled?: boolean })[];
@@ -277,6 +280,7 @@ export class Side {
 			ultra: false,
 			dynamax: false,
 			terastallize: false,
+			telepathy: false,
 		};
 
 		// old-gens
@@ -330,6 +334,7 @@ export class Side {
 				if (action.zmove) details += ` zmove`;
 				if (action.maxMove) details += ` dynamax`;
 				if (action.terastallize) details += ` terastallize`;
+				if (action.useTelepathy) details += ` telepathy`;
 				return `move ${action.moveid}${details}`;
 			case 'switch':
 			case 'instaswitch':
@@ -568,7 +573,7 @@ export class Side {
 	chooseMove(
 		moveText?: string | number,
 		targetLoc = 0,
-		event: 'mega' | 'megax' | 'megay' | 'zmove' | 'ultra' | 'dynamax' | 'terastallize' | '' = '',
+		event: 'mega' | 'megax' | 'megay' | 'zmove' | 'ultra' | 'dynamax' | 'terastallize' | 'telepathy' | '' = '',
 		terastallizeType?: string
 	) {
 		if (this.requestState !== 'move') {
@@ -840,6 +845,18 @@ export class Side {
 			// Make this work properly
 			return this.emitChoiceError(`Can't move: You can only Terastallize in Gen 9.`);
 		}
+		const useTelepathy = (event === 'telepathy');
+		if (useTelepathy) {
+			if (pokemon.ability !== 'telepathy' && pokemon.ability2 !== 'telepathy') {
+				return this.emitChoiceError(`Can't move: ${pokemon.name} doesn't have Telepathy.`);
+			}
+			if (pokemon.m.telepathyUsed) {
+				return this.emitChoiceError(`Can't move: ${pokemon.name}'s Telepathy has already been used.`);
+			}
+			if (this.choice.telepathy) {
+				return this.emitChoiceError(`Can't move: Telepathy already activated this turn.`);
+			}
+		}
 		if (moveSlot === undefined) {
 			throw new Error(`moveSlot should have been set by this point`);
 		}
@@ -856,6 +873,7 @@ export class Side {
 			zmove: zMove,
 			maxMove: maxMove ? maxMove.id : undefined,
 			terastallize: terastallize ? (terastallizeType || pokemon.teraType) : undefined,
+			useTelepathy: useTelepathy || undefined,
 		});
 
 		if (pokemon.maybeDisabled && (this.battle.gameType === 'singles' || (
@@ -869,6 +887,7 @@ export class Side {
 		if (zMove) this.choice.zMove = true;
 		if (dynamax) this.choice.dynamax = true;
 		if (terastallize) this.choice.terastallize = true;
+		if (useTelepathy) this.choice.telepathy = true;
 
 		return true;
 	}
@@ -1150,6 +1169,7 @@ export class Side {
 			ultra: false,
 			dynamax: false,
 			terastallize: false,
+			telepathy: false,
 			controlledActions: [],
 		};
 	}
@@ -1284,6 +1304,10 @@ export class Side {
 						if (event) return error();
 						event = 'terastallize';
 						data = data.slice(0, -13);
+					} else if (data.endsWith(' telepathy')) {
+						if (event) return error();
+						event = 'telepathy';
+						data = data.slice(0, -10);
 					} else {
 						break;
 					}

@@ -3462,13 +3462,6 @@ export class Battle {
 				side.emitChoiceError(`Incomplete choice: ${input} - missing other pokemon`);
 				return false;
 			}
-			// Mark the Telepathy Pokémon's foresight as used for this battle
-			for (const p of side.active) {
-				if (p && !p.fainted && (p.ability === 'telepathy' || p.ability2 === 'telepathy')) {
-					p.m.telepathyUsed = true;
-					break;
-				}
-			}
 			this.commitChoices();
 			return true;
 		}
@@ -3490,9 +3483,11 @@ export class Battle {
 			if (foresightSide) {
 				this.telepathyForesightPending = foresightSide;
 				const foresightPokemon = foresightSide.active.find(p =>
-					p && !p.fainted && !p.m.telepathyUsed &&
+					p && !p.fainted &&
 					(p.ability === 'telepathy' || p.ability2 === 'telepathy')
 				)!;
+				// Mark as used now (player already committed to using it)
+				foresightPokemon.m.telepathyUsed = true;
 				// Get opponent's committed move name
 				const oppSide = this.sides.find(s => s !== foresightSide)!;
 				const oppAction = oppSide.choice.actions[0];
@@ -3519,18 +3514,12 @@ export class Battle {
 		return true;
 	}
 
-	/** Returns the side whose active Pokémon has unused Telepathy foresight this turn, or null. */
+	/** Returns the side whose active Pokémon player-activated Telepathy foresight this turn, or null. */
 	checkTelepathyForesight(): Side | null {
 		if (this.requestState !== 'move') return null;
 		for (const side of this.sides) {
-			for (const p of side.active) {
-				if (p && !p.fainted && !p.m.telepathyUsed &&
-					(p.ability === 'telepathy' || p.ability2 === 'telepathy')) {
-					// Only foresight if this Pokémon is making a regular move (not forced switch)
-					const action = side.choice.actions[0];
-					if (action?.choice === 'move') return side;
-				}
-			}
+			const action = side.choice.actions[0];
+			if (action?.choice === 'move' && (action as AnyObject).useTelepathy) return side;
 		}
 		return null;
 	}

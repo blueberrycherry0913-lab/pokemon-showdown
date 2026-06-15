@@ -1161,6 +1161,9 @@ export class Pokemon {
 			if (this.getDynamaxRequest()) data.canDynamax = true;
 			if (data.canDynamax || this.volatiles['dynamax']) data.maxMoves = this.getDynamaxRequest(true);
 			if (this.canTerastallize) data.canTerastallize = this.canTerastallize;
+			if ((this.ability === 'telepathy' || this.ability2 === 'telepathy') && !this.m.telepathyUsed) {
+				data.canTelepathy = true;
+			}
 		}
 
 		return data;
