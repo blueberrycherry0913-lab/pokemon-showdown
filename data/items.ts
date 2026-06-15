@@ -6286,23 +6286,21 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
 		num: 879,
 		gen: 7,
 	},
-	thickclub: {
-		name: "Thick Club",
-		spritenum: 491,
-		fling: {
-			basePower: 90,
-		},
-		onModifyAtkPriority: 1,
-		onModifyAtk(atk, pokemon) {
-			if (pokemon.baseSpecies.baseSpecies === 'Cubone' || pokemon.baseSpecies.baseSpecies === 'Marowak') {
-				return this.chainModify(2);
-			}
-		},
-		itemUser: ["Marowak", "Marowak-Alola", "Marowak-Alola-Totem", "Cubone"],
-		num: 258,
-		gen: 2,
-		isNonstandard: "Past",
-	},
+	// thickclub: superseded by the fan-game Weapon item (thickclubweapon, num -9).
+	// Preserved here for reference; commented out so it is not obtainable.
+	// thickclub: {
+	// 	name: "Thick Club",
+	// 	spritenum: 491,
+	// 	fling: { basePower: 90 },
+	// 	onModifyAtkPriority: 1,
+	// 	onModifyAtk(atk, pokemon) {
+	// 		if (pokemon.baseSpecies.baseSpecies === 'Cubone' || pokemon.baseSpecies.baseSpecies === 'Marowak') {
+	// 			return this.chainModify(2);
+	// 		}
+	// 	},
+	// 	itemUser: ["Marowak", "Marowak-Alola", "Marowak-Alola-Totem", "Cubone"],
+	// 	num: 258, gen: 2, isNonstandard: "Past",
+	// },
 	throatspray: {
 		name: "Throat Spray",
 		spritenum: 713,
@@ -8219,7 +8217,8 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
 	// thickclubweapon/gigatonhammer revert to weapon if held by the wrong species.
 	weapon: {
 		name: "Weapon",
-		spritenum: 258,
+		spritenum: 698,
+		shortDesc: "This item has unique effects when given to certain Pokémon.",
 		onTakeItem: false,
 		onSwitchInPriority: -1,
 		onSwitchIn(pokemon) {
