@@ -481,6 +481,22 @@ export class BattleActions {
 			}));
 		}
 
+		// Analytics: a move (any category) was USED. Record whether the user acted
+		// before its opponent this turn ("moved first") using a turn-scoped tracker.
+		{
+			const b = this.battle as any;
+			if (b.analyticsMoveTurn !== this.battle.turn) {
+				b.analyticsMoveTurn = this.battle.turn;
+				b.analyticsSidesMoved = new Set<string>();
+			}
+			const moved: Set<string> = b.analyticsSidesMoved;
+			const first = !moved.has(pokemon.side.foe.id);
+			moved.add(pokemon.side.id);
+			this.battle.add('analytic', 'moveact', JSON.stringify({
+				ip: pokemon.species.name, ipl: pokemon.side.id, first,
+			}));
+		}
+
 		const callerMoveForPressure = sourceEffect && (sourceEffect as ActiveMove).pp ? sourceEffect as ActiveMove : null;
 		if (!sourceEffect || callerMoveForPressure || sourceEffect.id === 'pursuit') {
 			let extraPP = 0;

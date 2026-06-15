@@ -13,7 +13,7 @@
 
 import * as path from 'path';
 import * as fs from 'fs';
-import {getDB, insertGame, upsertPlayer, insertDamageEvent, insertPokemonGameStats} from './db';
+import {getDB, insertGame, upsertPlayer, insertDamageEvent, insertPokemonGameStats, insertTypeActivation} from './db';
 import {generateReports} from './report';
 
 // ---------------------------------------------------------------------------
@@ -86,6 +86,9 @@ interface NullifiedEvent {
 // A damaging move was USED (offense numerator + moves-used denominator).
 interface ThreatUsedEvent { ip: string; ipl: string; tpow: number }
 
+// A move (any category) was USED, with whether the user acted before its foe.
+interface MoveActEvent { ip: string; ipl: string; first: boolean }
+
 // Inflictor-attributed count events (assist / status / hazard set / hazard clear).
 interface CreditEvent { ip: string; ipl: string }
 
@@ -99,6 +102,7 @@ interface GameBuffer {
 	sub: SubAvoidEvent[];
 	nullified: NullifiedEvent[];
 	threatused: ThreatUsedEvent[];
+	moveact: MoveActEvent[];
 	assist: CreditEvent[];
 	status: CreditEvent[];
 	hazardset: CreditEvent[];
@@ -145,7 +149,7 @@ export function process(
 		let buf = buffers.get(roomId);
 		if (!buf) {
 			buf = {
-				gameId: roomId, dmg: [], heal: [], sub: [], nullified: [], threatused: [],
+				gameId: roomId, dmg: [], heal: [], sub: [], nullified: [], threatused: [], moveact: [],
 				assist: [], status: [], hazardset: [], hazardclear: [], typeabilityactivations: [], playerMap: {},
 			};
 			buffers.set(roomId, buf);
@@ -182,6 +186,12 @@ export function process(
 		let ev: ThreatUsedEvent;
 		try { ev = JSON.parse(json); } catch { return; }
 		getBuf().threatused.push(ev);
+		break;
+	}
+	case 'moveact': {
+		let ev: MoveActEvent;
+		try { ev = JSON.parse(json); } catch { return; }
+		getBuf().moveact.push(ev);
 		break;
 	}
 	case 'assist': case 'status': case 'hazardset': case 'hazardclear': {
@@ -323,6 +333,12 @@ function flushGame(
 				}
 			}
 
+			// Moved First — all moves used (status + damaging) and how many went before the foe.
+			let movesTotal = 0, movedFirst = 0;
+			for (const ev of buf.moveact) {
+				if (mon(ev.ip) && ev.ipl === pk.pl) { movesTotal++; if (ev.first) movedFirst++; }
+			}
+
 			// Threat Output (Σ Threat Power) + moves-used denominator.
 			let threatOutputRaw = 0, movesUsed = 0;
 			for (const ev of buf.threatused) {
@@ -362,6 +378,8 @@ function flushGame(
 				dmg_dealt_hazard: dealtHazard,
 				threat_output_raw: threatOutputRaw,
 				moves_used: movesUsed,
+				moves_total: movesTotal,
+				moved_first: movedFirst,
 				threat_absorbed_raw: threatAbsorbed,
 				hits_faced: hitsFaced,
 				threats_nullified: threatsNullified,
@@ -377,6 +395,19 @@ function flushGame(
 				item: pk.item || '',
 				item_is_mega: pk.itemMega ? 1 : 0,
 			});
+		}
+
+		// 4b. type_activation_record — type ability activations aggregated by (player, type),
+		// for the by-type dashboard table (the per-species view is no longer surfaced).
+		const typeCounts = new Map<string, number>(); // `${playerId}|${type}` → count
+		for (const ev of buf.typeabilityactivations) {
+			const playerId = buf.playerMap[ev.ipl]?.id || ev.ipl;
+			const key = `${playerId}|${ev.ty}`;
+			typeCounts.set(key, (typeCounts.get(key) || 0) + 1);
+		}
+		for (const [key, count] of typeCounts) {
+			const [playerId, ty] = key.split('|');
+			insertTypeActivation(db, buf.gameId, playerId, ty, count);
 		}
 	})();
 

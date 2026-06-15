@@ -1840,9 +1840,10 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				const nonTypeMoves = allMoves.filter(m => !targetTypes.includes(m.type));
 				const typeMoves = allMoves.filter(m => targetTypes.includes(m.type));
 				const prioritized = [...nonTypeMoves, ...typeMoves];
-				// Reveal up to 2 moves by name
-				for (let i = 0; i < Math.min(2, prioritized.length); i++) {
-					this.add('-activate', pokemon, 'ability: Forewarn', prioritized[i], `[of] ${target}`);
+				// Reveal up to 2 moves by name in a SINGLE activation (one banner per foe)
+				const revealed = prioritized.slice(0, 2).map(m => m.name).join(', ');
+				if (revealed) {
+					this.add('-activate', pokemon, 'ability: Forewarn', revealed, `[of] ${target}`);
 				}
 			}
 		},
@@ -3684,11 +3685,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onResidualOrder: 28,
 		onResidualSubOrder: 2,
 		onResidual(pokemon) {
-			if (pokemon.activeTurns) {
-				const boosted = this.boost({ spa: 1 });
-				if (boosted) {
-					this.damage(pokemon.baseMaxhp / 8, pokemon, pokemon);
-				}
+			if (!pokemon.activeTurns) return;
+			// Single activation banner, then the boost + recoil as plain result lines
+			// (previously both effects each carried [from] ability, showing twice).
+			this.add('-ability', pokemon, 'Overthinker');
+			const boosted = this.boost({ spa: 1 }, pokemon);
+			if (boosted) {
+				this.damage(pokemon.baseMaxhp / 8, pokemon, pokemon);
 			}
 		},
 		shortDesc: "Raises Sp. Atk by 1 stage each turn, but loses 1/8 max HP.",

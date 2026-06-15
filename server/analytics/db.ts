@@ -98,6 +98,8 @@ function initSchema(database: Database.Database): void {
 			-- Threat Stats system
 			threat_output_raw     REAL NOT NULL DEFAULT 0,
 			moves_used            INTEGER NOT NULL DEFAULT 0,
+			moves_total           INTEGER NOT NULL DEFAULT 0,
+			moved_first           INTEGER NOT NULL DEFAULT 0,
 			threat_absorbed_raw   REAL NOT NULL DEFAULT 0,
 			hits_faced            INTEGER NOT NULL DEFAULT 0,
 			threats_nullified     INTEGER NOT NULL DEFAULT 0,
@@ -134,6 +136,17 @@ function initSchema(database: Database.Database): void {
 			ON pokemon_game_stats(game_id);
 		CREATE INDEX IF NOT EXISTS idx_pgs_player
 			ON pokemon_game_stats(player_id);
+
+		CREATE TABLE IF NOT EXISTS type_activation_record (
+			id          INTEGER PRIMARY KEY AUTOINCREMENT,
+			game_id     TEXT NOT NULL,
+			player_id   TEXT NOT NULL,
+			type        TEXT NOT NULL,
+			count       INTEGER NOT NULL DEFAULT 0,
+			FOREIGN KEY (game_id) REFERENCES game_record(game_id)
+		);
+		CREATE INDEX IF NOT EXISTS idx_type_activation_game
+			ON type_activation_record(game_id);
 	`);
 
 	// Idempotent migration: this feature has grown columns incrementally, and
@@ -152,6 +165,8 @@ function initSchema(database: Database.Database): void {
 		['item_is_mega', 'INTEGER NOT NULL DEFAULT 0'],
 		['threat_output_raw', 'REAL NOT NULL DEFAULT 0'],
 		['moves_used', 'INTEGER NOT NULL DEFAULT 0'],
+		['moves_total', 'INTEGER NOT NULL DEFAULT 0'],
+		['moved_first', 'INTEGER NOT NULL DEFAULT 0'],
 		['threat_absorbed_raw', 'REAL NOT NULL DEFAULT 0'],
 		['hits_faced', 'INTEGER NOT NULL DEFAULT 0'],
 		['threats_nullified', 'INTEGER NOT NULL DEFAULT 0'],
@@ -261,6 +276,16 @@ export function insertPokemonGameStats(
 	);
 }
 
+/** Insert one (game, player, type) → count row for type ability activations. */
+export function insertTypeActivation(
+	database: Database.Database,
+	gameId: string, playerId: string, type: string, count: number
+): void {
+	stmt(database, 'ins_type_activation',
+		`INSERT INTO type_activation_record (game_id,player_id,type,count) VALUES (?,?,?,?)`
+	).run(gameId, playerId, type, count);
+}
+
 /**
  * Remove a single game from the analytics DB: its damage events, its per-Pokémon
  * rollup rows, and the game_record itself — and roll back the participating
@@ -287,6 +312,7 @@ export function deleteGame(database: Database.Database, gameId: string): boolean
 		}
 		database.prepare(`DELETE FROM damage_event WHERE game_id = ?`).run(gameId);
 		database.prepare(`DELETE FROM pokemon_game_stats WHERE game_id = ?`).run(gameId);
+		database.prepare(`DELETE FROM type_activation_record WHERE game_id = ?`).run(gameId);
 		database.prepare(`DELETE FROM game_record WHERE game_id = ?`).run(gameId);
 	})();
 	return true;
@@ -298,6 +324,7 @@ export function deleteAllGames(database: Database.Database): number {
 	database.transaction(() => {
 		database.prepare(`DELETE FROM damage_event`).run();
 		database.prepare(`DELETE FROM pokemon_game_stats`).run();
+		database.prepare(`DELETE FROM type_activation_record`).run();
 		database.prepare(`DELETE FROM game_record`).run();
 		database.prepare(`DELETE FROM player_record`).run();
 	})();

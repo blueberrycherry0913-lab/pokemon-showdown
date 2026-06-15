@@ -2510,8 +2510,11 @@ export class Battle {
 			}
 		};
 
-		if (effect.effectType === 'SideCondition') {
-			// Hazard — credit the Pokémon that set it (stored at placement, §2.3)
+		if ((effect.effectType === 'Condition' || effect.effectType === 'SideCondition') &&
+			(target.side.sideConditions as any)[effect.id]) {
+			// Hazard — credit the Pokémon that set it (stored at placement, §2.3).
+			// NB: side conditions are 'Condition'-type effects (dex-conditions never
+			// produces 'SideCondition'); detect them by sideConditions membership.
 			eventType = 'hazard';
 			srcLabel = effect.name || effect.id;
 			setInflictor((target.side.sideConditions as any)[effect.id]?.source);

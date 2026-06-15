@@ -21,6 +21,7 @@ const SUMMARY_PATH = path.join(ANALYTICS_DIR, 'battle_report_summary.json');
 // Leaderboard sample-size floors. Testing values now; real-play values in comments.
 const MIN_GAMES_FOR_LEADERBOARD = 1; // → 3
 const MIN_MOVES_USED = 1;            // → 10  (offense per-move stats)
+const MIN_MOVES_TOTAL = 1;           // → 10  (Moved First rate, all moves)
 const MIN_HITS_FACED = 1;            // → 10  (Threat Absorbed)
 const MIN_MOVES_AIMED = 1;           // → 10  (Threats Nullified rate)
 const MIN_ACTIVE_TURNS = 1;          // → 10  (per-active-turn stats)
@@ -34,6 +35,7 @@ export function generateReports(db: Database.Database): void {
 	const players = getPlayers(db);
 	const pokemon = getPokemon(db);
 	const items = getItems(db);
+	const typeActivations = getTypeActivations(db);
 
 	const generatedAt = new Date().toISOString();
 
@@ -45,6 +47,7 @@ export function generateReports(db: Database.Database): void {
 		players,
 		pokemon,
 		items,
+		type_activations: typeActivations,
 	};
 	writeAtomic(FULL_PATH, full);
 
@@ -54,6 +57,7 @@ export function generateReports(db: Database.Database): void {
 	// [key, accessor, eligibility] — each stat's floor depends on its denominator.
 	const byGames = (p: PokemonRow) => p.games_brought >= MIN_GAMES_FOR_LEADERBOARD;
 	const byMoves = (p: PokemonRow) => p.moves_used_total >= MIN_MOVES_USED;
+	const byMovesTotal = (p: PokemonRow) => p.moves_total >= MIN_MOVES_TOTAL;
 	const byHits = (p: PokemonRow) => p.hits_faced_total >= MIN_HITS_FACED;
 	const byAimed = (p: PokemonRow) => (p.hits_faced_total + p.threats_nullified_total) >= MIN_MOVES_AIMED;
 	const byTurns = (p: PokemonRow) => p.active_turns_total >= MIN_ACTIVE_TURNS;
@@ -69,6 +73,8 @@ export function generateReports(db: Database.Database): void {
 		// defense
 		['threat_absorbed_per_hit', p => p.threat_absorbed_per_hit, byHits],
 		['threats_nullified_rate', p => p.threats_nullified_rate, byAimed],
+		// move-order
+		['moved_first_rate', p => p.moved_first_rate, byMovesTotal],
 		// per active turn
 		['healing_per_turn', p => p.healing_per_turn, byTurns],
 		['kills_per_turn', p => p.kills_per_turn, byTurns],
@@ -83,7 +89,6 @@ export function generateReports(db: Database.Database): void {
 		['status_inflicted_total', p => p.status_inflicted_total, byGames],
 		['hazards_set_total', p => p.hazards_set_total, byGames],
 		['hazards_cleared_total', p => p.hazards_cleared_total, byGames],
-		['type_ability_activations_per_game', p => p.type_ability_activations_per_game, byGames],
 	];
 
 	for (const [statKey, accessor, eligible] of statKeys) {
@@ -161,6 +166,8 @@ interface PokemonRow {
 	games_participated: number;
 	games_as_lead: number;
 	moves_used_total: number;
+	moves_total: number;
+	moved_first_total: number;
 	hits_faced_total: number;
 	active_turns_total: number;
 	turns_survived_total: number;
@@ -178,6 +185,8 @@ interface PokemonRow {
 	threat_absorbed_per_hit: number;
 	threats_nullified_rate: number;
 	threats_nullified_total: number;
+	// move-order
+	moved_first_rate: number;
 	// per active turn
 	healing_per_turn: number;
 	kills_per_turn: number;
@@ -210,6 +219,8 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 			SUM(CASE WHEN pgs.was_lead = 1 THEN 1 ELSE 0 END)     AS lead_count,
 			SUM(pgs.turns_survived)                               AS active_turns_total,
 			SUM(pgs.moves_used)                                   AS moves_used_total,
+			SUM(pgs.moves_total)                                  AS moves_total,
+			SUM(pgs.moved_first)                                  AS moved_first_total,
 			SUM(pgs.hits_faced)                                   AS hits_faced_total,
 			SUM(pgs.threat_output_raw)                            AS threat_output_raw_total,
 			SUM(pgs.threat_absorbed_raw)                          AS threat_absorbed_raw_total,
@@ -236,6 +247,7 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 		const gb = r.games_brought;
 		const gp = r.games_participated || 0;
 		const mu = r.moves_used_total || 0;
+		const mt = r.moves_total || 0;
 		const hf = r.hits_faced_total || 0;
 		const at = r.active_turns_total || 0;
 		const movesAimed = hf + (r.threats_nullified_total || 0);
@@ -248,6 +260,8 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 			games_participated: gp,
 			games_as_lead: r.games_as_lead,
 			moves_used_total: mu,
+			moves_total: mt,
+			moved_first_total: r.moved_first_total || 0,
 			hits_faced_total: hf,
 			active_turns_total: at,
 			turns_survived_total: at,
@@ -264,6 +278,8 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 			threat_absorbed_per_hit: Math.round(hf > 0 ? r.threat_absorbed_raw_total / hf : 0),
 			threats_nullified_rate: movesAimed > 0 ? round2((r.threats_nullified_total || 0) / movesAimed) : 0,
 			threats_nullified_total: r.threats_nullified_total || 0,
+
+			moved_first_rate: mt > 0 ? round2((r.moved_first_total || 0) / mt) : 0,
 
 			healing_per_turn: perTurn(r.healing_total),
 			kills_per_turn: perTurn(r.kills_total),
@@ -297,6 +313,19 @@ function getItems(db: Database.Database): Array<{item: string; count: number}> {
 		GROUP BY pgs.item
 		ORDER BY count DESC, item ASC
 	`).all() as Array<{item: string; count: number}>;
+	return rows;
+}
+
+/** Total type ability activations grouped by type (across all non-excluded players). */
+function getTypeActivations(db: Database.Database): Array<{type: string; count: number}> {
+	const rows = db.prepare(`
+		SELECT tar.type AS type, SUM(tar.count) AS count
+		FROM type_activation_record tar
+		JOIN player_record pr ON tar.player_id = pr.player_id
+		WHERE pr.is_excluded = 0
+		GROUP BY tar.type
+		ORDER BY count DESC, type ASC
+	`).all() as Array<{type: string; count: number}>;
 	return rows;
 }
 

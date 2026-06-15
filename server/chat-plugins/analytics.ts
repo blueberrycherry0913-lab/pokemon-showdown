@@ -70,6 +70,7 @@ interface FullReport {
 	players: PlayerRow[];
 	pokemon: PokemonRow[];
 	items?: Array<{item: string; count: number}>;
+	type_activations?: Array<{type: string; count: number}>;
 }
 
 interface LeaderEntry {
@@ -196,6 +197,8 @@ const STAT_LABELS: {[k: string]: {label: string; fmt: (v: number) => string; des
 	// Defense
 	threat_absorbed_per_hit: {label: 'Threat Absorbed / Hit', fmt: num0, desc: 'Avg Threat Power soaked per direct hit faced — survived hits log the threat in full, fainting logs 0. The wall stat.'},
 	threats_nullified_rate: {label: 'Threats Nullified', fmt: pct, desc: 'Fraction of damaging moves aimed at it that did nothing — type/ability immunity or a miss (evasion). Where immunity & evasion shine.'},
+	// Move order
+	moved_first_rate: {label: 'Moved First %', fmt: pct, desc: 'Share of moves used where this Pokémon acted before its opponent that turn'},
 	// Per active turn
 	healing_per_turn: {label: 'Healing Caused / Turn', fmt: pctOf, desc: 'Avg % HP of healing this Pokémon caused, per turn it was on the field (Wish credits the wisher, etc.)'},
 	kills_per_turn: {label: 'Kills / Turn', fmt: v => v.toFixed(2), desc: 'KOs secured per turn active on the field'},
@@ -211,7 +214,6 @@ const STAT_LABELS: {[k: string]: {label: string; fmt: (v: number) => string; des
 	status_inflicted_total: {label: 'Most Status Inflicted', fmt: v => String(v), desc: 'Total non-volatile statuses (burn/poison/sleep/etc.) this species inflicted on foes'},
 	hazards_set_total: {label: 'Most Hazards Set', fmt: v => String(v), desc: 'Total entry hazards set (Stealth Rock, Spikes, Toxic Spikes, Sticky Web)'},
 	hazards_cleared_total: {label: 'Most Hazards Cleared', fmt: v => String(v), desc: 'Total entry hazards removed (Rapid Spin, Defog, etc.)'},
-	type_ability_activations_per_game: {label: 'Type Activations / Game', fmt: v => v.toFixed(1), desc: "Avg times per game this species' type passively activated (immunity, absorption, speed boost, etc.) — Normal type excluded"},
 };
 
 function buildLeaderboard(statKey: string, board: {top_10: LeaderEntry[]; bottom_10: LeaderEntry[]}): string {
@@ -308,6 +310,33 @@ function buildItems(items?: Array<{item: string; count: number}>): string {
 	return buf + `</table>`;
 }
 
+const TYPE_COLORS: {[k: string]: string} = {
+	Normal: '#9FA19F', Fire: '#E62829', Water: '#2980EF', Electric: '#FAC000',
+	Grass: '#3FA129', Ice: '#3DCEF3', Fighting: '#FF8000', Poison: '#9141CB',
+	Ground: '#915121', Flying: '#81B9EF', Psychic: '#EF4179', Bug: '#91A119',
+	Rock: '#AFA981', Ghost: '#704170', Dragon: '#5060E1', Dark: '#624D4E',
+	Steel: '#60A1B8', Fairy: '#EF70EF', Cosmic: '#6633AA',
+};
+// Flying is displayed as "Air" everywhere in this rework.
+const typeDisplay = (t: string) => (t === 'Flying' ? 'Air' : t);
+
+function buildTypeActivations(rows?: Array<{type: string; count: number}>): string {
+	if (!rows?.length) return '';
+	const max = rows[0].count || 1;
+	let buf = `<h3>Type Ability Activations <small style="font-weight:normal;font-size:.7em">(by Type — immunity, absorption, speed boost, status purge, etc.)</small></h3>`;
+	buf += `<table class="ladder" style="max-width:480px">`;
+	buf += `<tr><th></th><th>Type</th><th>Activations</th></tr>`;
+	rows.forEach((r, i) => {
+		const pctW = Math.round((r.count / max) * 100);
+		const color = TYPE_COLORS[r.type] || '#88a';
+		buf += `<tr><td>${medal(i + 1)}</td>` +
+			`<td><strong style="color:${color}">${h(typeDisplay(r.type))} Type</strong></td>` +
+			`<td><span style="display:inline-block;background:${color};height:10px;width:${pctW}px;` +
+			`vertical-align:middle;border-radius:2px"></span> ${h(r.count)}</td></tr>`;
+	});
+	return buf + `</table>`;
+}
+
 // ---------------------------------------------------------------------------
 // Full raw-data breakdown (queries the SQLite DB directly)
 // ---------------------------------------------------------------------------
@@ -317,6 +346,8 @@ function buildItems(items?: Array<{item: string; count: number}>): string {
 const PGS_NUMERIC_COLUMNS: [string, string, boolean][] = [
 	['threat_output_raw', 'ThreatOut', false],
 	['moves_used', 'Moves', false],
+	['moves_total', 'MovesAll', false],
+	['moved_first', 'MovedFirst', false],
 	['dmg_dealt_direct', 'Dealt%', true],
 	['dmg_dealt_true', 'True%', true],
 	['dmg_dealt_residual', 'Indir%', true],
@@ -332,7 +363,6 @@ const PGS_NUMERIC_COLUMNS: [string, string, boolean][] = [
 	['status_inflicted', 'Status', false],
 	['hazards_set', 'HazSet', false],
 	['hazards_cleared', 'HazClr', false],
-	['type_ability_activations', 'TypeAct', false],
 ];
 
 // Format a stored stat value for the full-data tables.
@@ -510,6 +540,7 @@ export const pages: Chat.PageTable = {
 			'true_damage_dealt_per_move',
 			'threat_absorbed_per_hit',
 			'threats_nullified_rate',
+			'moved_first_rate',
 			'kda_ratio',
 			'kills_per_turn',
 			'assists_per_turn',
@@ -522,7 +553,6 @@ export const pages: Chat.PageTable = {
 			'status_inflicted_total',
 			'hazards_set_total',
 			'hazards_cleared_total',
-			'type_ability_activations_per_game',
 		];
 
 		let buf = '<div class="pad">';
@@ -541,6 +571,8 @@ export const pages: Chat.PageTable = {
 		buf += buildSpeciesTable(full.pokemon);
 		buf += '<hr/>';
 		buf += buildItems(full.items);
+		buf += '<hr/>';
+		buf += buildTypeActivations(full.type_activations);
 		buf += `<hr/><p><button class="button" name="send" value="/join view-analyticsfull">` +
 			`<i class="fa fa-database"></i> View Full Raw Data</button></p>`;
 		buf += '</div>';
