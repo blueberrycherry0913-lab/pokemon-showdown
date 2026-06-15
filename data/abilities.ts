@@ -2287,19 +2287,20 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 258,
 	},
 	hustle: {
-		// This should be applied directly to the stat as opposed to chaining with the others
-		onModifyAtkPriority: 5,
-		onModifyAtk(atk) {
-			return this.modify(atk, 1.5);
+		onModifyBasePowerPriority: 5,
+		onModifyBasePower(basePower, attacker, defender, move) {
+			if (move.category !== 'Status') {
+				return this.modify(basePower, 1.5);
+			}
 		},
 		onSourceModifyAccuracyPriority: -1,
 		onSourceModifyAccuracy(accuracy, target, source, move) {
-			if (move.category === 'Physical' && typeof accuracy === 'number') {
+			if (move.category !== 'Status' && typeof accuracy === 'number') {
 				return this.chainModify([3277, 4096]);
 			}
 		},
-		shortDesc: "Boosts Attack by ×1.5, but physical moves have ×0.8 accuracy.",
-		origin: 'Unchanged',
+		shortDesc: "Boosts offensive move power by ×1.5, but all offensive moves have ×0.8 accuracy.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Hustle",
 		rating: 3.5,
