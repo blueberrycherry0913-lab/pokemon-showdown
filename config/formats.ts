@@ -215,7 +215,7 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			// the ability's own onSwitchIn so it works for Trace/Imposter users whose
 			// ability reverts to Trace/Imposter by the time they re-enter.
 			if (pokemon.m.regenTurnOut !== undefined) {
-				const turns = Math.min(3, this.battle.turn - pokemon.m.regenTurnOut);
+				const turns = Math.min(3, this.turn - pokemon.m.regenTurnOut);
 				if (turns > 0) {
 					this.heal(Math.floor(pokemon.baseMaxhp * 0.10 * turns), pokemon, pokemon);
 				}
