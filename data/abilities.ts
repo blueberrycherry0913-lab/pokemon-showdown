@@ -328,7 +328,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return null;
 			}
 		},
-		shortDesc: "Protects allies from moves or abilities that limit their move choices. (Taunt, Encore, Cursed Body, etc)",
+		shortDesc: "Protects self and allies from moves or abilities that limit their move choices. (Taunt, Encore, Cursed Body, etc)",
 		origin: 'Unchanged',
 		flags: { breakable: 1 },
 		name: "Aroma Veil",
