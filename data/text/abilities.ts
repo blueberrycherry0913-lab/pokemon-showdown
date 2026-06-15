@@ -1970,6 +1970,22 @@ export const AbilitiesText: { [id: IDEntry]: AbilityText } = {
 		name: "Sweetness",
 		shortDesc: "Protects user and allies from all non-volatile status conditions.",
 	},
+	constrictor: {
+		name: "Constrictor",
+		shortDesc: "Pokémon Interlocked with this Pokémon take 1/16 MaxHP damage each turn.",
+	},
+	emotionalsilencer: {
+		name: "Emotional Silencer",
+		shortDesc: "When a foe uses an emotion-based move, this Pokémon gains +2 to both offensive stats.",
+	},
+	chargedspines: {
+		name: "Charged Spines",
+		shortDesc: "Contact with this Pokémon gives the attacker the Electrify effect for two turns.",
+	},
+	skewer: {
+		name: "Skewer",
+		shortDesc: "Details pending.",
+	},
 	technician: {
 		name: "Technician",
 		desc: "This Pokemon's moves of 60 power or less have their power multiplied by 1.5, including Struggle. This effect comes after a move's effect changes its own power.",

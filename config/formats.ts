@@ -265,6 +265,7 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		onTryAddVolatile(status, pokemon) {
 			if (status.id === 'flinch' && pokemon.hasType('Fighting')) {
 				this.add('-activate', pokemon, 'typeEffect', '[type]Fighting', '[msg]Flinch Immunity');
+				this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Fighting'}));
 				return null;
 			}
 			// Ghost types are immune to the entire "Trapped" category (§1.5 / §4 line 269):
@@ -272,6 +273,7 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			// trapping moves/abilities never need their own Ghost check.
 			if (TRAPPED_VOLATILES.has(status.id) && pokemon.hasType('Ghost')) {
 				this.add('-activate', pokemon, 'typeEffect', '[type]Ghost', '[msg]Trap Immunity');
+				this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Ghost'}));
 				return null;
 			}
 		},
@@ -285,11 +287,13 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			if (target === source) return;
 			if (move.flags?.['wind'] && target.hasType('Flying')) {
 				this.add('-activate', target, 'typeEffect', '[type]Flying', '[msg]Wind Speed Boost');
+				this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: target.species.name, ipl: target.side.id, ty: 'Flying'}));
 				this.boost({ spe: 1 }, target, target);
 				// fall through — wind move proceeds at full effect (no immunity)
 			}
 			if (move.category === 'Status' && move.type === 'Dark' && target.hasType('Dark')) {
 				this.add('-activate', target, 'typeEffect', '[type]Dark', '[msg]Dark Move Immunity');
+				this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: target.species.name, ipl: target.side.id, ty: 'Dark'}));
 				this.add('-immune', target);
 				return null;
 			}
@@ -301,7 +305,11 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		onSideConditionStart(targetSide, source, sideCondition) {
 			if (sideCondition.id !== 'tailwind') return;
 			for (const pokemon of this.getAllActive()) {
-				if (pokemon.hasType('Flying')) this.boost({ spe: 1 }, pokemon, pokemon);
+				if (pokemon.hasType('Flying')) {
+					this.add('-activate', pokemon, 'typeEffect', '[type]Flying', '[msg]Tailwind Speed Boost');
+					this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Flying'}));
+					this.boost({ spe: 1 }, pokemon, pokemon);
+				}
 			}
 		},
 		// Steel types cannot be phazed (§1.5): immune to forced-switch effects (Roar,
@@ -310,6 +318,7 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		onDragOut(pokemon) {
 			if (pokemon.hasType('Steel')) {
 				this.add('-activate', pokemon, 'typeEffect', '[type]Steel', '[msg]Phazing Immunity');
+				this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Steel'}));
 				this.add('-fail', pokemon);
 				return false;
 			}
@@ -327,6 +336,7 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			pokemon.statusState.waterPurge = (pokemon.statusState.waterPurge || 0) + 1;
 			if (pokemon.statusState.waterPurge >= 2) {
 				this.add('-activate', pokemon, 'typeEffect', '[type]Water', '[msg]Status Purge');
+				this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Water'}));
 				pokemon.cureStatus();
 			}
 		},

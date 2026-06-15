@@ -5711,6 +5711,30 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		rating: 3,
 		num: 10140,
 	},
+	constrictor: {
+		shortDesc: "Pokémon Interlocked with this Pokémon take 1/16 MaxHP damage each turn.",
+		origin: 'Standby',
+		flags: {},
+		name: "Constrictor",
+		rating: 2,
+		num: 10141,
+	},
+	emotionalsilencer: {
+		shortDesc: "When a foe uses an emotion-based move, this Pokémon gains +2 to both offensive stats.",
+		origin: 'Standby',
+		flags: {},
+		name: "Emotional Silencer",
+		rating: 2,
+		num: 10142,
+	},
+	skewer: {
+		shortDesc: "Details pending.",
+		origin: 'Standby',
+		flags: {},
+		name: "Skewer",
+		rating: 1,
+		num: 10144,
+	},
 	swiftswim: {
 		onModifySpe(spe, pokemon) {
 			if (['raindance', 'primordialsea'].includes(pokemon.effectiveWeather())) {

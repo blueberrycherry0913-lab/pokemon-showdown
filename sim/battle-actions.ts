@@ -696,6 +696,8 @@ export class BattleActions {
 				if (target.illusion || !(move.status && !this.dex.getImmunity(move.status, target))) {
 					this.battle.hint("Since gen 7, Dark is immune to Prankster moves.");
 				}
+				this.battle.add('-activate', target, 'typeEffect', '[type]Dark', '[msg]Prankster Immunity');
+				this.battle.add('analytic', 'typeabilityactivation', JSON.stringify({ip: target.species.name, ipl: target.side.id, ty: 'Dark'}));
 				this.battle.add('-immune', target);
 				hitResults[i] = false;
 			} else {

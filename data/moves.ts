@@ -17334,11 +17334,13 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 				// Bug blanket effect (§1.5): immune to entry hazards except Sticky Web (personal — does not absorb).
 				if (pokemon.hasType('Bug')) {
 					this.add('-activate', pokemon, 'typeEffect', '[type]Bug', '[msg]Hazard Immunity');
+					this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Bug'}));
 					return;
 				}
 				// Ground blanket effect (§1.5): absorbs Spikes side-wide on switch-in.
 				if (pokemon.hasType('Ground')) {
 					this.add('-activate', pokemon, 'typeEffect', '[type]Ground', '[msg]Absorbed Spikes');
+					this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Ground'}));
 					this.add('-sideend', pokemon.side, 'Spikes', `[of] ${pokemon}`);
 					pokemon.side.removeSideCondition('spikes');
 					return;
@@ -17654,11 +17656,13 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 				// Bug blanket effect (§1.5): immune to entry hazards except Sticky Web (personal — does not absorb).
 				if (pokemon.hasType('Bug')) {
 					this.add('-activate', pokemon, 'typeEffect', '[type]Bug', '[msg]Hazard Immunity');
+					this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Bug'}));
 					return;
 				}
 				// Rock blanket effect (§1.5): absorbs Stealth Rock side-wide on switch-in.
 				if (pokemon.hasType('Rock')) {
 					this.add('-activate', pokemon, 'typeEffect', '[type]Rock', '[msg]Absorbed Stealth Rock');
+					this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Rock'}));
 					this.add('-sideend', pokemon.side, 'move: Stealth Rock', `[of] ${pokemon}`);
 					pokemon.side.removeSideCondition('stealthrock');
 					return;
@@ -19619,9 +19623,12 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 				// Bug blanket effect (§1.5): immune to entry hazards except Sticky Web (personal — does not absorb).
 				if (pokemon.hasType('Bug')) {
 					this.add('-activate', pokemon, 'typeEffect', '[type]Bug', '[msg]Hazard Immunity');
+					this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Bug'}));
 					return;
 				}
 				if (pokemon.hasType('Poison')) {
+					this.add('-activate', pokemon, 'typeEffect', '[type]Poison', '[msg]Absorbed Toxic Spikes');
+					this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Poison'}));
 					this.add('-sideend', pokemon.side, 'move: Toxic Spikes', `[of] ${pokemon}`);
 					pokemon.side.removeSideCondition('toxicspikes');
 				} else if (pokemon.hasType('Steel') || pokemon.hasItem('heavydutyboots') || pokemon.hasAbility('lightfooted') || pokemon.hasAbility('tinyfeet')) {
