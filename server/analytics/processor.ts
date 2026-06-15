@@ -56,6 +56,7 @@ interface PokeEnd {
 	fainted: boolean;
 	lead: boolean;     // was the team lead
 	activeTurns: number;
+	totalActiveTurns: number;
 	item?: string;     // item brought (set.item display name), '' if none
 	itemMega?: boolean; // true if a Mega Stone / Z-Crystal (excluded from item leaderboard)
 }
@@ -388,6 +389,7 @@ function flushGame(
 				kills, deaths,
 				assists: countCredit(buf.assist),
 				turns_survived: pk.activeTurns || 0,
+				total_active_turns: pk.totalActiveTurns || 0,
 				status_inflicted: countCredit(buf.status),
 				hazards_set: countCredit(buf.hazardset),
 				hazards_cleared: countCredit(buf.hazardclear),

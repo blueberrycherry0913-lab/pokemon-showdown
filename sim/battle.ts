@@ -1638,6 +1638,7 @@ export class Battle {
 					fainted: p.fainted,
 					lead: s.pokemon[0] === p,
 					activeTurns: p.activeTurns,
+					totalActiveTurns: p.totalActiveTurns,
 					item: broughtItem.exists ? broughtItem.name : '',
 					itemMega: !!(broughtItem.megaStone || broughtItem.zMove),
 				};
@@ -1875,6 +1876,7 @@ export class Battle {
 					}
 				}
 
+				pokemon.totalActiveTurns++;
 				if (pokemon.fainted) continue;
 
 				sideTrapped = sideTrapped && pokemon.trapped;

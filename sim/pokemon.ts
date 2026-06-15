@@ -244,6 +244,7 @@ export class Pokemon {
 
 	isActive: boolean;
 	activeTurns: number;
+	totalActiveTurns: number; // includes the faint turn; denominator for offensive per-turn stats
 	/**
 	 * This is for Fake-Out-likes specifically - it mostly counts how many move
 	 * actions you've had since the last time you switched in, so 1/turn normally,
@@ -488,6 +489,7 @@ export class Pokemon {
 
 		this.isActive = false;
 		this.activeTurns = 0;
+		this.totalActiveTurns = 0;
 		this.activeMoveActions = 0;
 		this.previouslySwitchedIn = 0;
 		this.truantTurn = false;

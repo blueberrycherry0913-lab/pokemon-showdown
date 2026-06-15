@@ -89,6 +89,7 @@ function initSchema(database: Database.Database): void {
 			deaths                INTEGER NOT NULL DEFAULT 0,
 			assists               INTEGER NOT NULL DEFAULT 0,
 			turns_survived        INTEGER NOT NULL DEFAULT 0,
+			total_active_turns    INTEGER NOT NULL DEFAULT 0,
 			immune_hits           INTEGER NOT NULL DEFAULT 0,
 			status_inflicted      INTEGER NOT NULL DEFAULT 0,
 			hazards_set           INTEGER NOT NULL DEFAULT 0,
@@ -171,6 +172,7 @@ function initSchema(database: Database.Database): void {
 		['hits_faced', 'INTEGER NOT NULL DEFAULT 0'],
 		['threats_nullified', 'INTEGER NOT NULL DEFAULT 0'],
 		['type_ability_activations', 'INTEGER NOT NULL DEFAULT 0'],
+		['total_active_turns', 'INTEGER NOT NULL DEFAULT 0'],
 	]);
 	migrateColumns(database, 'damage_event', [
 		['calculated_damage', 'INTEGER NOT NULL DEFAULT 0'],

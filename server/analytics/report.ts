@@ -218,6 +218,7 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 			SUM(CASE WHEN pgs.was_lead = 1 AND pgs.outcome = 'win' THEN 1 ELSE 0 END) AS wins_lead,
 			SUM(CASE WHEN pgs.was_lead = 1 THEN 1 ELSE 0 END)     AS lead_count,
 			SUM(pgs.turns_survived)                               AS active_turns_total,
+			SUM(pgs.total_active_turns)                           AS total_active_turns_total,
 			SUM(pgs.moves_used)                                   AS moves_used_total,
 			SUM(pgs.moves_total)                                  AS moves_total,
 			SUM(pgs.moved_first)                                  AS moved_first_total,
@@ -250,9 +251,10 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 		const mt = r.moves_total || 0;
 		const hf = r.hits_faced_total || 0;
 		const at = r.active_turns_total || 0;
+		const tat = r.total_active_turns_total || 0; // includes faint turn; denominator for offensive stats
 		const movesAimed = hf + (r.threats_nullified_total || 0);
 		const perMove = (n: number) => mu > 0 ? round2(n / mu) : 0;
-		const perTurn = (n: number) => at > 0 ? round2(n / at) : 0;
+		const perTurn = (n: number) => tat > 0 ? round2(n / tat) : 0; // offensive stats use totalActiveTurns
 		const perGame = (n: number) => gb > 0 ? round2(n / gb) : 0;
 		return {
 			species: r.species,
@@ -263,7 +265,7 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 			moves_total: mt,
 			moved_first_total: r.moved_first_total || 0,
 			hits_faced_total: hf,
-			active_turns_total: at,
+			active_turns_total: tat,
 			turns_survived_total: at,
 			win_rate_when_brought: gb > 0 ? round2(r.wins_brought / gb) : 0,
 			win_rate_as_lead: r.lead_count > 0 ? round2(r.wins_lead / r.lead_count) : 0,
