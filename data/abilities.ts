@@ -8492,7 +8492,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	// --- Row 446: Charged Spines ---
 	chargedspines: {
 		onDamagingHit(damage, target, source, move) {
-			if (this.checkMoveMakeContact(move, source, target, true)) {
+			if (move.flags['contact']) {
 				source.addVolatile('chargedspineselectrify');
 			}
 		},
