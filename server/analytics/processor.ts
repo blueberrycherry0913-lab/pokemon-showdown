@@ -89,6 +89,9 @@ interface ThreatUsedEvent { ip: string; ipl: string; tpow: number }
 // Inflictor-attributed count events (assist / status / hazard set / hazard clear).
 interface CreditEvent { ip: string; ipl: string }
 
+// A type ability activated (immunity, hazard absorption, speed boost, status purge, etc.).
+interface TypeAbilityActivationEvent { ip: string; ipl: string; ty: string }
+
 interface GameBuffer {
 	gameId: string;
 	dmg: DmgEvent[];
@@ -100,6 +103,7 @@ interface GameBuffer {
 	status: CreditEvent[];
 	hazardset: CreditEvent[];
 	hazardclear: CreditEvent[];
+	typeabilityactivations: TypeAbilityActivationEvent[];
 	// player slot → {userId, username}
 	playerMap: {[slot: string]: {id: string; name: string}};
 }
@@ -142,7 +146,7 @@ export function process(
 		if (!buf) {
 			buf = {
 				gameId: roomId, dmg: [], heal: [], sub: [], nullified: [], threatused: [],
-				assist: [], status: [], hazardset: [], hazardclear: [], playerMap: {},
+				assist: [], status: [], hazardset: [], hazardclear: [], typeabilityactivations: [], playerMap: {},
 			};
 			buffers.set(roomId, buf);
 		}
@@ -184,6 +188,12 @@ export function process(
 		let ev: CreditEvent;
 		try { ev = JSON.parse(json); } catch { return; }
 		getBuf()[type].push(ev);
+		break;
+	}
+	case 'typeabilityactivation': {
+		let ev: TypeAbilityActivationEvent;
+		try { ev = JSON.parse(json); } catch { return; }
+		getBuf().typeabilityactivations.push(ev);
 		break;
 	}
 	case 'end': {
@@ -325,6 +335,12 @@ function flushGame(
 				if (mon(ev.tp) && ev.tpl === pk.pl) threatsNullified++;
 			}
 
+			// Type Ability Activations — how many times this Pokémon's type passively activated.
+			let typeAbilityActivations = 0;
+			for (const ev of buf.typeabilityactivations) {
+				if (mon(ev.ip) && ev.ipl === pk.pl) typeAbilityActivations++;
+			}
+
 			// Healing CAUSED by this Pokémon, as % of recipient max HP.
 			let healingReceived = 0, healingTrue = 0;
 			for (const ev of buf.heal) {
@@ -357,6 +373,7 @@ function flushGame(
 				status_inflicted: countCredit(buf.status),
 				hazards_set: countCredit(buf.hazardset),
 				hazards_cleared: countCredit(buf.hazardclear),
+				type_ability_activations: typeAbilityActivations,
 				item: pk.item || '',
 				item_is_mega: pk.itemMega ? 1 : 0,
 			});

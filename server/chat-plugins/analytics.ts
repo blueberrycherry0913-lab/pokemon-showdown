@@ -55,6 +55,8 @@ interface PokemonRow {
 	status_inflicted_total: number;
 	hazards_set_total: number;
 	hazards_cleared_total: number;
+	type_ability_activations_total: number;
+	type_ability_activations_per_game: number;
 	kills_total: number;
 	assists_total: number;
 	threat_output_raw_total: number;
@@ -209,6 +211,7 @@ const STAT_LABELS: {[k: string]: {label: string; fmt: (v: number) => string; des
 	status_inflicted_total: {label: 'Most Status Inflicted', fmt: v => String(v), desc: 'Total non-volatile statuses (burn/poison/sleep/etc.) this species inflicted on foes'},
 	hazards_set_total: {label: 'Most Hazards Set', fmt: v => String(v), desc: 'Total entry hazards set (Stealth Rock, Spikes, Toxic Spikes, Sticky Web)'},
 	hazards_cleared_total: {label: 'Most Hazards Cleared', fmt: v => String(v), desc: 'Total entry hazards removed (Rapid Spin, Defog, etc.)'},
+	type_ability_activations_per_game: {label: 'Type Activations / Game', fmt: v => v.toFixed(1), desc: "Avg times per game this species' type passively activated (immunity, absorption, speed boost, etc.) — Normal type excluded"},
 };
 
 function buildLeaderboard(statKey: string, board: {top_10: LeaderEntry[]; bottom_10: LeaderEntry[]}): string {
@@ -329,6 +332,7 @@ const PGS_NUMERIC_COLUMNS: [string, string, boolean][] = [
 	['status_inflicted', 'Status', false],
 	['hazards_set', 'HazSet', false],
 	['hazards_cleared', 'HazClr', false],
+	['type_ability_activations', 'TypeAct', false],
 ];
 
 // Format a stored stat value for the full-data tables.
@@ -518,6 +522,7 @@ export const pages: Chat.PageTable = {
 			'status_inflicted_total',
 			'hazards_set_total',
 			'hazards_cleared_total',
+			'type_ability_activations_per_game',
 		];
 
 		let buf = '<div class="pad">';

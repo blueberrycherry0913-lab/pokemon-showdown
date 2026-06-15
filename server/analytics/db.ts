@@ -155,6 +155,7 @@ function initSchema(database: Database.Database): void {
 		['threat_absorbed_raw', 'REAL NOT NULL DEFAULT 0'],
 		['hits_faced', 'INTEGER NOT NULL DEFAULT 0'],
 		['threats_nullified', 'INTEGER NOT NULL DEFAULT 0'],
+		['type_ability_activations', 'INTEGER NOT NULL DEFAULT 0'],
 	]);
 	migrateColumns(database, 'damage_event', [
 		['calculated_damage', 'INTEGER NOT NULL DEFAULT 0'],

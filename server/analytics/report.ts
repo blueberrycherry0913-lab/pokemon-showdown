@@ -83,6 +83,7 @@ export function generateReports(db: Database.Database): void {
 		['status_inflicted_total', p => p.status_inflicted_total, byGames],
 		['hazards_set_total', p => p.hazards_set_total, byGames],
 		['hazards_cleared_total', p => p.hazards_cleared_total, byGames],
+		['type_ability_activations_per_game', p => p.type_ability_activations_per_game, byGames],
 	];
 
 	for (const [statKey, accessor, eligible] of statKeys) {
@@ -189,6 +190,8 @@ interface PokemonRow {
 	status_inflicted_total: number;
 	hazards_set_total: number;
 	hazards_cleared_total: number;
+	type_ability_activations_total: number;
+	type_ability_activations_per_game: number;
 	kills_total: number;
 	assists_total: number;
 	threat_output_raw_total: number;
@@ -221,7 +224,8 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 			SUM(pgs.assists)                                      AS assists_total,
 			SUM(pgs.status_inflicted)                             AS status_inflicted_total,
 			SUM(pgs.hazards_set)                                  AS hazards_set_total,
-			SUM(pgs.hazards_cleared)                              AS hazards_cleared_total
+			SUM(pgs.hazards_cleared)                              AS hazards_cleared_total,
+			SUM(pgs.type_ability_activations)                     AS type_ability_activations_total
 		FROM pokemon_game_stats pgs
 		JOIN player_record pr ON pgs.player_id = pr.player_id
 		WHERE pr.is_excluded = 0 AND pgs.brought = 1
@@ -272,6 +276,8 @@ function getPokemon(db: Database.Database): PokemonRow[] {
 			status_inflicted_total: r.status_inflicted_total,
 			hazards_set_total: r.hazards_set_total,
 			hazards_cleared_total: r.hazards_cleared_total,
+			type_ability_activations_total: r.type_ability_activations_total || 0,
+			type_ability_activations_per_game: perGame(r.type_ability_activations_total || 0),
 			kills_total: r.kills_total,
 			assists_total: r.assists_total,
 			threat_output_raw_total: Math.round(r.threat_output_raw_total || 0),
