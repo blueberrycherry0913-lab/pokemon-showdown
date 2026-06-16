@@ -17676,6 +17676,8 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		type: "Rock",
 		zMove: { boost: { def: 1 } },
 		contestType: "Cool",
+		shortDesc: "Hurts foes on switch-in. Grounded: 10%, Ungrounded: 20%.",
+		desc: "Sets jagged rocks on the foe's side. Pokémon switching in take 10% max HP if grounded, or 20% if ungrounded. Type does not affect damage. Rock-types absorb the hazard. Bug-types are immune.",
 	},
 	steameruption: {
 		num: 592,
@@ -21689,6 +21691,8 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { protect: 1, mirror: 1, metronome: 1, beam: 1 },
 		target: "normal",
 		type: "Normal",
+		shortDesc: "Usually goes first.",
+		desc: "No additional effect. This move is a beam.",
 	},
 
 	// Standard Moves — new ** entries (nums -19 to -50)
