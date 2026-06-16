@@ -21128,4 +21128,16 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		eggGroups: ["Field"],
 		canLearnAnyMove: true,
 	} as any,
+	eisque: {
+		num: 10003,
+		name: "Eisque",
+		types: ["Ice"],
+		baseStats: {hp: 80, atk: 70, def: 80, spa: 110, spd: 90, spe: 95},
+		abilities: { 0: "Ice Body", 1: "Snow Cloak", H: "Flash Freeze" },
+		heightm: 1.0,
+		weightkg: 30,
+		color: "Blue",
+		eggGroups: ["Field"],
+		isNonstandard: "custom" as any,
+	},
 };

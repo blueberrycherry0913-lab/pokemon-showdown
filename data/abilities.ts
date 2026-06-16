@@ -5755,6 +5755,46 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		rating: 3,
 		num: 10144,
 	},
+	flashfreeze: {
+		onStart() {
+			this.effectState.triggered = false;
+		},
+		onAfterDamage(damage, target, source, move) {
+			if (!this.effectState.triggered && target.hp && target.hp <= target.maxhp / 4) {
+				this.effectState.triggered = true;
+				this.add('-activate', target, 'ability: Flash Freeze');
+				if (this.field.setWeather('snowscape', target, {name: 'Flash Freeze'})) {
+					this.field.weatherData.duration = 1;
+				}
+				for (const pokemon of this.getAllActive()) {
+					if (pokemon !== target && !pokemon.fainted) {
+						pokemon.trySetStatus('frb', target, null);
+					}
+				}
+			}
+		},
+		onResidualOrder: 28,
+		onResidual(pokemon) {
+			if (!this.effectState.triggered && pokemon.hp && pokemon.hp <= pokemon.maxhp / 4) {
+				this.effectState.triggered = true;
+				this.add('-activate', pokemon, 'ability: Flash Freeze');
+				if (this.field.setWeather('snowscape', pokemon, {name: 'Flash Freeze'})) {
+					this.field.weatherData.duration = 1;
+				}
+				for (const poke of this.getAllActive()) {
+					if (poke !== pokemon && !poke.fainted) {
+						poke.trySetStatus('frb', pokemon, null);
+					}
+				}
+			}
+		},
+		shortDesc: "At ≤25% HP: Frostbite all other active Pokémon and set 1-turn Snowstorm.",
+		origin: 'Custom',
+		flags: {},
+		name: "Flash Freeze",
+		rating: 3.5,
+		num: 10145,
+	},
 	swiftswim: {
 		onModifySpe(spe, pokemon) {
 			if (['raindance', 'primordialsea'].includes(pokemon.effectiveWeather())) {
