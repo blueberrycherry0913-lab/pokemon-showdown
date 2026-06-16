@@ -16,6 +16,8 @@
  * Flags:
  *   --games=N         number of games (default 50)
  *   --mode=M          random | pool | both       (default both)
+ *   --teams=PATH      team file for pool/both mode (export OR packed format)
+ *   --strict-pool     skip pool teams that fail the validator (default: use anyway)
  *   --server=host:port                            (default localhost:8000)
  *   --names=A,B       bot names                   (default BotAlpha,BotBravo)
  *   --move=F          AI: 1.0 = never switch, 0.7 = ~30% switch (default 0.7)
@@ -51,6 +53,8 @@ function parseArgs(argv) {
 const args = parseArgs(process.argv);
 const GAMES = Number(args.games) || 50;
 const MODE = args.mode || 'both';
+const TEAMS_FILE = args.teams || undefined; // defaults to ./teams.txt inside teams.js
+const STRICT_POOL = !!args['strict-pool'];
 const SERVER = args.server || 'localhost:8000';
 const [NAME_A, NAME_B] = (args.names || 'BotAlpha,BotBravo').split(',').map(s => s.trim());
 const MOVE = args.move !== undefined ? Number(args.move) : 0.7;
@@ -73,7 +77,7 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 class Harness {
 	constructor() {
-		this.nextTeam = teamSource(MODE);
+		this.nextTeam = teamSource(MODE, {file: TEAMS_FILE, strict: STRICT_POOL});
 		this.aiByConn = new Map(); // conn -> Map(roomid -> WSPlayerAI)
 		this.game = null;          // current game state
 		this.stats = {a: 0, b: 0, ties: 0, crashes: 0, setupErrors: 0, turnsTotal: 0, completed: 0};

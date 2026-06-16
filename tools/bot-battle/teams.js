@@ -125,40 +125,77 @@ function generateTeam(maxTries = 60) {
 	throw new Error(`Could not generate a valid team in ${maxTries} tries. Last problems: ${JSON.stringify(lastProblems)}`);
 }
 
-/** Load and validate packed teams from teams.txt (blank-line-separated blocks or one-per-line). */
-function loadPool(file = path.join(__dirname, 'teams.txt')) {
-	if (!fs.existsSync(file)) return [];
-	const raw = fs.readFileSync(file, 'utf8');
-	// Each non-empty, non-comment line is treated as a packed team.
-	const blocks = raw.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#') && !l.startsWith('//'));
-	const out = [];
-	for (const packed of blocks) {
-		const team = Teams.unpack(packed);
-		if (!team) {
-			console.warn(`[teams] skipping unparseable line in teams.txt`);
-			continue;
+/**
+ * Parse a teams file into an array of teams (each a PokemonSet[]).
+ * Auto-detects the Showdown EXPORT format (teambuilder Import/Export — supports
+ * multiple teams separated by "=== [format] name ===" headers) vs. the packed
+ * format (one packed team per line).
+ */
+function parseTeamsFile(raw) {
+	const isExport = /^===.*===\s*$/m.test(raw) || /^\s*Ability:\s/m.test(raw);
+	if (isExport) {
+		const chunks = raw.split(/^===.*===\s*$/m).map(c => c.trim()).filter(Boolean);
+		const source = chunks.length ? chunks : [raw];
+		const teams = [];
+		for (const chunk of source) {
+			const t = Teams.import(chunk);
+			if (t && t.length) teams.push(t);
 		}
+		return teams;
+	}
+	// Packed format: one team per non-comment line.
+	const teams = [];
+	for (const line of raw.split('\n').map(l => l.trim())) {
+		if (!line || line.startsWith('#') || line.startsWith('//')) continue;
+		const t = Teams.unpack(line);
+		if (t && t.length) teams.push(t);
+	}
+	return teams;
+}
+
+/**
+ * Load teams from a file (export OR packed format). By default LENIENT: a team
+ * that fails the validator is used anyway (with a warning) — your game has no
+ * strict move validator, so hand-made teams with freeform movesets must still
+ * run; the server is the final arbiter. Pass `strict` to skip invalid teams.
+ */
+function loadPool(file = path.join(__dirname, 'teams.txt'), strict = false) {
+	if (!fs.existsSync(file)) {
+		console.warn(`[teams] team file not found: ${file}`);
+		return [];
+	}
+	const parsed = parseTeamsFile(fs.readFileSync(file, 'utf8'));
+	const out = [];
+	let idx = 0;
+	for (const team of parsed) {
+		idx++;
 		const problems = validator.validateTeam(team);
 		if (problems) {
-			console.warn(`[teams] skipping invalid pool team: ${problems.slice(0, 2).join('; ')}`);
-			continue;
+			if (strict) {
+				console.warn(`[teams] skipping invalid pool team #${idx}: ${problems.slice(0, 2).join('; ')}`);
+				continue;
+			}
+			console.warn(`[teams] pool team #${idx} has validator warnings (using anyway): ${problems.slice(0, 2).join('; ')}`);
 		}
-		out.push({team, packed});
+		out.push({team, packed: Teams.pack(team)});
 	}
+	console.log(`[teams] loaded ${out.length} team(s) from ${path.basename(file)}.`);
 	return out;
 }
 
 /**
  * Returns a function `nextTeam()` that yields {team, packed} per call, according
- * to `mode`: 'random' | 'pool' | 'both'.
+ * to `mode`: 'random' | 'pool' | 'both'. `opts.file` selects the pool file;
+ * `opts.strict` skips (rather than warns on) invalid pool teams.
  */
-function teamSource(mode) {
-	const pool = (mode === 'pool' || mode === 'both') ? loadPool() : [];
+function teamSource(mode, opts = {}) {
+	const file = opts.file;
+	const pool = (mode === 'pool' || mode === 'both') ? loadPool(file, !!opts.strict) : [];
 	if ((mode === 'pool' || mode === 'both') && !pool.length) {
 		if (mode === 'pool') {
-			throw new Error(`mode=pool but no valid teams found in teams.txt. Paste exported packed teams there, or use --mode=random.`);
+			throw new Error(`mode=pool but no teams found in ${file || 'teams.txt'}. Paste teams there or pass --teams=<path>.`);
 		}
-		console.warn(`[teams] mode=both but teams.txt has no valid teams — falling back to generated teams only.`);
+		console.warn(`[teams] mode=both but the team file has no teams — falling back to generated teams only.`);
 	}
 	let poolIndex = 0;
 	let useGenerated = false; // toggled in 'both' mode

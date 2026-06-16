@@ -26,6 +26,8 @@ It prints a win-rate/crash summary and exits. `Ctrl+C` stops it early.
 |---|---|---|
 | `--games=N` | 50 | number of games to play |
 | `--mode=random\|pool\|both` | both | team source (see below) |
+| `--teams=PATH` | teams.txt | team file for pool/both (export or packed format) |
+| `--strict-pool` | off | skip pool teams that fail the validator (default: use anyway) |
 | `--server=host:port` | localhost:8000 | running server |
 | `--names=A,B` | BotAlpha,BotBravo | bot names (use **unregistered** names) |
 | `--move=F` | 0.7 | AI: `1.0` = never voluntarily switch, `0.7` = ~30% switch |
@@ -55,11 +57,25 @@ client's battle list — you join by the printed room id.
 
 ## Team sources
 
-- **random** — generates fresh `[Gen 9] Testing Standard`-legal teams (random Gen 1
-  species, learnset moves, valid abilities/items, SP spreads) and validates each
-  with the real `TeamValidator` before use. Widest coverage for bug-hunting.
-- **pool** — rotates packed teams you paste into `teams.txt` (one per line).
+- **pool** — rotates teams from a file (`--teams=<path>`, default `teams.txt`). The
+  file can be in the Showdown **export format** (teambuilder Import/Export — multiple
+  teams separated by `=== [format] name ===` headers) OR the packed format (one
+  packed team per line); the loader auto-detects. Pool teams are **lenient**: a team
+  that fails the validator is used anyway (with a warning), since your game has no
+  strict move validator — the server is the final arbiter. Use `--strict-pool` to
+  skip invalid teams instead.
+- **random** — generates fresh `[Gen 9] Testing Standard`-legal teams (random species,
+  learnset moves, valid abilities/items, SP spreads), validated before use. Widest
+  coverage for bug-hunting.
 - **both** — alternates pool / generated.
+
+Use your existing teams file:
+
+```
+node run.js --games=20 --mode=pool --teams="C:\Users\primo\Documents\GitHub\pokemon-showdown-client\play.pokemonshowdown.com\default-teams.txt"
+```
+
+(This is the default in `run-bots.bat`.)
 
 ## Output
 

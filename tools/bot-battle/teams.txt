@@ -1,10 +1,15 @@
-# Packed teams for --mode=pool / --mode=both.
+# Default team file for --mode=pool / --mode=both.
 #
-# Paste one packed team PER LINE. To get a packed team:
-#   Teambuilder -> pick a team -> "Import/Export" -> copy the text, then convert
-#   it to packed form, OR just export from the teambuilder's packed format.
-# Lines starting with # or // are ignored. Every team is validated against
-# [Gen 9] Testing Standard on load; invalid teams are skipped with a warning.
+# Two accepted formats (auto-detected):
+#   1. EXPORT format — paste teambuilder Import/Export text. Multiple teams are
+#      separated by "=== [gen9testingstandard] My Team ===" header lines.
+#   2. PACKED format — one packed team per line (# and // lines ignored).
 #
-# Example (delete this comment block and paste real teams):
+# Pool teams are used even if the validator complains (lenient) — your game has
+# no strict move validator. Use --strict-pool to skip invalid teams instead.
+#
+# Tip: you can point the harness straight at your existing teams file with
+#   --teams="C:\Users\primo\Documents\GitHub\pokemon-showdown-client\play.pokemonshowdown.com\default-teams.txt"
+#
+# Example packed team (delete this block and paste your own, or use --teams):
 # Venusaur||leftovers|Overgrow|gigadrain,sludgebomb,sleeppowder,synthesis|Modest|,,,32,,32||0,0,0,0,0,0||50|
