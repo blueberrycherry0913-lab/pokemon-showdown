@@ -30,11 +30,28 @@ It prints a win-rate/crash summary and exits. `Ctrl+C` stops it early.
 | `--names=A,B` | BotAlpha,BotBravo | bot names (use **unregistered** names) |
 | `--move=F` | 0.7 | AI: `1.0` = never voluntarily switch, `0.7` = ~30% switch |
 | `--mega=F` | 0.6 | AI: `0` = no random Tera/Mega, `0.6` = often |
-| `--timeout=S` | 180 | per-game timeout (seconds); a hang past this is logged as a crash |
+| `--watch` | off | viewable mode (see below) |
+| `--watch-delay=MS` | 900 | per-choice delay in watch mode |
+| `--watch-linger=MS` | 5000 | keep room open this long after a win |
+| `--replays` | off | attempt `/savereplay` after each game |
+| `--timeout=S` | 180 (600 in watch) | per-game timeout (seconds); a hang past this is logged as a crash |
 | `--noauth` | off | log in without a loginserver assertion (only if your server sets `Config.noguestsecurity = true`) |
 | `--loginserver=URL` | play.pokemonshowdown.com | assertion source |
 
 **Moves-only bots:** `--move=1.0 --mega=0` (forced post-faint switches still happen — those are mandatory).
+
+## Watching games
+
+```
+node run.js --games=10 --mode=both --watch
+```
+
+In watch mode the harness prints a `/join battle-gen9testingstandard-N` link the
+moment each battle opens — type that into your client to spectate live. Turns are
+slowed (`--watch-delay`, default 0.9s/choice) so they're readable, and each room
+stays open a few seconds after the win (`--watch-linger`). Add `--replays` to also
+attempt to save a replay of each game. Note: battles don't auto-appear in your
+client's battle list — you join by the printed room id.
 
 ## Team sources
 

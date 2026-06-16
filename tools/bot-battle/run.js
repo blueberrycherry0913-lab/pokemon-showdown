@@ -20,7 +20,12 @@
  *   --names=A,B       bot names                   (default BotAlpha,BotBravo)
  *   --move=F          AI: 1.0 = never switch, 0.7 = ~30% switch (default 0.7)
  *   --mega=F          AI: 0 = no random Tera/Mega, 0.6 = often   (default 0.6)
- *   --timeout=S       per-game timeout in seconds (default 180)
+ *   --watch           viewable mode: print each room's /join link, slow turns,
+ *                     and keep the room open after a win
+ *   --watch-delay=MS  per-choice delay in watch mode (default 900)
+ *   --watch-linger=MS keep room open this long after a win (default 5000)
+ *   --replays         attempt /savereplay after each game
+ *   --timeout=S       per-game timeout in seconds (default 180; 600 in watch mode)
  *   --noauth          log in without a loginserver assertion (dev servers with
  *                     Config.noguestsecurity = true)
  *   --loginserver=URL override loginserver base   (default play.pokemonshowdown.com)
@@ -50,7 +55,12 @@ const SERVER = args.server || 'localhost:8000';
 const [NAME_A, NAME_B] = (args.names || 'BotAlpha,BotBravo').split(',').map(s => s.trim());
 const MOVE = args.move !== undefined ? Number(args.move) : 0.7;
 const MEGA = args.mega !== undefined ? Number(args.mega) : 0.6;
-const TIMEOUT_MS = (Number(args.timeout) || 180) * 1000;
+const WATCH = !!args.watch;
+const WATCH_DELAY = Number(args['watch-delay']) || 900;   // ms delay per choice (watch mode)
+const WATCH_LINGER = args['watch-linger'] !== undefined ? Number(args['watch-linger']) : 5000; // ms to keep room open after a win
+const REPLAYS = !!args.replays;                            // attempt /savereplay after each game
+// Watch mode slows turns, so use a longer per-game timeout unless overridden.
+const TIMEOUT_MS = (Number(args.timeout) || (WATCH ? 600 : 180)) * 1000;
 const NOAUTH = !!args.noauth;
 const LOGINSERVER = args.loginserver || 'https://play.pokemonshowdown.com/';
 
@@ -85,7 +95,8 @@ class Harness {
 		this.connA.connect();
 		this.connB.connect();
 		await Promise.all([this.connA.ready, this.connB.ready]);
-		console.log(`Both bots logged in. Running ${GAMES} game(s) of ${FORMAT} (mode=${MODE}, move=${MOVE}, mega=${MEGA}).`);
+		console.log(`Both bots logged in. Running ${GAMES} game(s) of ${FORMAT} (mode=${MODE}, move=${MOVE}, mega=${MEGA}${WATCH ? `, WATCH +${WATCH_DELAY}ms/choice` : ''}).`);
+		if (WATCH) console.log(`Watch mode on: join each battle room in your client when its /join link prints below.`);
 
 		for (let i = 1; i <= GAMES; i++) {
 			await this.playGame(i);
@@ -101,7 +112,11 @@ class Harness {
 		const map = this.aiByConn.get(conn);
 		let ai = map.get(roomid);
 		if (!ai) {
-			ai = new WSPlayerAI(choice => conn.send(roomid, choice), {move: MOVE, mega: MEGA});
+			// Watch mode delays each choice so turns are human-readable in the client.
+			const sendChoice = WATCH ?
+				(choice => setTimeout(() => conn.send(roomid, choice), WATCH_DELAY)) :
+				(choice => conn.send(roomid, choice));
+			ai = new WSPlayerAI(sendChoice, {move: MOVE, mega: MEGA});
 			map.set(roomid, ai);
 		}
 		return ai;
@@ -116,7 +131,10 @@ class Harness {
 		if (!roomid.startsWith('battle-')) return;
 
 		// First battle line of the game pins the room id.
-		if (this.game && !this.game.roomid) this.game.roomid = roomid;
+		if (this.game && !this.game.roomid) {
+			this.game.roomid = roomid;
+			if (WATCH) console.log(`[game ${this.game.index}] WATCH — in your client type:  /join ${roomid}`);
+		}
 
 		// Feed every battle-room line to this connection's AI (it acts only on
 		// |request| / |error|, logs the rest). This is the engine's own decision logic.
@@ -196,6 +214,18 @@ class Harness {
 
 	async finishGame(game) {
 		const roomid = game.roomid;
+		const excluded = game.crashed || game.winner === undefined;
+
+		this.recordResult(game, roomid, excluded);
+
+		// Watch mode: optionally save a replay, then keep the room open so you can
+		// see the end of the battle in your client before the bots leave.
+		if (roomid && REPLAYS) this.connA.send(roomid, '/savereplay');
+		if (roomid && WATCH && !excluded) {
+			console.log(`[game ${game.index}] keeping room open ${WATCH_LINGER / 1000}s — /join ${roomid}`);
+			await sleep(WATCH_LINGER);
+		}
+
 		// Leave the battle room on both connections and drop their AIs.
 		if (roomid) {
 			this.connA.send(roomid, '/leave');
@@ -203,8 +233,10 @@ class Harness {
 			this.aiByConn.get(this.connA).delete(roomid);
 			this.aiByConn.get(this.connB).delete(roomid);
 		}
+		this.game = null;
+	}
 
-		const excluded = game.crashed || game.winner === undefined;
+	recordResult(game, roomid, excluded) {
 		if (excluded) {
 			this.stats.crashes++;
 			const scrubbed = roomid ? scrubGame(roomid) : false;
@@ -238,7 +270,6 @@ class Harness {
 			console.log(`[game ${game.index}] ${result === 'tie' ? 'TIE' : `${result} won`} in ${game.turns} turns.`);
 			this.append({game: game.index, roomid, result, turns: game.turns});
 		}
-		this.game = null;
 	}
 
 	append(row) {
