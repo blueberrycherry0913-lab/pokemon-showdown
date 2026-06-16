@@ -1437,20 +1437,32 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 	},
 
 	// Side condition created by Protective Soul ability when holder is KO'd.
-	// Grants the next ally that switches in a free substitute (no HP cost).
+	// Grants the next ally that switches in a free 1-HP substitute lasting only 1 turn.
 	protectivesoulbarrier: {
 		name: 'Protective Soul Barrier',
 		onSwitchIn(pokemon) {
 			if (pokemon.volatiles['substitute']) {
-				// Already has a substitute; discard the barrier.
 				pokemon.side.removeSideCondition('protectivesoulbarrier');
 				return;
 			}
-			const hp = (this.effectState as any).barrierHP || 1;
 			// Install the substitute volatile directly (no HP deducted from the incoming Pokémon).
-			(pokemon.volatiles as any)['substitute'] = {hp, id: 'substitute', target: pokemon, source: pokemon};
+			(pokemon.volatiles as any)['substitute'] = {hp: 1, id: 'substitute', target: pokemon, source: pokemon};
 			this.add('-start', pokemon, 'Substitute');
+			// Track the 1-turn duration; expires at end of this turn.
+			pokemon.addVolatile('protectivesoulsubduration');
 			pokemon.side.removeSideCondition('protectivesoulbarrier');
+		},
+	},
+
+	// Tracks the 1-turn lifespan of a Protective Soul substitute.
+	// Removes the substitute at end of the switch-in turn if it wasn't already broken.
+	protectivesoulsubduration: {
+		duration: 1,
+		onResidual(pokemon) {
+			if (pokemon.volatiles['substitute']) {
+				delete (pokemon.volatiles as any)['substitute'];
+				this.add('-end', pokemon, 'Substitute');
+			}
 		},
 	},
 
