@@ -1669,43 +1669,29 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 138,
 	},
 	flashfire: {
-		onTryHit(target, source, move) {
-			if (target !== source && move.type === 'Fire') {
-				move.accuracy = true;
-				if (!target.addVolatile('flashfire')) {
-					this.add('-immune', target, '[from] ability: Flash Fire');
-				}
-				return null;
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Fire') {
+				return this.chainModify(0.5);
 			}
 		},
-		onEnd(pokemon) {
-			pokemon.removeVolatile('flashfire');
+		onDamagingHit(damage, target, source, move) {
+			if (move.type === 'Fire') {
+				this.boost({ atk: 1, spa: 1 }, target);
+			}
 		},
-		condition: {
-			noCopy: true, // doesn't get copied by Baton Pass
-			onStart(target) {
-				this.add('-start', target, 'ability: Flash Fire');
-			},
-			onModifyAtkPriority: 5,
-			onModifyAtk(atk, attacker, defender, move) {
-				if (move.type === 'Fire' && attacker.hasAbility('flashfire')) {
-					this.debug('Flash Fire boost');
-					return this.chainModify(1.5);
+		onAnyRedirectTarget(target, source, source2, move) {
+			if (move.type !== 'Fire' || move.flags['pledgecombo']) return;
+			const redirectTarget = ['randomNormal', 'adjacentFoe'].includes(move.target) ? 'normal' : move.target;
+			if (this.validTarget(this.effectState.target, source, redirectTarget)) {
+				if (move.smartTarget) move.smartTarget = false;
+				if (this.effectState.target !== target) {
+					this.add('-activate', this.effectState.target, 'ability: Flash Fire');
 				}
-			},
-			onModifySpAPriority: 5,
-			onModifySpA(atk, attacker, defender, move) {
-				if (move.type === 'Fire' && attacker.hasAbility('flashfire')) {
-					this.debug('Flash Fire boost');
-					return this.chainModify(1.5);
-				}
-			},
-			onEnd(target) {
-				this.add('-end', target, 'ability: Flash Fire', '[silent]');
-			},
+				return this.effectState.target;
+			}
 		},
-		shortDesc: "Immune to Fire-type moves; being hit by one raises Fire-type move power by ×1.5.",
-		origin: 'Standby',
+		shortDesc: "Reduces the damage of Fire-type moves by 50% and raises Attack and Sp. Atk by +1 when hit by one.",
+		origin: 'Reworked',
 		flags: { breakable: 1 },
 		name: "Flash Fire",
 		rating: 3.5,
@@ -6583,42 +6569,18 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 273,
 	},
 	whitesmoke: {
-		onAfterEachBoost(boost, target, source, effect) {
-			if (this.effectState.reverting) return;
-			const log: AnyObject[] = this.effectState.boostLog || (this.effectState.boostLog = []);
-			const entry: AnyObject = { turn: this.turn };
-			let hasChange = false;
+		onBoost(boost, target, source, effect) {
+			if (!source || target === source) return;
 			let i: BoostID;
 			for (i in boost) {
-				if (boost[i] !== 0) {
-					entry[i] = boost[i];
-					hasChange = true;
+				if (boost[i] < 0) {
+					delete boost[i];
 				}
 			}
-			if (hasChange) log.push(entry);
 		},
-		onResidualOrder: 28,
-		onResidual(pokemon) {
-			const log: AnyObject[] = this.effectState.boostLog;
-			if (!log || !log.length) return;
-			const expired = log.filter((entry: AnyObject) => this.turn - entry.turn >= 2);
-			if (!expired.length) return;
-			const rev: Partial<Record<BoostID, number>> = {};
-			for (const entry of expired) {
-				let i: BoostID;
-				for (i in entry) {
-					if (i === 'turn') continue;
-					rev[i] = (rev[i] || 0) - (entry[i] as number);
-				}
-			}
-			this.effectState.reverting = true;
-			this.boost(rev as Record<BoostID, number>, pokemon, pokemon, null);
-			this.effectState.reverting = false;
-			this.effectState.boostLog = log.filter((entry: AnyObject) => this.turn - entry.turn < 2);
-		},
-		shortDesc: "The Pokémon's stat changes, both self and foe inflicted, return to normal 2 turns after infliction.",
+		shortDesc: "The Pokémon's stats cannot be lowered by opponents.",
 		origin: 'Reworked',
-		flags: {},
+		flags: { breakable: 1 },
 		name: "White Smoke",
 		rating: 2,
 		num: 73,
