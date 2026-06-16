@@ -116,6 +116,24 @@ interface GameBuffer {
 const buffers = new Map<string, GameBuffer>();
 
 // ---------------------------------------------------------------------------
+// Species name normalization
+// ---------------------------------------------------------------------------
+// Renames and merges applied before any data hits the buffer or DB.
+//   - Toxtricity (Amped base form) → "Toxtricity-Amp" for clarity
+//   - Toxtricity-Low-Key           → "Toxtricity-LK"
+//   - Eiscue-Noice / Morpeko-Hangry → merged into their base forms (same Pokémon, form swaps)
+const SPECIES_RENAMES: {[name: string]: string} = {
+	'Toxtricity': 'Toxtricity-Amp',
+	'Toxtricity-Low-Key': 'Toxtricity-LK',
+	'Eiscue-Noice': 'Eiscue',
+	'Morpeko-Hangry': 'Morpeko',
+};
+function normalizeSpecies(name: string | null | undefined): string | null {
+	if (!name) return name ?? null;
+	return SPECIES_RENAMES[name] ?? name;
+}
+
+// ---------------------------------------------------------------------------
 // Public API — called from room-battle.ts receive()
 // ---------------------------------------------------------------------------
 
@@ -162,54 +180,70 @@ export function process(
 	case 'dmg': {
 		let ev: DmgEvent;
 		try { ev = JSON.parse(json); } catch { return; }
+		ev.ip = normalizeSpecies(ev.ip);
+		ev.tp = normalizeSpecies(ev.tp) ?? ev.tp;
+		ev.ssp = normalizeSpecies(ev.ssp);
 		getBuf().dmg.push(ev);
 		break;
 	}
 	case 'heal': {
 		let ev: HealEvent;
 		try { ev = JSON.parse(json); } catch { return; }
+		ev.tp = normalizeSpecies(ev.tp) ?? ev.tp;
+		ev.recip = normalizeSpecies(ev.recip) ?? ev.recip;
 		getBuf().heal.push(ev);
 		break;
 	}
 	case 'subavoid': {
 		let ev: SubAvoidEvent;
 		try { ev = JSON.parse(json); } catch { return; }
+		ev.tp = normalizeSpecies(ev.tp) ?? ev.tp;
 		getBuf().sub.push(ev);
 		break;
 	}
 	case 'nullified': {
 		let ev: NullifiedEvent;
 		try { ev = JSON.parse(json); } catch { return; }
+		ev.tp = normalizeSpecies(ev.tp) ?? ev.tp;
 		getBuf().nullified.push(ev);
 		break;
 	}
 	case 'threatused': {
 		let ev: ThreatUsedEvent;
 		try { ev = JSON.parse(json); } catch { return; }
+		ev.ip = normalizeSpecies(ev.ip) ?? ev.ip;
 		getBuf().threatused.push(ev);
 		break;
 	}
 	case 'moveact': {
 		let ev: MoveActEvent;
 		try { ev = JSON.parse(json); } catch { return; }
+		ev.ip = normalizeSpecies(ev.ip) ?? ev.ip;
 		getBuf().moveact.push(ev);
 		break;
 	}
 	case 'assist': case 'status': case 'hazardset': case 'hazardclear': {
 		let ev: CreditEvent;
 		try { ev = JSON.parse(json); } catch { return; }
+		ev.ip = normalizeSpecies(ev.ip) ?? ev.ip;
 		getBuf()[type].push(ev);
 		break;
 	}
 	case 'typeabilityactivation': {
 		let ev: TypeAbilityActivationEvent;
 		try { ev = JSON.parse(json); } catch { return; }
+		ev.ip = normalizeSpecies(ev.ip) ?? ev.ip;
 		getBuf().typeabilityactivations.push(ev);
 		break;
 	}
 	case 'end': {
 		let payload: EndPayload;
 		try { payload = JSON.parse(json); } catch { return; }
+		// Normalize species names in the end-roster so DB keys match event data.
+		for (const pk of payload.pokes) {
+			pk.sp = normalizeSpecies(pk.sp) ?? pk.sp;
+			if (pk.base) pk.base = normalizeSpecies(pk.base) ?? pk.base;
+		}
 		const buf = getBuf();
 		if (playerMap) buf.playerMap = playerMap;
 		buffers.delete(roomId);
