@@ -237,13 +237,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				(this.dex.getImmunity(moveType, target) && this.dex.getEffectiveness(moveType, target) > 0) ||
 				move.ohko || move.selfdestruct
 			) {
-				return this.chainModify(0.5);
+				return this.chainModify(0.25);
 			}
 		},
 		onFoeAfterMove(source, target, move) {
 			(this.effectState.target.abilityState.anticipatedFoes as Set<Pokemon> | undefined)?.delete(source);
 		},
-		shortDesc: "Senses a foe's dangerous moves; if immediately attacked with one of those moves, the Pokémon takes 50% less damage.",
+		shortDesc: "Senses a foe's dangerous moves; if immediately attacked with one of those moves, the Pokémon takes 75% less damage.",
 		origin: 'Buffed',
 		flags: {},
 		name: "Anticipation",
@@ -2284,11 +2284,17 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onResidual(pokemon) {
 			if (pokemon.species.baseSpecies !== 'Morpeko' || pokemon.terastallized) return;
 			const targetForme = pokemon.species.name === 'Morpeko' ? 'Morpeko-Hangry' : 'Morpeko';
+			if (pokemon.species.name === 'Morpeko-Hangry') {
+				// End of a Hangry Mode turn — heal 20% MaxHP before switching back
+				this.heal(Math.floor(pokemon.baseMaxhp / 5));
+			}
 			pokemon.formeChange(targetForme);
 		},
+		shortDesc: "Alternates between Full Belly and Hangry Mode each turn; heals 20% MaxHP at end of Hangry Mode turns.",
+		origin: 'Buffed',
 		flags: { failroleplay: 1, noreceiver: 1, noentrain: 1, notrace: 1, failskillswap: 1, notransform: 1 },
 		name: "Hunger Switch",
-		rating: 1,
+		rating: 2,
 		num: 258,
 	},
 	hustle: {
@@ -5731,11 +5737,17 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 10141,
 	},
 	emotionalsilencer: {
+		onAnyAfterMove(source, target, move) {
+			const holder = this.effectState.target;
+			if (source === holder || source.isAlly(holder)) return;
+			if (!move.flags['emotion']) return;
+			this.boost({ atk: 2, spa: 2 }, holder, holder, this.effect);
+		},
 		shortDesc: "When a foe uses an emotion-based move, this Pokémon gains +2 to both offensive stats.",
-		origin: 'Standby',
+		origin: 'Custom',
 		flags: {},
 		name: "Emotional Silencer",
-		rating: 2,
+		rating: 3,
 		num: 10142,
 	},
 	skewer: {
@@ -5847,6 +5859,14 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 180,
 	},
 	synchronize: {
+		onStart(pokemon) {
+			if (!pokemon.status || pokemon.status === 'slp' || pokemon.status === 'frz' || pokemon.status === 'frb') return;
+			const status = this.dex.conditions.get(pokemon.status);
+			for (const foe of pokemon.foes()) {
+				this.add('-activate', pokemon, 'ability: Synchronize');
+				foe.trySetStatus(status, pokemon, { status: pokemon.status, id: 'synchronize' } as Effect);
+			}
+		},
 		onAfterSetStatus(status, target, source, effect) {
 			if (!source || source === target) return;
 			if (effect && effect.id === 'toxicspikes') return;
@@ -5856,9 +5876,11 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			// and show messages when activating against it.
 			source.trySetStatus(status, target, { status: status.id, id: 'synchronize' } as Effect);
 		},
+		shortDesc: "Passes non-sleep status to the foe upon infliction; re-applies on switch-in while statused.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Synchronize",
-		rating: 2,
+		rating: 2.5,
 		num: 28,
 	},
 	tabletsofruin: {
@@ -7820,13 +7842,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onModifyAccuracyPriority: -1,
 		onModifyAccuracy(accuracy, source, target) {
 			if (!this.effectState.firstTurn || typeof accuracy !== 'number') return;
-			if ((source as any)?.hasType?.('Psychic')) return; // Psychic-type attackers bypass
+			if ((source as any)?.hasType?.('Psychic') || (source as any)?.hasType?.('Dark')) return;
 			return 0;
 		},
 		onResidual(pokemon) {
 			this.effectState.firstTurn = false;
 		},
-		shortDesc: "On switch-in, all non-Psychic attacks miss for one turn.",
+		shortDesc: "On switch-in, all non-Psychic, non-Dark attacks miss for one turn.",
 		origin: 'Custom',
 		flags: {},
 		name: "Psychic Vision",
@@ -8581,5 +8603,44 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		name: "Charged Spines",
 		rating: 2,
 		num: 10140,
+	},
+
+	// --- Row 450: Emotion Siphon ---
+	emotionsiphon: {
+		onAnyAfterMove(source, target, move) {
+			const holder = this.effectState.target;
+			if (source === holder || source.isAlly(holder)) return;
+			if (!move.flags['emotion']) return;
+			this.heal(Math.floor(holder.baseMaxhp / 4), holder, holder, this.effect);
+		},
+		shortDesc: "Heals 25% MaxHP when a foe uses an emotion-based move.",
+		origin: 'Custom',
+		flags: {},
+		name: "Emotion Siphon",
+		rating: 3,
+		num: 10146,
+	},
+
+	// --- Row 451: Endocrine Dampener ---
+	endocrinedampener: {
+		onFoeTryMove(target, source, move) {
+			const targetAllExceptions = ['perishsong', 'flowershield', 'rototiller'];
+			if (move.target === 'foeSide' || (move.target === 'all' && !targetAllExceptions.includes(move.id))) {
+				return;
+			}
+			const holder = this.effectState.target;
+			if (target !== holder) return;
+			if (move.priority > 0.1) {
+				this.attrLastMove('[still]');
+				this.add('cant', holder, 'ability: Endocrine Dampener', move, `[of] ${target}`);
+				return false;
+			}
+		},
+		shortDesc: "Blocks priority moves (priority +1 or higher) aimed at this Pokémon.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Endocrine Dampener",
+		rating: 2.5,
+		num: 10147,
 	},
 };
