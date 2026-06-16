@@ -7183,11 +7183,17 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return null;
 			}
 		},
-		shortDesc: "Gives immunity to Fire-type moves.",
+		onTrySetStatus(status, target, source, effect) {
+			if (status.id === 'brn' || status.id === 'scr') {
+				if (effect?.effectType === 'Move') this.add('-immune', target, '[from] ability: Fireproof');
+				return false;
+			}
+		},
+		shortDesc: "Immune to Fire-type moves and Burn.",
 		origin: 'Custom',
 		flags: { breakable: 1 },
 		name: "Fireproof",
-		rating: 1,
+		rating: 2,
 		num: 10052,
 	},
 	waterproof: {
@@ -7211,11 +7217,17 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return null;
 			}
 		},
-		shortDesc: "Gives immunity to Electric-type moves.",
+		onTrySetStatus(status, target, source, effect) {
+			if (status.id === 'stun' || status.id === 'par') {
+				if (effect?.effectType === 'Move') this.add('-immune', target, '[from] ability: Insulated');
+				return false;
+			}
+		},
+		shortDesc: "Immune to Electric-type moves and Stun.",
 		origin: 'Custom',
 		flags: { breakable: 1 },
 		name: "Insulated",
-		rating: 1,
+		rating: 2,
 		num: 10054,
 	},
 	herbicide: {
@@ -7239,11 +7251,17 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return null;
 			}
 		},
-		shortDesc: "Gives immunity to Ice-type moves.",
+		onTrySetStatus(status, target, source, effect) {
+			if (status.id === 'frb' || status.id === 'frz') {
+				if (effect?.effectType === 'Move') this.add('-immune', target, '[from] ability: Frostproof');
+				return false;
+			}
+		},
+		shortDesc: "Immune to Ice-type moves and Frostbite.",
 		origin: 'Custom',
 		flags: { breakable: 1 },
 		name: "Frostproof",
-		rating: 1,
+		rating: 2,
 		num: 10056,
 	},
 	pacifist: {
@@ -7267,11 +7285,17 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return null;
 			}
 		},
-		shortDesc: "Gives immunity to Poison-type moves.",
+		onTrySetStatus(status, target, source, effect) {
+			if (status.id === 'psn' || status.id === 'tox' || status.id === 'cor' || status.id === 'mlt') {
+				if (effect?.effectType === 'Move') this.add('-immune', target, '[from] ability: Immunized');
+				return false;
+			}
+		},
+		shortDesc: "Immune to Poison-type moves and poison status.",
 		origin: 'Custom',
 		flags: { breakable: 1 },
 		name: "Immunized",
-		rating: 1,
+		rating: 2,
 		num: 10058,
 	},
 	antiair: {
@@ -7929,10 +7953,10 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	punisher: {
 		onModifyDamage(damage, source, target, move) {
 			if (target.getMoveHitData(move).typeMod > 0) {
-				return this.chainModify(2);
+				return this.chainModify(2.5);
 			}
 		},
-		shortDesc: "Super Effective moves deal an additional ×2 damage.",
+		shortDesc: "Super Effective moves deal ×2.5 damage.",
 		origin: 'Custom',
 		flags: {},
 		name: "Punisher",
