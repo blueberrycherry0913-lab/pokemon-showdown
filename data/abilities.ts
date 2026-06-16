@@ -1679,17 +1679,6 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.boost({ atk: 1, spa: 1 }, target);
 			}
 		},
-		onAnyRedirectTarget(target, source, source2, move) {
-			if (move.type !== 'Fire' || move.flags['pledgecombo']) return;
-			const redirectTarget = ['randomNormal', 'adjacentFoe'].includes(move.target) ? 'normal' : move.target;
-			if (this.validTarget(this.effectState.target, source, redirectTarget)) {
-				if (move.smartTarget) move.smartTarget = false;
-				if (this.effectState.target !== target) {
-					this.add('-activate', this.effectState.target, 'ability: Flash Fire');
-				}
-				return this.effectState.target;
-			}
-		},
 		shortDesc: "Reduces the damage of Fire-type moves by 50% and raises Attack and Sp. Atk by +1 when hit by one.",
 		origin: 'Reworked',
 		flags: { breakable: 1 },
@@ -6569,18 +6558,20 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 273,
 	},
 	whitesmoke: {
-		onBoost(boost, target, source, effect) {
-			if (!source || target === source) return;
+		onTryBoost(boost, target, source, effect) {
+			let blockedDrop = false;
 			let i: BoostID;
 			for (i in boost) {
-				if (boost[i] < 0) {
-					delete boost[i];
-				}
+				if (boost[i]! < 0) blockedDrop = true;
+				delete boost[i];
+			}
+			if (blockedDrop && source && source !== target && !(effect as ActiveMove).secondaries && effect.id !== 'octolock') {
+				this.add('-fail', target, 'unboost', '[from] ability: White Smoke', `[of] ${target}`);
 			}
 		},
-		shortDesc: "The Pokémon's stats cannot be lowered by opponents.",
+		shortDesc: "This Pokémon's stats cannot be changed by any means.",
 		origin: 'Reworked',
-		flags: { breakable: 1 },
+		flags: {},
 		name: "White Smoke",
 		rating: 2,
 		num: 73,
