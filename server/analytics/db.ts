@@ -20,21 +20,34 @@ import * as fs from 'fs';
 
 import type Database from 'better-sqlite3';
 
-let db: Database.Database | null = null;
+export type AnalyticsScope = 'players' | 'bots';
 
-export function getDB(): Database.Database | null {
+const DB_FILES: {[scope in AnalyticsScope]: string} = {
+	players: 'battle_analytics_v2.db',
+	bots: 'battle_analytics_bots_v2.db',
+};
+const dbs: {[scope: string]: Database.Database} = {};
+
+/** Whether analytics can run at all (better-sqlite3 present). Cheap — does not open a DB. */
+export function analyticsEnabled(): boolean {
+	return !!BetterSqlite3;
+}
+
+export function getDB(scope: AnalyticsScope = 'players'): Database.Database | null {
 	if (!BetterSqlite3) return null;
-	if (db) return db;
+	if (dbs[scope]) return dbs[scope];
 
 	const dir = path.join(__dirname, '../../../logs/analytics');
 	fs.mkdirSync(dir, {recursive: true});
 
-	// v2: damage/healing stored as % of max HP (was raw HP in v1) + True/overkill columns
-	db = new BetterSqlite3(path.join(dir, 'battle_analytics_v2.db'));
-	db.pragma('journal_mode = WAL');
-	db.pragma('foreign_keys = ON');
-	initSchema(db);
-	return db;
+	// v2: damage/healing stored as % of max HP (was raw HP in v1) + True/overkill columns.
+	// Bot games (scope 'bots') use a separate file so they never mix with player stats.
+	const handle = new BetterSqlite3(path.join(dir, DB_FILES[scope]));
+	handle.pragma('journal_mode = WAL');
+	handle.pragma('foreign_keys = ON');
+	initSchema(handle);
+	dbs[scope] = handle;
+	return handle;
 }
 
 function initSchema(database: Database.Database): void {

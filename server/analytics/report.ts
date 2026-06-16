@@ -16,8 +16,14 @@ import * as fs from 'fs';
 import type Database from 'better-sqlite3';
 
 const ANALYTICS_DIR = path.join(__dirname, '../../../logs/analytics');
-const FULL_PATH = path.join(ANALYTICS_DIR, 'battle_report_full.json');
-const SUMMARY_PATH = path.join(ANALYTICS_DIR, 'battle_report_summary.json');
+// Bot games write to *_bots_* report files so they never overwrite player stats.
+function reportPaths(scope: 'players' | 'bots') {
+	const suffix = scope === 'bots' ? '_bots' : '';
+	return {
+		full: path.join(ANALYTICS_DIR, `battle_report${suffix}_full.json`),
+		summary: path.join(ANALYTICS_DIR, `battle_report${suffix}_summary.json`),
+	};
+}
 // Leaderboard sample-size floors. Testing values now; real-play values in comments.
 const MIN_GAMES_FOR_LEADERBOARD = 1; // → 3
 const MIN_MOVES_USED = 1;            // → 10  (offense per-move stats)
@@ -30,7 +36,8 @@ const MIN_ACTIVE_TURNS = 1;          // → 10  (per-active-turn stats)
 // Main entry point
 // ---------------------------------------------------------------------------
 
-export function generateReports(db: Database.Database): void {
+export function generateReports(db: Database.Database, scope: 'players' | 'bots' = 'players'): void {
+	const {full: FULL_PATH, summary: SUMMARY_PATH} = reportPaths(scope);
 	const {gamesTotal, avgTurns} = getGlobalStats(db);
 	const players = getPlayers(db);
 	const pokemon = getPokemon(db);

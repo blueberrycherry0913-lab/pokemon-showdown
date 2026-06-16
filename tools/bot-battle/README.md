@@ -68,6 +68,26 @@ client's battle list — you join by the printed room id.
   packed teams, and the captured battle log. The two teams let you reproduce the
   matchup. (`results/` is git-ignored.)
 
+## Bot stats are kept separate
+
+Bot games record the **same** analytics as player games, but into a **separate
+database** (`logs/analytics/battle_analytics_bots_v2.db`) and separate report
+files — they never touch your real player leaderboards. Routing is automatic: any
+battle where a participant is a known bot id (default `botalpha` / `botbravo`,
+configurable in `server/analytics/bots.ts` or via `Config.analyticsbotids`) goes
+to the bot dataset, so the player DB stays human-only.
+
+View bot stats in your client:
+
+| Command | Shows |
+|---|---|
+| `/analyticsbots` | bot leaderboard dashboard |
+| `/analyticsbotsfull` | raw bot data + per-game Remove buttons |
+| `/analyticsbotsremove <game_id>` | scrub one bot game (staff) |
+| `/analyticsbotsclearall confirm` | wipe all bot data (staff) |
+
+The normal `/analytics` / `/analyticsfull` pages continue to show **players only**.
+
 ## Login note
 
 Bots use **unregistered** names and fetch a guest assertion from the public

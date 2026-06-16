@@ -9,11 +9,18 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import {getDB, deleteGame, deleteAllGames} from '../analytics/db';
+import type {AnalyticsScope} from '../analytics/db';
 import {generateReports} from '../analytics/report';
 
 const ANALYTICS_DIR = path.join(__dirname, '../../../logs/analytics');
-const FULL_PATH = path.join(ANALYTICS_DIR, 'battle_report_full.json');
-const SUMMARY_PATH = path.join(ANALYTICS_DIR, 'battle_report_summary.json');
+// Player and bot stats live in separate report files (and separate DBs).
+function reportFiles(scope: AnalyticsScope) {
+	const suffix = scope === 'bots' ? '_bots' : '';
+	return {
+		full: path.join(ANALYTICS_DIR, `battle_report${suffix}_full.json`),
+		summary: path.join(ANALYTICS_DIR, `battle_report${suffix}_summary.json`),
+	};
+}
 
 // ---------------------------------------------------------------------------
 // Types (mirror the report generator output)
@@ -91,17 +98,17 @@ interface SummaryReport {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function loadFull(): FullReport | null {
+function loadFull(scope: AnalyticsScope): FullReport | null {
 	try {
-		return JSON.parse(fs.readFileSync(FULL_PATH, 'utf8')) as FullReport;
+		return JSON.parse(fs.readFileSync(reportFiles(scope).full, 'utf8')) as FullReport;
 	} catch {
 		return null;
 	}
 }
 
-function loadSummary(): SummaryReport | null {
+function loadSummary(scope: AnalyticsScope): SummaryReport | null {
 	try {
-		return JSON.parse(fs.readFileSync(SUMMARY_PATH, 'utf8')) as SummaryReport;
+		return JSON.parse(fs.readFileSync(reportFiles(scope).summary, 'utf8')) as SummaryReport;
 	} catch {
 		return null;
 	}
@@ -371,16 +378,22 @@ function fmtCell(val: number, isPct: boolean): string {
 	return isPct ? val.toFixed(1) + '%' : String(val);
 }
 
-function buildFullDataPage(): string {
-	const db = getDB();
+function buildFullDataPage(scope: AnalyticsScope): string {
+	const isBots = scope === 'bots';
+	const removeCmd = isBots ? '/analyticsbotsremove' : '/analyticsremove';
+	const clearCmd = isBots ? '/analyticsbotsclearall confirm' : '/analyticsclearall confirm';
+	const fullView = isBots ? '/join view-analyticsbotsfull' : '/join view-analyticsfull';
+	const heading = isBots ? 'Full Bot Battle Data' : 'Full Battle Data';
+
+	const db = getDB(scope);
 	if (!db) {
-		return `<div class="pad"><h2>Full Battle Data</h2>` +
+		return `<div class="pad"><h2>${heading}</h2>` +
 			`<div class="infobox"><p>Database unavailable (better-sqlite3 not installed).</p></div></div>`;
 	}
 
-	let buf = `<div class="pad"><h2><i class="fa fa-database"></i> Full Battle Data</h2>`;
-	buf += `<p style="color:#888;font-size:.85em">Raw per-game and per-Pokémon data straight from the database. ` +
-		`<button class="button" name="send" value="/join view-analyticsfull"><i class="fa fa-refresh"></i> Refresh</button></p>`;
+	let buf = `<div class="pad"><h2><i class="fa fa-database"></i> ${heading}</h2>`;
+	buf += `<p style="color:#888;font-size:.85em">Raw per-game and per-Pokémon data straight from the ${isBots ? 'BOT ' : ''}database. ` +
+		`<button class="button" name="send" value="${fullView}"><i class="fa fa-refresh"></i> Refresh</button></p>`;
 
 	// ----- 1. Games log -----
 	const games = db.prepare(
@@ -394,13 +407,13 @@ function buildFullDataPage(): string {
 
 	buf += `<hr/><h3>Games (${games.length})</h3>`;
 	buf += `<p style="color:#888;font-size:.8em">Use <b>Remove</b> to scrub a bugged match from all charts (staff only). ` +
-		`<button class="button" name="send" value="/analyticsclearall confirm" ` +
-		`style="color:#c0392b">Wipe ALL data</button></p>`;
+		`<button class="button" name="send" value="${clearCmd}" ` +
+		`style="color:#c0392b">Wipe ALL ${isBots ? 'bot ' : ''}data</button></p>`;
 	buf += `<div style="overflow-x:auto"><table class="ladder" style="font-size:.85em">`;
 	buf += `<tr><th></th><th>Game ID</th><th>When</th><th>Format</th><th>Player A</th><th>Player B</th><th>Winner</th><th>Turns</th></tr>`;
 	for (const g of games) {
 		buf += `<tr>` +
-			`<td><button class="button" name="send" value="/analyticsremove ${h(g.game_id)}" ` +
+			`<td><button class="button" name="send" value="${removeCmd} ${h(g.game_id)}" ` +
 			`style="color:#c0392b"><i class="fa fa-trash"></i></button></td>` +
 			`<td><small>${h(g.game_id)}</small></td>` +
 			`<td><small>${h(new Date(g.timestamp).toLocaleString())}</small></td>` +
@@ -471,6 +484,69 @@ function buildFullDataPage(): string {
 	return buf.replace(/\n\s*/g, ' ');
 }
 
+// Render the leaderboard dashboard for a given scope ('players' or 'bots').
+function renderDashboard(scope: AnalyticsScope): string {
+	const isBots = scope === 'bots';
+	const titleText = isBots ? 'Bot Battle Analytics' : 'Battle Analytics';
+	const full = loadFull(scope);
+	const summary = loadSummary(scope);
+
+	if (!full || !summary) {
+		return `<div class="pad"><h2>${titleText}</h2>` +
+			`<div class="infobox"><p>No ${isBots ? 'bot ' : ''}data yet — play a ${isBots ? 'bot ' : ''}battle to generate analytics.</p>` +
+			`<p><small>Data appears in <code>logs/analytics/</code> after the first completed ${isBots ? 'bot ' : ''}game.</small></p>` +
+			`</div></div>`;
+	}
+
+	const statOrder = [
+		'win_rate_when_brought',
+		'threat_output_per_move',
+		'pct_max_hp_dealt_per_move',
+		'true_damage_dealt_per_move',
+		'threat_absorbed_per_hit',
+		'threats_nullified_rate',
+		'moved_first_rate',
+		'kda_ratio',
+		'kills_per_turn',
+		'assists_per_turn',
+		'healing_per_turn',
+		'avg_turns_survived',
+		'indirect_dealt_per_game',
+		'hazard_dealt_per_game',
+		'games_brought',
+		'turns_survived_total',
+		'status_inflicted_total',
+		'hazards_set_total',
+		'hazards_cleared_total',
+	];
+
+	let buf = '<div class="pad">';
+	buf += `<h2><i class="fa fa-bar-chart"></i> ${titleText}</h2>`;
+	if (isBots) buf += `<p style="color:#888;font-size:.85em">Automated bot games only — recorded separately so they never affect player stats.</p>`;
+	buf += buildHeader(full);
+	buf += '<hr/>';
+	buf += buildPlayers(full.players);
+	buf += '<hr/>';
+	buf += '<h2>Leaderboards</h2>';
+	for (const key of statOrder) {
+		if (summary.leaderboards[key]) {
+			buf += buildLeaderboard(key, summary.leaderboards[key]);
+		}
+	}
+	buf += '<hr/>';
+	buf += buildSpeciesTable(full.pokemon);
+	buf += '<hr/>';
+	buf += buildItems(full.items);
+	buf += '<hr/>';
+	buf += buildTypeActivations(full.type_activations);
+	buf += `<hr/><p><button class="button" name="send" value="/join ${isBots ? 'view-analyticsbotsfull' : 'view-analyticsfull'}">` +
+		`<i class="fa fa-database"></i> View Full Raw Data</button></p>`;
+	buf += '</div>';
+	// The legacy client splits room messages on '\n' (HTMLRoom.add), so a
+	// |pagehtml| payload MUST be a single line.
+	return buf.replace(/\n\s*/g, ' ');
+}
+
 // ---------------------------------------------------------------------------
 // Chat commands + page export
 // ---------------------------------------------------------------------------
@@ -487,6 +563,17 @@ export const commands: Chat.Commands = {
 	},
 	analyticsraw(target, room, user) {
 		return this.parse('/join view-analyticsfull');
+	},
+
+	// Bot analytics (separate dataset — automated bot games only).
+	analyticsbots(target, room, user) {
+		return this.parse('/join view-analyticsbots');
+	},
+	botanalytics(target, room, user) {
+		return this.parse('/join view-analyticsbots');
+	},
+	analyticsbotsfull(target, room, user) {
+		return this.parse('/join view-analyticsbotsfull');
 	},
 
 	analyticsremove(target, room, user) {
@@ -517,69 +604,45 @@ export const commands: Chat.Commands = {
 		this.globalModlog('ANALYTICSCLEARALL', null, `${n} games`);
 		return this.sendReply(`Wiped all analytics data (${n} games removed).`);
 	},
+
+	// Bot-DB scrub variants (operate on the separate bot dataset).
+	analyticsbotsremove(target, room, user) {
+		this.checkCan('rangeban');
+		const gameId = target.trim();
+		if (!gameId) return this.errorReply(`Usage: /analyticsbotsremove <game_id>  (find IDs on the Bot Full Data page)`);
+		const db = getDB('bots');
+		if (!db) return this.errorReply(`Bot analytics DB unavailable (better-sqlite3 not installed).`);
+		const ok = deleteGame(db, gameId);
+		if (!ok) return this.errorReply(`No bot analytics record found for game "${gameId}".`);
+		try { generateReports(db, 'bots'); } catch {}
+		this.globalModlog('ANALYTICSREMOVE', null, `bots:${gameId}`);
+		this.sendReply(`Removed bot game "${gameId}" from bot analytics and regenerated the bot charts.`);
+		return this.parse('/join view-analyticsbotsfull');
+	},
+
+	analyticsbotsclearall(target, room, user) {
+		this.checkCan('rangeban');
+		if (target !== 'confirm') {
+			return this.errorReply(`This wipes ALL bot analytics data. Type /analyticsbotsclearall confirm to proceed.`);
+		}
+		const db = getDB('bots');
+		if (!db) return this.errorReply(`Bot analytics DB unavailable.`);
+		const n = deleteAllGames(db);
+		try { generateReports(db, 'bots'); } catch {}
+		this.globalModlog('ANALYTICSCLEARALL', null, `bots: ${n} games`);
+		return this.sendReply(`Wiped all bot analytics data (${n} games removed).`);
+	},
 };
 
 export const pages: Chat.PageTable = {
 	analytics(args, user) {
 		this.title = '[Battle Analytics]';
+		return renderDashboard('players');
+	},
 
-		const full = loadFull();
-		const summary = loadSummary();
-
-		if (!full || !summary) {
-			return `<div class="pad"><h2>Battle Analytics</h2>` +
-				`<div class="infobox"><p>No data yet — play a battle to generate analytics.</p>` +
-				`<p><small>Data appears in <code>logs/analytics/</code> after the first completed game.</small></p>` +
-				`</div></div>`;
-		}
-
-		const statOrder = [
-			'win_rate_when_brought',
-			'threat_output_per_move',
-			'pct_max_hp_dealt_per_move',
-			'true_damage_dealt_per_move',
-			'threat_absorbed_per_hit',
-			'threats_nullified_rate',
-			'moved_first_rate',
-			'kda_ratio',
-			'kills_per_turn',
-			'assists_per_turn',
-			'healing_per_turn',
-			'avg_turns_survived',
-			'indirect_dealt_per_game',
-			'hazard_dealt_per_game',
-			'games_brought',
-			'turns_survived_total',
-			'status_inflicted_total',
-			'hazards_set_total',
-			'hazards_cleared_total',
-		];
-
-		let buf = '<div class="pad">';
-		buf += '<h2><i class="fa fa-bar-chart"></i> Battle Analytics</h2>';
-		buf += buildHeader(full);
-		buf += '<hr/>';
-		buf += buildPlayers(full.players);
-		buf += '<hr/>';
-		buf += '<h2>Leaderboards</h2>';
-		for (const key of statOrder) {
-			if (summary.leaderboards[key]) {
-				buf += buildLeaderboard(key, summary.leaderboards[key]);
-			}
-		}
-		buf += '<hr/>';
-		buf += buildSpeciesTable(full.pokemon);
-		buf += '<hr/>';
-		buf += buildItems(full.items);
-		buf += '<hr/>';
-		buf += buildTypeActivations(full.type_activations);
-		buf += `<hr/><p><button class="button" name="send" value="/join view-analyticsfull">` +
-			`<i class="fa fa-database"></i> View Full Raw Data</button></p>`;
-		buf += '</div>';
-		// The legacy client splits room messages on '\n' (HTMLRoom.add), so a
-		// |pagehtml| payload MUST be a single line — collapse all newlines/indent
-		// introduced by template literals into single spaces.
-		return buf.replace(/\n\s*/g, ' ');
+	analyticsbots(args, user) {
+		this.title = '[Bot Battle Analytics]';
+		return renderDashboard('bots');
 	},
 
 	analyticsfull(args, user) {
@@ -589,6 +652,11 @@ export const pages: Chat.PageTable = {
 		// the given global permission (e.g. console/admin access) will be able to
 		// open it. Left open for now during testing.
 		// this.checkCan('rangeban');
-		return buildFullDataPage();
+		return buildFullDataPage('players');
+	},
+
+	analyticsbotsfull(args, user) {
+		this.title = '[Full Bot Battle Data]';
+		return buildFullDataPage('bots');
 	},
 };

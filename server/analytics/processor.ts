@@ -13,8 +13,10 @@
 
 import * as path from 'path';
 import * as fs from 'fs';
-import {getDB, insertGame, upsertPlayer, insertDamageEvent, insertPokemonGameStats, insertTypeActivation} from './db';
+import {getDB, analyticsEnabled, insertGame, upsertPlayer, insertDamageEvent, insertPokemonGameStats, insertTypeActivation} from './db';
+import type {AnalyticsScope} from './db';
 import {generateReports} from './report';
+import {isBotGame} from './bots';
 
 // ---------------------------------------------------------------------------
 // In-memory buffer per active game
@@ -149,8 +151,8 @@ export function process(
 	line: string,
 	playerMap?: {[slot: string]: {id: string; name: string}}
 ): void {
-	const db = getDB();
-	if (!db) return; // better-sqlite3 not installed
+	if (!analyticsEnabled()) return; // better-sqlite3 not installed
+	// The scoped DB is opened at flush time ('end'), once we know the players.
 
 	// |analytic|TYPE|JSON
 	const parts = line.split('|');
@@ -248,7 +250,11 @@ export function process(
 		const buf = getBuf();
 		if (playerMap) buf.playerMap = playerMap;
 		buffers.delete(roomId);
-		flushGame(db, buf, payload);
+		// Route bot games to the separate bot DB so they never mix with player stats.
+		const scope: AnalyticsScope = isBotGame(buf.playerMap) ? 'bots' : 'players';
+		const db = getDB(scope);
+		if (!db) return;
+		flushGame(db, buf, payload, scope);
 		break;
 	}
 	}
@@ -261,7 +267,8 @@ export function process(
 function flushGame(
 	db: import('better-sqlite3').Database,
 	buf: GameBuffer,
-	end: EndPayload
+	end: EndPayload,
+	scope: AnalyticsScope = 'players'
 ): void {
 	const timestamp = new Date().toISOString();
 	const pA = end.players[0];
@@ -450,7 +457,7 @@ function flushGame(
 
 	// 5. Regenerate reports (outside transaction, best-effort)
 	try {
-		generateReports(db);
+		generateReports(db, scope);
 	} catch (err) {
 		console.error('[Analytics] Report generation failed:', err);
 	}
