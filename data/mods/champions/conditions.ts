@@ -1462,6 +1462,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			if (pokemon.volatiles['substitute']) {
 				delete (pokemon.volatiles as any)['substitute'];
 				this.add('-end', pokemon, 'Substitute');
+				this.add('-message', `The spirit has moved on and wished its ally good luck.`);
 			}
 		},
 	},
