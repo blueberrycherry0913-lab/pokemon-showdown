@@ -127,6 +127,7 @@ const SPECIES_RENAMES: {[name: string]: string} = {
 	'Toxtricity-Low-Key': 'Toxtricity-LK',
 	'Eiscue-Noice': 'Eiscue',
 	'Morpeko-Hangry': 'Morpeko',
+	'Minior-Meteor': 'Minior', // Shields Up and Shields Down forms aggregate under "Minior"
 };
 function normalizeSpecies(name: string | null | undefined): string | null {
 	if (!name) return name ?? null;

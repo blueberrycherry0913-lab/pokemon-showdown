@@ -69,19 +69,26 @@ function familyHasGen8Member(dex: any, species: any, seen: Set<string>): boolean
 	return false;
 }
 
+// Specific Pokémon added to Testing Standard as "Cosmic Additions" — hand-picked
+// for Cosmic-type coverage. Not full lineages; just these individual species.
+const COSMIC_ADDITION_NUMS = new Set([178, 606, 774]); // Xatu, Beheeyem, Minior
+function isCosmicAddition(species: any): boolean {
+	if (!species || !species.exists) return false;
+	return COSMIC_ADDITION_NUMS.has(species.num);
+}
+
 export const Rulesets: import('../../../sim/dex-formats').ModdedFormatDataTable = {
-	// Restrict Testing Standard to Gen 1 lineage Pokémon (Bulbasaur-Mew family,
-	// their forward/backward evolutions, and their Mega/Primal/Ultra-Burst/G-Max
-	// formes). Temporary — easy to remove by dropping 'Gen 1 Only' from the
-	// format's ruleset.
+	// Restrict Testing Standard to Gen 1 lineage (Bulbasaur-Mew), Gen 8 lineage
+	// (Grookey-Calyrex), or Cosmic Additions (Xatu, Beheeyem, Minior).
+	// Temporary — easy to remove by dropping 'Gen 1 Only' from the format's ruleset.
 	gen1only: {
 		effectType: 'ValidatorRule',
 		name: 'Gen 1 Only',
-		desc: "Only Pokémon from Gen 1 lineage (Bulbasaur-Mew) or Gen 8 lineage (Grookey-Calyrex) are legal.",
+		desc: "Only Gen 1 lineage (Bulbasaur-Mew), Gen 8 lineage (Grookey-Calyrex), or Cosmic Additions (Xatu, Beheeyem, Minior) are legal.",
 		onValidateSet(set) {
 			const species = this.dex.species.get(set.species);
 			if ((species as any).canLearnAnyMove) return; // utility test species, always legal
-			if (!isGen1Lineage(this.dex, species) && !isGen8Lineage(this.dex, species)) {
+			if (!isGen1Lineage(this.dex, species) && !isGen8Lineage(this.dex, species) && !isCosmicAddition(species)) {
 				return [`${set.name || set.species} is not available yet.`];
 			}
 		},
