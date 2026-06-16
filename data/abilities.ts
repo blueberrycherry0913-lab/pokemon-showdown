@@ -6602,21 +6602,23 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	windrider: {
 		onStart(pokemon) {
 			if (pokemon.side.sideConditions['tailwind']) {
-				this.boost({ atk: 1 }, pokemon, pokemon);
+				this.boost({ atk: 1, spa: 1 }, pokemon, pokemon);
 			}
 		},
-		onTryHit(target, source, move) {
-			if (target !== source && move.flags['wind']) {
-				if (!this.boost({ atk: 1 }, target, target)) {
-					this.add('-immune', target, '[from] ability: Wind Rider');
-				}
-				return null;
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.flags['wind']) {
+				return this.chainModify(0.5);
+			}
+		},
+		onDamagingHit(damage, target, source, move) {
+			if (move.flags['wind']) {
+				this.boost({ atk: 1, spa: 1 }, target, target);
 			}
 		},
 		onSideConditionStart(side, source, sideCondition) {
 			const pokemon = this.effectState.target;
 			if (sideCondition.id === 'tailwind') {
-				this.boost({ atk: 1 }, pokemon, pokemon);
+				this.boost({ atk: 1, spa: 1 }, pokemon, pokemon);
 			}
 		},
 		flags: { breakable: 1 },
@@ -6624,6 +6626,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		rating: 3.5,
 		// We do not want Brambleghast to get Infiltrator in Randbats
 		num: 274,
+		origin: 'Buffed',
+		shortDesc: "Halves wind move damage; +1 Atk/SpA on wind hit or Tailwind.",
 	},
 	wonderguard: {
 		onTryHit(target, source, move) {
