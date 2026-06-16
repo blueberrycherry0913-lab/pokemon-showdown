@@ -1,0 +1,13 @@
+{
+  "name": "showdown-bot-battle",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Headless bot-vs-bot battle harness for [Gen 9] Testing Standard. Feeds the analytics DB and surfaces crashes before beta playtests.",
+  "main": "run.js",
+  "scripts": {
+    "start": "node run.js"
+  },
+  "dependencies": {
+    "sockjs-client": "^1.6.1"
+  }
+}

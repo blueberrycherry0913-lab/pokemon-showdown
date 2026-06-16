@@ -1,0 +1,10 @@
+# Packed teams for --mode=pool / --mode=both.
+#
+# Paste one packed team PER LINE. To get a packed team:
+#   Teambuilder -> pick a team -> "Import/Export" -> copy the text, then convert
+#   it to packed form, OR just export from the teambuilder's packed format.
+# Lines starting with # or // are ignored. Every team is validated against
+# [Gen 9] Testing Standard on load; invalid teams are skipped with a warning.
+#
+# Example (delete this comment block and paste real teams):
+# Venusaur||leftovers|Overgrow|gigadrain,sludgebomb,sleeppowder,synthesis|Modest|,,,32,,32||0,0,0,0,0,0||50|
