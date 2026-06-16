@@ -17667,8 +17667,9 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 					pokemon.side.removeSideCondition('stealthrock', pokemon);
 					return;
 				}
-				const typeMod = this.clampIntRange(pokemon.runEffectiveness(this.dex.getActiveMove('stealthrock')), -6, 6);
-				this.damage(pokemon.maxhp * (2 ** typeMod) / 8);
+				// Flat damage: 10% grounded, 20% ungrounded. Typing irrelevant.
+				const fraction = pokemon.isGrounded() ? 0.1 : 0.2;
+				this.damage(Math.floor(pokemon.maxhp * fraction));
 			},
 		},
 		target: "foeSide",
