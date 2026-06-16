@@ -913,8 +913,8 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 	},
 	scyther: {
 		tier: "NU",
-		doublesTier: "NFE",
-		natDexTier: "NFE",
+		doublesTier: "(DUU)",
+		natDexTier: "NU",
 	},
 	scizor: {
 		tier: "UU",
@@ -4270,6 +4270,11 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 	},
 	cutiefly: {
 		tier: "NFE",
+	},
+	cutot: {
+		tier: "NFE",
+		doublesTier: "NFE",
+		natDexTier: "NFE",
 	},
 	ribombee: {
 		tier: "RU",
