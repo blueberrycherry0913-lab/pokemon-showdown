@@ -69,6 +69,7 @@ interface MoveFlags {
 
 	// Category-only tags — no inherent mechanical effect.
 	// Exist as hooks for abilities, items, and other systems to reference.
+	emotion?: 1; // Category tag: emotionally-driven or emotion-causing moves. (Examples: Outrage, Charm, Taunt)
 	ball?: 1; // Category tag: ball-type projectile moves. (Examples: Energy Ball, Shadow Ball)
 	beam?: 1; // Category tag: beam attacks. (Examples: Hyper Beam, Ice Beam, Solar Beam)
 	drill?: 1; // Category tag: drill-type attacks. (Examples: Drill Peck, Drill Run)
