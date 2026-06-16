@@ -6825,13 +6825,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	breakingpoint: {
 		onModifyAtkPriority: 5,
 		onModifyAtk(atk, attacker, defender, move) {
-			if (attacker.hasType(move.type) && attacker.hp <= attacker.maxhp / 3) {
+			if (attacker.types.includes(move.type) && attacker.hp <= attacker.maxhp / 3) {
 				return this.chainModify(1.5);
 			}
 		},
 		onModifySpAPriority: 5,
 		onModifySpA(atk, attacker, defender, move) {
-			if (attacker.hasType(move.type) && attacker.hp <= attacker.maxhp / 3) {
+			if (attacker.types.includes(move.type) && attacker.hp <= attacker.maxhp / 3) {
 				return this.chainModify(1.5);
 			}
 		},
@@ -8710,17 +8710,22 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	energyabsorb: {
 		// Uses base types (not Tera type) to determine same-type matches.
 		// Physical same-type: 50% damage reduction.
-		// Special/Status same-type: heal 1/3 max HP after hit.
+		// Special same-type: take damage, then heal 1/3 max HP.
+		// Status same-type: heal 1/3 max HP.
 		onSourceModifyDamage(damage, source, target, move) {
-			if (move.category === 'Physical' && target.types.some((t: string) => t === move.type)) {
+			if (move.category === 'Physical' && target.types.includes(move.type)) {
 				this.debug('Energy Absorb halved Physical same-type damage');
 				return this.chainModify(0.5);
 			}
 		},
-		onAfterHit(source, target, move) {
-			if (move.category !== 'Physical' && target.types.some((t: string) => t === move.type)) {
-				const healed = this.heal(Math.floor(target.baseMaxhp / 3), target, source, this.effect);
-				if (healed) this.add('-heal', target, target.getHealth, '[from] ability: Energy Absorb');
+		onDamagingHit(damage, target, source, move) {
+			if (move.category === 'Special' && target.types.includes(move.type)) {
+				this.heal(Math.floor(target.baseMaxhp / 3), target, source, this.effect);
+			}
+		},
+		onHit(target, source, move) {
+			if (move.category === 'Status' && target !== source && target.types.includes(move.type)) {
+				this.heal(Math.floor(target.baseMaxhp / 3), target, source, this.effect);
 			}
 		},
 		shortDesc: "50% dmg from Physical same-type moves; heal 1/3 HP from Special/Status same-type moves. Ignores Tera.",
