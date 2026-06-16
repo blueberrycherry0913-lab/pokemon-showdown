@@ -1704,6 +1704,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.add('-end', target, 'ability: Flash Fire', '[silent]');
 			},
 		},
+		shortDesc: "Immune to Fire-type moves; being hit by one raises Fire-type move power by ×1.5.",
+		origin: 'Standby',
 		flags: { breakable: 1 },
 		name: "Flash Fire",
 		rating: 3.5,
@@ -6581,21 +6583,42 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 273,
 	},
 	whitesmoke: {
-		onTryBoost(boost, target, source, effect) {
-			if (source && target === source) return;
-			let showMsg = false;
+		onAfterEachBoost(boost, target, source, effect) {
+			if (this.effectState.reverting) return;
+			const log: AnyObject[] = this.effectState.boostLog || (this.effectState.boostLog = []);
+			const entry: AnyObject = { turn: this.turn };
+			let hasChange = false;
 			let i: BoostID;
 			for (i in boost) {
-				if (boost[i]! < 0) {
-					delete boost[i];
-					showMsg = true;
+				if (boost[i] !== 0) {
+					entry[i] = boost[i];
+					hasChange = true;
 				}
 			}
-			if (showMsg && !(effect as ActiveMove).secondaries && effect.id !== 'octolock') {
-				this.add("-fail", target, "unboost", "[from] ability: White Smoke", `[of] ${target}`);
-			}
+			if (hasChange) log.push(entry);
 		},
-		flags: { breakable: 1 },
+		onResidualOrder: 28,
+		onResidual(pokemon) {
+			const log: AnyObject[] = this.effectState.boostLog;
+			if (!log || !log.length) return;
+			const expired = log.filter((entry: AnyObject) => this.turn - entry.turn >= 2);
+			if (!expired.length) return;
+			const rev: Partial<Record<BoostID, number>> = {};
+			for (const entry of expired) {
+				let i: BoostID;
+				for (i in entry) {
+					if (i === 'turn') continue;
+					rev[i] = (rev[i] || 0) - (entry[i] as number);
+				}
+			}
+			this.effectState.reverting = true;
+			this.boost(rev as Record<BoostID, number>, pokemon, pokemon, null);
+			this.effectState.reverting = false;
+			this.effectState.boostLog = log.filter((entry: AnyObject) => this.turn - entry.turn < 2);
+		},
+		shortDesc: "The Pokémon's stat changes, both self and foe inflicted, return to normal 2 turns after infliction.",
+		origin: 'Reworked',
+		flags: {},
 		name: "White Smoke",
 		rating: 2,
 		num: 73,
