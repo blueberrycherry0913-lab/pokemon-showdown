@@ -16029,7 +16029,7 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 	orbeetle: {
 		num: 826,
 		name: "Orbeetle",
-		types: ["Bug", "Psychic"],
+		types: ["Bug", "Cosmic"],
 		baseStats: { hp: 60, atk: 45, def: 110, spa: 85, spd: 130, spe: 90 },
 		abilities: { 0: "Forewarn", 1: "Frisk", H: "Telepathy" },
 		heightm: 0.4,
@@ -16045,7 +16045,7 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		name: "Orbeetle-Gmax",
 		baseSpecies: "Orbeetle",
 		forme: "Gmax",
-		types: ["Bug", "Psychic"],
+		types: ["Bug", "Cosmic"],
 		baseStats: { hp: 60, atk: 45, def: 110, spa: 80, spd: 120, spe: 90 },
 		abilities: { 0: "Swarm", 1: "Frisk", H: "Telepathy" },
 		heightm: 14,
