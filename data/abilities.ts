@@ -8597,6 +8597,20 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 10146,
 	},
 
+	// --- Elastic ---
+	elastic: {
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Ice') return this.chainModify(2);
+			return this.chainModify(0.9);
+		},
+		shortDesc: "Takes 0.9× direct damage, but 2× from Ice-type moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Elastic",
+		rating: 2.5,
+		num: 10148,
+	},
+
 	// --- Row 451: Endocrine Dampener ---
 	endocrinedampener: {
 		onFoeTryMove(target, source, move) {
