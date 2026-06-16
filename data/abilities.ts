@@ -8578,7 +8578,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		flags: { breakable: 1 },
 		name: "Charged Spines",
 		rating: 2,
-		num: 10140,
+		num: 10149,
 	},
 
 	// --- Row 450: Emotion Siphon ---
@@ -8632,5 +8632,55 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		name: "Endocrine Dampener",
 		rating: 2.5,
 		num: 10147,
+	},
+
+	// --- Legendary Bird / Custom Awakened Ability Stubs ---
+	frosty: {
+		shortDesc: "TBD — Articuno's innate ability.",
+		origin: 'Custom',
+		flags: {},
+		name: "Frosty",
+		rating: 0,
+		num: 10150,
+	},
+	winterfreeze: {
+		shortDesc: "TBD — Articuno's awakened ability.",
+		origin: 'Custom',
+		flags: {},
+		name: "Winter Freeze",
+		rating: 0,
+		num: 10151,
+	},
+	springstorm: {
+		shortDesc: "TBD — Zapdos's awakened ability.",
+		origin: 'Custom',
+		flags: {},
+		name: "Spring Storm",
+		rating: 0,
+		num: 10152,
+	},
+	summersun: {
+		shortDesc: "TBD — Moltres's awakened ability.",
+		origin: 'Custom',
+		flags: {},
+		name: "Summer Sun",
+		rating: 0,
+		num: 10153,
+	},
+	seeded: {
+		shortDesc: "TBD — Falcuatro's innate ability.",
+		origin: 'Custom',
+		flags: {},
+		name: "Seeded",
+		rating: 0,
+		num: 10154,
+	},
+	autumnmoon: {
+		shortDesc: "TBD — Falcuatro's awakened ability.",
+		origin: 'Custom',
+		flags: {},
+		name: "Autumn Moon",
+		rating: 0,
+		num: 10155,
 	},
 };
