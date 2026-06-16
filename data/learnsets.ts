@@ -21753,6 +21753,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			naturalgift: ["7E", "6E", "5E", "4M"],
 			payday: ["8M", "8V"],
 			protect: ["9M", "8M", "8V", "7M", "7V", "6M", "5M", "4M", "3M"],
+			flashbeam: ["9L10"],
 			quickattack: ["9L10", "8L10", "8V", "7L13", "7V", "6L13", "6S4", "5L13", "4L22", "4S1", "3L23"],
 			rage: ["7V"],
 			raindance: ["9M", "8M", "7M", "7V", "6M", "5M", "4M", "3M"],

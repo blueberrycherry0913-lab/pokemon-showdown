@@ -4194,7 +4194,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		name: "Drill Peck",
 		pp: 20,
 		priority: 0,
-		flags: { contact: 1, protect: 1, mirror: 1, distance: 1, metronome: 1, drill: 1, piercing: 1 },
+		flags: { contact: 1, protect: 1, mirror: 1, distance: 1, metronome: 1, piercing: 1 },
 		target: "any",
 		type: "Flying",
 		contestType: "Cool",
@@ -4207,7 +4207,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		name: "Drill Run",
 		pp: 10,
 		priority: 0,
-		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1, drill: 1, piercing: 1 },
+		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1, piercing: 1 },
 		critRatio: 2,
 		target: "normal",
 		type: "Ground",
@@ -21675,6 +21675,19 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		target: "all",
 		type: "Normal",
 		isNonstandard: "Custom",
+	},
+
+	flashbeam: {
+		num: -18,
+		accuracy: 100,
+		basePower: 40,
+		category: "Special",
+		name: "Flash Beam",
+		pp: 30,
+		priority: 1,
+		flags: { protect: 1, mirror: 1, metronome: 1, beam: 1 },
+		target: "normal",
+		type: "Normal",
 	},
 
 	// Standard Moves — new ** entries (nums -19 to -50)
