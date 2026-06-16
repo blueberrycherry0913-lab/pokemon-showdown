@@ -17026,7 +17026,7 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		forme: "Noice",
 		types: ["Ice"],
 		baseStats: { hp: 75, atk: 80, def: 70, spa: 65, spd: 50, spe: 130 },
-		abilities: { 0: "Ice Face" },
+		abilities: { 0: "Ice Face", H: "Flash Freeze" },
 		heightm: 1.4,
 		weightkg: 89,
 		color: "Blue",
