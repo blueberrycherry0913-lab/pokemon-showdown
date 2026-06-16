@@ -7953,10 +7953,10 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	punisher: {
 		onModifyDamage(damage, source, target, move) {
 			if (target.getMoveHitData(move).typeMod > 0) {
-				return this.chainModify(2.5);
+				return this.chainModify(1.25);
 			}
 		},
-		shortDesc: "Super Effective moves deal ×2.5 damage.",
+		shortDesc: "Super Effective moves deal ×2.5 total (×5 for double SE).",
 		origin: 'Custom',
 		flags: {},
 		name: "Punisher",
