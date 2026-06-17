@@ -42,6 +42,9 @@ const DOMAIN_SETTER_BY_TYPE: {[id: string]: string} = {
 };
 const DOMAIN_SETTER_IDS = new Set(Object.keys(DOMAIN_SETTER_BY_TYPE));
 
+// Gen 1 legendary/mythical Pokémon banned in Testing Standard (not in Mythics and Megas).
+const GEN1_LEGENDARIES = new Set(['articuno', 'zapdos', 'moltres', 'mewtwo', 'mew']);
+
 function pokemonInActiveDomain(battle: any, pokemon: any): boolean {
 	if (battle.field.pseudoWeather['antidomain']) return false;
 	for (const id in DOMAIN_TYPE_BY_ID) {
@@ -63,6 +66,21 @@ function pokemonInActiveDomain(battle: any, pokemon: any): boolean {
 // (Switch-prevention trapping — Arena Trap / Shadow Tag / Mean Look / canon binding moves — is
 //  handled separately by the Ghost guard in pokemon.tryTrap; see champions/scripts.ts.)
 const TRAPPED_VOLATILES = new Set(['interlocked', 'deathgrip', 'locked', 'rooted', 'swallowed']);
+
+// Domain Setter awakened-ability validation shared by both custom formats.
+function validateDomainSetter(this: any, set: any): string[] | void {
+	const ability2 = (set as any).ability2 as string | undefined;
+	if (!ability2) return;
+	const id = this.toID(ability2);
+	if (!DOMAIN_SETTER_IDS.has(id)) {
+		return [`${set.name || set.species}'s Awakened ability "${ability2}" is not a valid Domain Setter ability.`];
+	}
+	const requiredType = DOMAIN_SETTER_BY_TYPE[id];
+	const species = this.dex.species.get(set.species);
+	if (!species.types.includes(requiredType as any)) {
+		return [`${set.name || set.species} cannot use ${ability2} (type mismatch: needs ${requiredType}).`];
+	}
+}
 
 export const Formats: import('../sim/dex-formats').FormatList = [
 
@@ -346,25 +364,225 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 				pokemon.cureStatus();
 			}
 		},
-		// Domain Setter awakened ability validation (§ domain-setter restructuring):
-		//   onValidateSet: if ability2 is set, it must be a known Domain Setter ability and the
-		//     Pokémon must have the matching type. Uses 'Flying' internally (even though the
-		//     display name is 'Air') because species.types stores engine type names.
-		//   onValidateTeam: at most one Pokémon per team may have a Domain Setter awakened ability.
+		// Testing Standard bans Mega Evolutions, Mega Stones, and Gen 1 legendaries.
+		// Domain Setter awakened-ability validation is also applied (shared with Mythics and Megas).
 		onValidateSet(set) {
-			const ability2 = (set as any).ability2 as string | undefined;
-			if (!ability2) return;
-			const id = this.toID(ability2);
-			if (!DOMAIN_SETTER_IDS.has(id)) {
-				return [`${set.name || set.species}'s Awakened ability "${ability2}" is not a valid Domain Setter ability.`];
-			}
-			const requiredType = DOMAIN_SETTER_BY_TYPE[id];
+			const problems: string[] = [];
 			const species = this.dex.species.get(set.species);
-			if (!species.types.includes(requiredType as any)) {
-				return [`${set.name || set.species} cannot use ${ability2} (type mismatch: needs ${requiredType}).`];
+			// Ban Mega forms (any species whose forme contains "mega", case-insensitive).
+			if (species.forme && /mega/i.test(species.forme)) {
+				problems.push(`${species.name} is a Mega Evolution and is banned from Testing Standard.`);
 			}
+			// Ban Gen 1 legendaries/mythicals (check both the species and its base species so
+			// formes like Mewtwo-Mega-X are caught by the forme check above AND the legendary check).
+			const baseId = this.dex.species.get(species.baseSpecies).id;
+			if (GEN1_LEGENDARIES.has(species.id) || GEN1_LEGENDARIES.has(baseId)) {
+				problems.push(`${species.name} is a legendary Pokémon and is banned from Testing Standard.`);
+			}
+			// Ban Mega Stones.
+			if (set.item) {
+				const item = this.dex.items.get(set.item);
+				if (item.megaStone) {
+					problems.push(`${item.name} is a Mega Stone and is banned from Testing Standard.`);
+				}
+			}
+			// Domain Setter awakened-ability validation (shared).
+			const domainProblems = validateDomainSetter.call(this, set);
+			if (domainProblems) problems.push(...domainProblems);
+			return problems.length ? problems : undefined;
 		},
 		onValidateTeam(team) {
+			const count = team.filter((set: any) => DOMAIN_SETTER_IDS.has(this.toID(set.ability2))).length;
+			if (count > 1) {
+				return ['Only one Pokémon per team may have a Domain Setter as their Awakened ability.'];
+			}
+		},
+	},
+	{
+		name: "[Gen 9] Mythics and Megas",
+		desc: `Custom fan-game rework — same as Testing Standard but Mega Evolutions, Mega Stones, and legendary/mythical Pok&eacute;mon are legal.`,
+		mod: 'champions',
+		ruleset: [
+			'Standard NatDex',
+			'!Obtainable Abilities',
+			'!Obtainable Formes',
+			'!Obtainable Moves',
+			'Force IV 0',
+			'Gen 1 Only',
+			'Species Abilities',
+			'No Dup Abilities',
+		],
+		banlist: ['Hidden Power'],
+		restricted: [],
+		// All battle handlers (STAB, domain stat boost, blanket type effects, etc.) are
+		// identical to Testing Standard. The only difference is the onValidateSet ban list:
+		// Mythics and Megas skips the Mega/legendary/Mega-Stone bans.
+		onModifyMove(move: any) {
+			if (move.flags['piercing']) move.ignorePositiveDefensive = true;
+		},
+		onModifySTAB(stab: number, attacker: any, defender: any, move: any) {
+			if (stab <= 1) return stab;
+			const types = attacker.types;
+			const tera = attacker.terastallized;
+			const teraBonus = (tera && move.type === tera) ? 0.5 : 0;
+			if (attacker.hasAbility('adaptability')) return stab + teraBonus;
+			let bonus = 0;
+			if (types.includes(move.type)) {
+				if (types.length === 1) bonus = 0.6;
+				else if (types[0] === move.type) bonus = 0.5;
+				else bonus = 0.4;
+				if (attacker.hasAbility('specialist')) bonus += 0.75;
+			}
+			const result = 1 + bonus + teraBonus;
+			return result > 1 ? result : stab;
+		},
+		onModifyAtkPriority: 5,
+		onModifyAtk(atk: number, attacker: any) {
+			if (pokemonInActiveDomain(this, attacker)) return this.chainModify([6144, 5120]);
+		},
+		onModifySpAPriority: 5,
+		onModifySpA(spa: number, attacker: any) {
+			if (pokemonInActiveDomain(this, attacker)) return this.chainModify([6144, 5120]);
+		},
+		onModifyDefPriority: 6,
+		onModifyDef(def: number, target: any) {
+			if (pokemonInActiveDomain(this, target)) return this.chainModify([6144, 5120]);
+		},
+		onModifySpDPriority: 6,
+		onModifySpD(spd: number, target: any) {
+			if (pokemonInActiveDomain(this, target)) return this.chainModify([6144, 5120]);
+		},
+		onModifySpePriority: 5,
+		onModifySpe(spe: number, pokemon: any) {
+			if (pokemonInActiveDomain(this, pokemon)) return this.chainModify([6144, 5120]);
+		},
+		onModifyDamage(damage: number, source: any, target: any, move: any) {
+			if (source.hasType('Normal') && !source.hasType(move.type) && !move.forceSTAB) {
+				this.chainModify(1.1);
+			}
+			if (target.hasType('Normal') && move.type !== 'Fighting' && move.type !== 'Ghost') {
+				this.chainModify(0.9);
+			}
+		},
+		onBattleStart(this: any) {
+			for (const side of this.sides) {
+				for (const source of side.pokemon) {
+					if (source.ability !== 'trainedassassin' && source.ability2 !== 'trainedassassin') continue;
+					const candidates = source.side.foe.pokemon.filter(
+						(p: any) => !p.fainted && !(p as any).markedHunter && !p.volatiles['marked']
+					);
+					if (!candidates.length) continue;
+					const target = this.sample(candidates);
+					(target as any).markedHunter = source;
+					this.add('-message', `${source.name}'s Trained Assassin has Marked ${target.name}!`);
+				}
+			}
+		},
+		onSwitchIn(pokemon: any) {
+			const hunter = (pokemon as any).markedHunter;
+			if (hunter && !pokemon.volatiles['marked']) {
+				pokemon.addVolatile('marked', hunter);
+			}
+			if (pokemon.m.regenTurnOut !== undefined) {
+				const turns = Math.min(3, this.turn - pokemon.m.regenTurnOut);
+				if (turns > 0) {
+					this.heal(Math.floor(pokemon.baseMaxhp * 0.10 * turns), pokemon, pokemon);
+				}
+				delete pokemon.m.regenTurnOut;
+			}
+		},
+		onFaint(pokemon: any, source: any, effect: any) {
+			for (const side of this.sides) {
+				for (const p of side.pokemon) {
+					if ((p as any).markedHunter === pokemon) {
+						delete (p as any).markedHunter;
+						if (p.volatiles['marked']) p.removeVolatile('marked');
+					}
+				}
+			}
+			const hunter = (pokemon as any).markedHunter;
+			if (!hunter) return;
+			delete (pokemon as any).markedHunter;
+			const killedByHunter = source === hunter;
+			const selfKO = source === pokemon;
+			if (killedByHunter || selfKO) {
+				const teammates = pokemon.side.pokemon.filter((p: any) => p !== pokemon && !p.fainted);
+				if (teammates.length > 0) {
+					const newTarget = this.sample(teammates);
+					(newTarget as any).markedHunter = hunter;
+					if (newTarget.isActive) newTarget.addVolatile('marked', hunter);
+					this.add('-message', `${hunter.name}'s Mark has transferred to ${newTarget.name}!`);
+				} else {
+					this.add('-message', `${hunter.name}'s Mark fades — no targets remain.`);
+				}
+			}
+		},
+		onAfterBoost(boost: any, target: any, source: any, effect: any) {
+			if (!(boost.accuracy && boost.accuracy < 0)) return;
+			if (!source || source === target) return;
+			const hunter = (source as any).markedHunter;
+			if (!hunter || target !== hunter) return;
+			delete (source as any).markedHunter;
+			if (source.volatiles['marked']) source.removeVolatile('marked');
+		},
+		onTryAddVolatile(status: any, pokemon: any) {
+			if (status.id === 'flinch' && pokemon.hasType('Fighting')) {
+				this.add('-activate', pokemon, 'typeEffect', '[type]Fighting', '[msg]Flinch Immunity');
+				this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Fighting'}));
+				return null;
+			}
+			if (TRAPPED_VOLATILES.has(status.id) && pokemon.hasType('Ghost')) {
+				this.add('-activate', pokemon, 'typeEffect', '[type]Ghost', '[msg]Trap Immunity');
+				this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Ghost'}));
+				return null;
+			}
+		},
+		onTryHit(target: any, source: any, move: any) {
+			if (target === source) return;
+			if (move.flags?.['wind'] && target.hasType('Flying')) {
+				this.add('-activate', target, 'typeEffect', '[type]Flying', '[msg]Wind Speed Boost');
+				this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: target.species.name, ipl: target.side.id, ty: 'Flying'}));
+				this.boost({ spe: 1 }, target, target);
+			}
+			if (move.category === 'Status' && move.type === 'Dark' && target.hasType('Dark')) {
+				this.add('-activate', target, 'typeEffect', '[type]Dark', '[msg]Dark Move Immunity');
+				this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: target.species.name, ipl: target.side.id, ty: 'Dark'}));
+				this.add('-immune', target);
+				return null;
+			}
+		},
+		onSideConditionStart(targetSide: any, source: any, sideCondition: any) {
+			if (sideCondition.id !== 'tailwind') return;
+			for (const pokemon of this.getAllActive()) {
+				if (pokemon.hasType('Flying')) {
+					this.add('-activate', pokemon, 'typeEffect', '[type]Flying', '[msg]Tailwind Speed Boost');
+					this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Flying'}));
+					this.boost({ spe: 1 }, pokemon, pokemon);
+				}
+			}
+		},
+		onDragOut(pokemon: any) {
+			if (pokemon.hasType('Steel')) {
+				this.add('-activate', pokemon, 'typeEffect', '[type]Steel', '[msg]Phazing Immunity');
+				this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Steel'}));
+				this.add('-fail', pokemon);
+				return false;
+			}
+		},
+		onResidualOrder: 100,
+		onResidual(pokemon: any) {
+			if (!pokemon.status || !pokemon.hasType('Water')) return;
+			pokemon.statusState.waterPurge = (pokemon.statusState.waterPurge || 0) + 1;
+			if (pokemon.statusState.waterPurge >= 2) {
+				this.add('-activate', pokemon, 'typeEffect', '[type]Water', '[msg]Status Purge');
+				this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Water'}));
+				pokemon.cureStatus();
+			}
+		},
+		onValidateSet(set: any) {
+			return validateDomainSetter.call(this, set);
+		},
+		onValidateTeam(team: any[]) {
 			const count = team.filter((set: any) => DOMAIN_SETTER_IDS.has(this.toID(set.ability2))).length;
 			if (count > 1) {
 				return ['Only one Pokémon per team may have a Domain Setter as their Awakened ability.'];
