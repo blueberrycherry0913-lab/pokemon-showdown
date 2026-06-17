@@ -5753,7 +5753,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.effectState.triggered = true;
 				this.add('-activate', target, 'ability: Flash Freeze');
 				if (this.field.setWeather('snowscape', target, {name: 'Flash Freeze'})) {
-					this.field.weatherData.duration = 1;
+					this.field.weatherState.duration = 1;
 				}
 				for (const pokemon of this.getAllActive()) {
 					if (pokemon !== target && !pokemon.fainted) {
@@ -5768,7 +5768,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.effectState.triggered = true;
 				this.add('-activate', pokemon, 'ability: Flash Freeze');
 				if (this.field.setWeather('snowscape', pokemon, {name: 'Flash Freeze'})) {
-					this.field.weatherData.duration = 1;
+					this.field.weatherState.duration = 1;
 				}
 				for (const poke of this.getAllActive()) {
 					if (poke !== pokemon && !poke.fainted) {

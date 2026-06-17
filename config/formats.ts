@@ -140,6 +140,11 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			// Reject sets where the chosen basic ability matches the awakened (hidden)
 			// ability — no strategic choice if both slots are the same.
 			'No Dup Abilities',
+			// Lift the Evasion Clause (inherited from Standard NatDex). It bans evasion
+			// abilities (Sand Veil/Snow Cloak), items, and moves — but reworked abilities
+			// must be testable. Negating the umbrella cascades to its three child clauses
+			// (Evasion Abilities/Items/Moves), so this one line removes all of them.
+			'!Evasion Clause',
 		],
 		banlist: [
 			// With all IVs at 0, Hidden Power is always Fighting-type at low BP.

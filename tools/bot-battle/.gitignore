@@ -1,2 +1,4 @@
 node_modules/
 results/
+smoke-teams.txt
+prescreen-crashers.json

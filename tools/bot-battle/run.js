@@ -52,6 +52,10 @@ function parseArgs(argv) {
 
 const args = parseArgs(process.argv);
 const GAMES = Number(args.games) || 50;
+// Batched/resume: skip the first START games (advance the pool cursor by 2*START so
+// game START+1 draws the right teams) and run games START+1 .. GAMES. Lets a big pool
+// run be split into chunks against the same static team file (see --teams).
+const START = Math.max(0, Number(args.start) || 0);
 const MODE = args.mode || 'both';
 const TEAMS_FILE = args.teams || undefined; // defaults to ./teams.txt inside teams.js
 const STRICT_POOL = !!args['strict-pool'];
@@ -99,10 +103,16 @@ class Harness {
 		this.connA.connect();
 		this.connB.connect();
 		await Promise.all([this.connA.ready, this.connB.ready]);
-		console.log(`Both bots logged in. Running ${GAMES} game(s) of ${FORMAT} (mode=${MODE}, move=${MOVE}, mega=${MEGA}${WATCH ? `, WATCH +${WATCH_DELAY}ms/choice` : ''}).`);
+		console.log(`Both bots logged in. Running games ${START + 1}..${GAMES} of ${FORMAT} (mode=${MODE}, move=${MOVE}, mega=${MEGA}${START ? `, resuming from #${START + 1}` : ''}${WATCH ? `, WATCH +${WATCH_DELAY}ms/choice` : ''}).`);
 		if (WATCH) console.log(`Watch mode on: join each battle room in your client when its /join link prints below.`);
 
-		for (let i = 1; i <= GAMES; i++) {
+		// Resume support: discard the first 2*START pool draws so game START+1 lines up
+		// with teams[2*START] vs teams[2*START+1] in the static team file.
+		for (let s = 0; s < 2 * START; s++) {
+			try { this.nextTeam(); } catch (err) { /* pool exhausted/short — ignore */ }
+		}
+
+		for (let i = START + 1; i <= GAMES; i++) {
 			await this.playGame(i);
 			await sleep(300); // let rooms settle between games
 		}
