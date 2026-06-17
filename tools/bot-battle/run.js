@@ -134,10 +134,10 @@ class Harness {
 			if (this.game) (this.game.globalLines || (this.game.globalLines = [])).push(`${who}: ${line}`);
 			// Challenge/team rejections come back as popups (and sometimes PMs) — surface them,
 			// otherwise a refused challenge hangs silently.
+			// Popups carry challenge/team rejections — always surface them. PMs (incl. the
+			// challenge handshake) are captured in globalLines above but not printed (noisy).
 			if (line.startsWith('|popup|')) {
 				console.error(`[${who}] server popup: ${line.slice('|popup|'.length).replace(/\|\|/g, '  —  ')}`);
-			} else if (line.startsWith('|pm|')) {
-				console.log(`[${who}] pm: ${line.slice('|pm|'.length)}`);
 			}
 			// This server uses the classic PM-based challenge protocol (no |updatechallenges|):
 			// the offer arrives as |pm|<from>|<to>|/challenge <format>|... — B accepts that.
@@ -167,7 +167,8 @@ class Harness {
 		} else if (line.startsWith('|win|')) {
 			this.game.winner = line.slice(5).trim();
 			this.endGame(false);
-		} else if (line.startsWith('|tie')) {
+		} else if (line === '|tie' || line.startsWith('|tie|')) {
+			// NB: exact match — `|tier|...` (room init) also starts with "|tie".
 			this.game.winner = null;
 			this.endGame(false);
 		} else if (line.startsWith('|bigerror|') && /crash/i.test(line)) {
