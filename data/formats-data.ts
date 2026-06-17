@@ -543,7 +543,7 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 		natDexTier: "Illegal",
 	},
 	graveler: {
-		tier: "NFE",
+		tier: "ZU",
 	},
 	graveleralola: {
 		tier: "NFE",
@@ -3276,7 +3276,7 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 	runerigus: {
 		isNonstandard: "Past",
 		tier: "Illegal",
-		natDexTier: "RU",
+		natDexTier: "Illegal",
 	},
 	tirtouga: {
 		isNonstandard: "Past",
