@@ -941,8 +941,8 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 		desc: "If this move is successful, the user loses 1/2 of its maximum HP, rounded up, unless the user has the Magic Guard or Rock Head Abilities.",
 		shortDesc: "User loses 50% max HP.",
 	},
-	chstrike: {
-		name: "chstrike",
+	chistrike: {
+		name: "Chi Strike",
 		desc: "Has a 25% chance to lower the target's Special Defense by 1 stage.",
 		shortDesc: "25% chance to lower the target's Sp. Def by 1.",
 	},

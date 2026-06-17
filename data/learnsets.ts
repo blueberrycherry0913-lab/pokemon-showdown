@@ -8955,7 +8955,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	mankey: {
 		learnset: {
 			aurasphere: ["9L1"],
-			chstrike: ["9L1"],
+			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
 
@@ -9086,7 +9086,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	primeape: {
 		learnset: {
 			aurasphere: ["9L1"],
-			chstrike: ["9L1"],
+			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
 
@@ -9219,7 +9219,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			astonish: ["9L1"],
 			aurasphere: ["9L1"],
 			bittermalice: ["9L1"],
-			chstrike: ["9L1"],
+			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
 			grudge: ["9L1"],
@@ -9840,7 +9840,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	poliwrath: {
 		learnset: {
 			aurasphere: ["9L1"],
-			chstrike: ["9L1"],
+			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
 			shallowslam: ["9L1"],
@@ -10411,7 +10411,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	machop: {
 		learnset: {
 			aurasphere: ["9L1"],
-			chstrike: ["9L1"],
+			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
 
@@ -10519,7 +10519,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	machoke: {
 		learnset: {
 			aurasphere: ["9L1"],
-			chstrike: ["9L1"],
+			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
 
@@ -10625,7 +10625,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	machamp: {
 		learnset: {
 			aurasphere: ["9L1"],
-			chstrike: ["9L1"],
+			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
 
@@ -13194,7 +13194,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	farfetchdkanto: {
 		learnset: {
 			aurasphere: ["9L1"],
-			chstrike: ["9L1"],
+			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
 			rocksmash: ["9L1"],
@@ -13310,7 +13310,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	farfetchd: {
 		learnset: {
 			aurasphere: ["9L1"],
-			chstrike: ["9L1"],
+			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
 			strength: ["9L1"],
@@ -13370,7 +13370,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	sirfetchd: {
 		learnset: {
 			aurasphere: ["9L1"],
-			chstrike: ["9L1"],
+			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
 			strength: ["9L1"],
@@ -16703,7 +16703,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	tyrogue: {
 		learnset: {
 			aurasphere: ["9L1"],
-			chstrike: ["9L1"],
+			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
 
@@ -16776,7 +16776,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	},
 	hitmonlee: {
 		learnset: {
-			chstrike: ["9L1"],
+			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
 
@@ -16891,7 +16891,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	},
 	hitmonchan: {
 		learnset: {
-			chstrike: ["9L1"],
+			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
 
@@ -17007,7 +17007,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	hitmontop: {
 		learnset: {
 			aurasphere: ["9L1"],
-			chstrike: ["9L1"],
+			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
 
@@ -102407,7 +102407,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			alloyspark: ["9L1"],
 			blightbrush: ["9L1"],
 			breezeboost: ["9L1"],
-			chstrike: ["9L1"],
+			chistrike: ["9L1"],
 			dirtdozer: ["9L1"],
 			faecurrent: ["9L1"],
 			fightingspirit: ["9L1"],

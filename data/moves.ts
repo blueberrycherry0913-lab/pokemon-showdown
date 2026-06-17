@@ -775,7 +775,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		name: "Aurora Beam",
 		pp: 20,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, metronome: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, beam: 1 },
 		secondary: {
 			chance: 25,
 			boosts: {
@@ -9156,7 +9156,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		name: "Ice Beam",
 		pp: 10,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, metronome: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, beam: 1 },
 		secondary: {
 			chance: 10,
 			status: 'frb',
@@ -21794,7 +21794,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		priority: 0,
 		flags: { protect: 1, mirror: 1 },
 		secondary: {
-			chance: 30,
+			chance: 25,
 			boosts: {
 				spa: -1,
 			},
@@ -21899,7 +21899,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		target: "normal",
 		type: "Fighting",
 	},
-	chstrike: {
+	chistrike: {
 		num: -32,
 		accuracy: 100,
 		basePower: 65,
