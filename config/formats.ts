@@ -45,6 +45,30 @@ const DOMAIN_SETTER_IDS = new Set(Object.keys(DOMAIN_SETTER_BY_TYPE));
 // Gen 1 legendary/mythical Pokémon banned in Testing Standard (not in Mythics and Megas).
 const GEN1_LEGENDARIES = new Set(['articuno', 'zapdos', 'moltres', 'mewtwo', 'mew']);
 
+// Species banned in both formats — regional forward-evolutions of non-Gen-1 lines or Galar
+// fossil chimeras that slip through the Gen 1 Only clause due to having no Gen 1 lineage anchor.
+const SHARED_EXPLICIT_BANS: string[] = [
+	// Galar fossil chimeras (no pre-evolution; Gen 1 Only has nothing to anchor on)
+	'Arctovish', 'Arctozolt', 'Dracovish', 'Dracozolt',
+	// Gen 5 lineage: Basculin → Basculegion (Hisui)
+	'Basculegion', 'Basculegion-F',
+	// Gen 2 lineage forward-evos (Hisui/Paldea)
+	'Cursola', 'Overqwil', 'Sneasler', 'Ursaluna', 'Ursaluna-Bloodmoon', 'Wyrdeer',
+	// Gen 3 lineage forward-evo (Galarian)
+	'Obstagoon',
+];
+
+// Gen 8 legendary/mythical Pokémon banned only in Testing Standard (legal in Mythics and Megas).
+const GEN8_LEGENDARY_BANS: string[] = [
+	'Urshifu', 'Urshifu-Rapid-Strike',
+	'Zacian', 'Zacian-Crowned',
+	'Zamazenta', 'Zamazenta-Crowned',
+	'Zarude', 'Zarude-Dada',
+	'Spectrier', 'Regidrago', 'Regieleki', 'Eternatus',
+	'Enamorus', 'Enamorus-Therian',
+	'Calyrex', 'Calyrex-Ice', 'Calyrex-Shadow',
+];
+
 function pokemonInActiveDomain(battle: any, pokemon: any): boolean {
 	if (battle.field.pseudoWeather['antidomain']) return false;
 	for (const id in DOMAIN_TYPE_BY_ID) {
@@ -118,10 +142,12 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			'No Dup Abilities',
 		],
 		banlist: [
-			// With all IVs at 0, Hidden Power is always Fighting-type at low BP — uglier
-			// than just disabling it. Can revisit if a custom Hidden Power replacement
-			// gets added to the rework.
+			// With all IVs at 0, Hidden Power is always Fighting-type at low BP.
 			'Hidden Power',
+			// Fossil chimeras + non-Gen-1 regional forward-evos that slip Gen 1 Only.
+			...SHARED_EXPLICIT_BANS,
+			// Gen 8 legendaries/mythicals (legal in Mythics and Megas).
+			...GEN8_LEGENDARY_BANS,
 		],
 		restricted: [],
 		// Type Order STAB (§6 of master reference) + Tera Crystal STAB (§11), as a single
@@ -412,7 +438,11 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			'Species Abilities',
 			'No Dup Abilities',
 		],
-		banlist: ['Hidden Power'],
+		banlist: [
+			'Hidden Power',
+			// Fossil chimeras + non-Gen-1 regional forward-evos that slip Gen 1 Only.
+			...SHARED_EXPLICIT_BANS,
+		],
 		restricted: [],
 		// All battle handlers (STAB, domain stat boost, blanket type effects, etc.) are
 		// identical to Testing Standard. The only difference is the onValidateSet ban list:

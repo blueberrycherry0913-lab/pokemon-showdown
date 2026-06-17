@@ -1183,14 +1183,14 @@ export class TeamValidator {
 		const diancieException = species.name === 'Diancie' && !set.shiny;
 		const has3PerfectIVs = setSources.minSourceGen() >= 6 && isLegendary && !diancieException;
 
-		if (set.hpType === 'Fighting' && ruleTable.has('obtainablemisc')) {
+		if (set.hpType === 'Fighting' && ruleTable.has('obtainablemisc') && !ruleTable.has('forceiv0')) {
 			if (has3PerfectIVs) {
 				// Legendary Pokemon must have at least 3 perfect IVs in gen 6+
 				problems.push(`${name} must not have Hidden Power Fighting because it starts with 3 perfect IVs because it's a Gen 6+ legendary.`);
 			}
 		}
 
-		if (has3PerfectIVs && ruleTable.has('obtainablemisc')) {
+		if (has3PerfectIVs && ruleTable.has('obtainablemisc') && !ruleTable.has('forceiv0')) {
 			let perfectIVs = 0;
 			for (const stat in set.ivs) {
 				if (set.ivs[stat as 'hp'] >= 31) perfectIVs++;
@@ -2205,7 +2205,7 @@ export class TeamValidator {
 		} else {
 			requiredIVs = eventData.perfectIVs || 0;
 		}
-		if (requiredIVs && set.ivs) {
+		if (requiredIVs && set.ivs && !this.ruleTable.has('forceiv0')) {
 			// Legendary Pokemon must have at least 3 perfect IVs in gen 6
 			// Events can also have a certain amount of guaranteed perfect IVs
 			let perfectIVs = 0;
