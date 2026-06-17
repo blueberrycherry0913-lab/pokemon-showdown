@@ -11,6 +11,9 @@
  * Login: on `|challstr|`, fetch an assertion for the (unregistered) bot name from
  * the public loginserver and send `/trn`. With `noAuth: true` (for a server set
  * to `Config.noguestsecurity = true`) it logs in without an assertion.
+ *
+ * Fail-fast: connection, login, and assertion errors all reject the `ready`
+ * promise immediately (with a descriptive message) instead of silently hanging.
  */
 
 const https = require('https');
@@ -21,15 +24,21 @@ function toID(text) {
 	return ('' + text).toLowerCase().replace(/[^a-z0-9]+/g, '');
 }
 
-/** GET the request body as a string. */
-function httpGet(url) {
+/** GET url → string with a hard timeout. */
+function httpGet(url, timeoutMs = 20000) {
 	return new Promise((resolve, reject) => {
 		const mod = url.startsWith('https') ? https : http;
-		mod.get(url, res => {
+		const req = mod.get(url, res => {
 			let data = '';
 			res.on('data', c => { data += c; });
 			res.on('end', () => resolve(data));
-		}).on('error', reject);
+			res.on('error', reject);
+		});
+		req.on('error', reject);
+		req.setTimeout(timeoutMs, () => {
+			req.destroy();
+			reject(new Error(`HTTP request timed out after ${timeoutMs / 1000}s`));
+		});
 	});
 }
 
@@ -50,19 +59,38 @@ class Connection {
 		this.loginServer = opts.loginServer || 'https://play.pokemonshowdown.com/';
 		this.onLine = opts.onLine || (() => {});
 		this.sock = null;
+		this._connectTimer = null;
 		this._readyResolve = null;
-		this.ready = new Promise(res => { this._readyResolve = res; });
+		this._readyReject = null;
+		this.ready = new Promise((res, rej) => {
+			this._readyResolve = res;
+			this._readyReject = rej;
+		});
 	}
 
 	connect() {
 		const url = `http://${this.server}/showdown`;
+		console.log(`[${this.name}] connecting to ${url} …`);
 		this.sock = new SockJS(url, undefined, {transports: ['websocket', 'xhr-polling']});
 		this.sock.onmessage = e => this._onMessage(e.data);
-		this.sock.onerror = e => console.error(`[${this.name}] socket error`, e && e.message || e);
+		this.sock.onerror = e => {
+			const msg = `[${this.name}] socket error — is the server running at ${this.server}? (${(e && e.message) || e})`;
+			console.error(msg);
+			this._reject(new Error(msg));
+		};
+
+		// If the server never sends |challstr| within 30 s it's not listening.
+		this._connectTimer = setTimeout(() => {
+			const msg = `[${this.name}] no |challstr| from server after 30s — server may not be running at ${this.server}`;
+			console.error(msg);
+			this._reject(new Error(msg));
+		}, 30000);
+
 		return this.ready;
 	}
 
 	close() {
+		clearTimeout(this._connectTimer);
 		try { this.sock && this.sock.close(); } catch { /* ignore */ }
 	}
 
@@ -74,6 +102,15 @@ class Connection {
 	/** Send a global command, e.g. sendGlobal('/challenge Bob, gen9testingstandard'). */
 	sendGlobal(text) {
 		this.send('', text);
+	}
+
+	/** Reject the ready promise once (subsequent calls are no-ops). */
+	_reject(err) {
+		if (this._readyReject) {
+			this._readyReject(err);
+			this._readyReject = null;
+			this._readyResolve = null;
+		}
 	}
 
 	_onMessage(data) {
@@ -96,6 +133,8 @@ class Connection {
 	async _handleGlobalLine(roomid, line) {
 		if (roomid) return; // only global lines drive login
 		if (line.startsWith('|challstr|')) {
+			clearTimeout(this._connectTimer); // server is alive
+			this._connectTimer = null;
 			const challstr = line.slice('|challstr|'.length);
 			await this._login(challstr);
 		} else if (line.startsWith('|updateuser|')) {
@@ -103,8 +142,12 @@ class Connection {
 			const parts = line.split('|');
 			const named = parts[3] === '1';
 			if (named && toID(parts[2]) === this.id) {
-				this._readyResolve && this._readyResolve();
-				this._readyResolve = null;
+				console.log(`[${this.name}] logged in OK.`);
+				if (this._readyResolve) {
+					this._readyResolve();
+					this._readyResolve = null;
+					this._readyReject = null;
+				}
 			}
 		}
 	}
@@ -116,19 +159,25 @@ class Connection {
 		}
 		const url = `${this.loginServer.replace(/\/$/, '')}/action.php` +
 			`?act=getassertion&userid=${encodeURIComponent(this.id)}&challstr=${encodeURIComponent(challstr)}`;
+		console.log(`[${this.name}] fetching login assertion …`);
 		let assertion;
 		try {
 			assertion = (await httpGet(url)).trim();
 		} catch (err) {
-			console.error(`[${this.name}] assertion request failed (is there internet access to the loginserver?):`, err.message);
-			console.error(`[${this.name}] If your server has Config.noguestsecurity = true, rerun with --noauth.`);
+			const msg = `[${this.name}] loginserver request failed: ${err.message}\n` +
+				`  → Check internet access to ${this.loginServer}`;
+			console.error(msg);
+			this._reject(new Error(msg));
 			return;
 		}
 		if (!assertion || assertion.charAt(0) === ';') {
-			console.error(`[${this.name}] loginserver refused the name "${this.name}" ` +
-				`(it may be a registered account requiring a password). Pick an unregistered bot name or use --noauth. Response: ${assertion.slice(0, 80)}`);
+			const msg = `[${this.name}] loginserver refused the name "${this.name}" — it may be a registered account requiring a password.\n` +
+				`  → Choose a different unregistered name (pass --names=A,B) and rerun.`;
+			console.error(msg);
+			this._reject(new Error(msg));
 			return;
 		}
+		console.log(`[${this.name}] assertion received, logging in …`);
 		this.sendGlobal(`/trn ${this.name},0,${assertion}`);
 	}
 }
