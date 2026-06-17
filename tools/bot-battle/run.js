@@ -129,6 +129,16 @@ class Harness {
 	onLine(conn, side, roomid, line) {
 		// Global lines: connection B watches for an incoming challenge to accept.
 		if (!roomid) {
+			const who = side === 'a' ? NAME_A : NAME_B;
+			// Capture recent global lines for handshake diagnostics.
+			if (this.game) (this.game.globalLines || (this.game.globalLines = [])).push(`${who}: ${line}`);
+			// Challenge/team rejections come back as popups (and sometimes PMs) — surface them,
+			// otherwise a refused challenge hangs silently.
+			if (line.startsWith('|popup|')) {
+				console.error(`[${who}] server popup: ${line.slice('|popup|'.length).replace(/\|\|/g, '  —  ')}`);
+			} else if (line.startsWith('|pm|')) {
+				console.log(`[${who}] pm: ${line.slice('|pm|'.length)}`);
+			}
 			if (side === 'b' && line.startsWith('|updatechallenges|')) this.maybeAccept(line);
 			return;
 		}
@@ -137,6 +147,8 @@ class Harness {
 		// First battle line of the game pins the room id.
 		if (this.game && !this.game.roomid) {
 			this.game.roomid = roomid;
+			clearTimeout(this.game.handshakeTimer);
+			console.log(`[game ${this.game.index}] battle room opened: ${roomid}`);
 			if (WATCH) console.log(`[game ${this.game.index}] WATCH — in your client type:  /join ${roomid}`);
 		}
 
@@ -172,6 +184,7 @@ class Harness {
 		try { data = JSON.parse(line.slice('|updatechallenges|'.length)); } catch { return; }
 		const from = data && data.challengesFrom;
 		if (from && from[toID(NAME_A)]) {
+			console.log(`[game ${this.game.index}] ${NAME_B} received the challenge — accepting.`);
 			this.game.accepted = true;
 			this.connB.sendGlobal(`/utm ${this.game.teamB.packed}`);
 			this.connB.sendGlobal(`/accept ${NAME_A}`);
@@ -183,6 +196,7 @@ class Harness {
 		this.game.ended = true;
 		this.game.crashed = crashed;
 		clearTimeout(this.game.timer);
+		clearTimeout(this.game.handshakeTimer);
 		this.game.resolve();
 	}
 
@@ -200,15 +214,28 @@ class Harness {
 
 		const game = this.game = {
 			index, roomid: null, ended: false, crashed: false, accepted: false,
-			winner: undefined, reason: null, turns: 0, log: [], errors: [],
-			teamA, teamB, resolve: null, timer: null,
+			winner: undefined, reason: null, turns: 0, log: [], errors: [], globalLines: [],
+			teamA, teamB, resolve: null, timer: null, handshakeTimer: null,
 		};
 		const done = new Promise(res => { game.resolve = res; });
 		game.timer = setTimeout(() => {
 			if (!game.ended) { game.reason = `timeout after ${TIMEOUT_MS / 1000}s (possible hang)`; this.endGame(true); }
 		}, TIMEOUT_MS);
 
+		// Handshake watchdog: if no battle room opens within 30s the challenge or accept
+		// was rejected (almost always shown as a |popup| above). Report and move on rather
+		// than waiting out the full per-game timeout.
+		game.handshakeTimer = setTimeout(() => {
+			if (game.ended || game.roomid) return;
+			console.error(`[game ${index}] handshake failed — no battle room after 30s (accepted=${game.accepted}).`);
+			console.error(`  Last global lines (look for a popup just above):`);
+			for (const l of game.globalLines.slice(-15)) console.error(`    ${l}`);
+			game.reason = `challenge handshake failed (accepted=${game.accepted}, no battle room)`;
+			this.endGame(true);
+		}, 30000);
+
 		// Challenge handshake. A sets its team and challenges; B auto-accepts via maybeAccept().
+		console.log(`[game ${index}] ${NAME_A} challenging ${NAME_B} to ${FORMAT} …`);
 		this.connA.sendGlobal(`/utm ${teamA.packed}`);
 		this.connA.sendGlobal(`/challenge ${NAME_B}, ${FORMAT}`);
 
