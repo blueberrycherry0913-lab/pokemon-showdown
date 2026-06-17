@@ -139,7 +139,9 @@ class Harness {
 			} else if (line.startsWith('|pm|')) {
 				console.log(`[${who}] pm: ${line.slice('|pm|'.length)}`);
 			}
-			if (side === 'b' && line.startsWith('|updatechallenges|')) this.maybeAccept(line);
+			// This server uses the classic PM-based challenge protocol (no |updatechallenges|):
+			// the offer arrives as |pm|<from>|<to>|/challenge <format>|... — B accepts that.
+			if (side === 'b' && line.startsWith('|pm|')) this.maybeAccept(line);
 			return;
 		}
 		if (!roomid.startsWith('battle-')) return;
@@ -180,15 +182,22 @@ class Harness {
 
 	maybeAccept(line) {
 		if (!this.game || this.game.accepted) return;
-		let data;
-		try { data = JSON.parse(line.slice('|updatechallenges|'.length)); } catch { return; }
-		const from = data && data.challengesFrom;
-		if (from && from[toID(NAME_A)]) {
-			console.log(`[game ${this.game.index}] ${NAME_B} received the challenge — accepting.`);
-			this.game.accepted = true;
-			this.connB.sendGlobal(`/utm ${this.game.teamB.packed}`);
-			this.connB.sendGlobal(`/accept ${NAME_A}`);
-		}
+		// Challenge offer PM: |pm| <fromIdentity>| <toIdentity>|/challenge <format>|<tbf>|<msg>|...
+		// (A bare "/challenge" with no format is a cancel/clear — ignore it.)
+		const parts = line.split('|');
+		const from = toID(parts[2]);     // challenger
+		const to = toID(parts[3]);       // recipient (should be us, connB)
+		const payload = parts[4] || '';
+		if (to !== this.connB.id) return;            // not addressed to this bot
+		if (from !== toID(NAME_A)) return;           // not from our challenger
+		if (!payload.startsWith('/challenge ')) return; // not an active challenge offer
+		const format = payload.slice('/challenge '.length).split('|')[0];
+		if (toID(format) !== toID(FORMAT)) return;   // different format
+
+		console.log(`[game ${this.game.index}] ${NAME_B} received the challenge — accepting.`);
+		this.game.accepted = true;
+		this.connB.sendGlobal(`/utm ${this.game.teamB.packed}`);
+		this.connB.sendGlobal(`/accept ${NAME_A}`);
 	}
 
 	endGame(crashed) {
