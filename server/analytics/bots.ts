@@ -15,7 +15,7 @@
 
 declare const Config: any;
 
-export const BOT_IDS = new Set<string>(['botalpha', 'botbravo']);
+export const BOT_IDS = new Set<string>(['botalpha', 'botbravo', 'testerbotruby', 'testerbotsapphire']);
 
 function isBotId(id: string): boolean {
 	const lc = (id || '').toLowerCase();
