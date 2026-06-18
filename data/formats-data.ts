@@ -575,7 +575,7 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 	rapidashgalar: {
 		isNonstandard: "Past",
 		tier: "Illegal",
-		natDexTier: "RU",
+		natDexTier: "Illegal",
 	},
 	slowpoke: {
 		tier: "Illegal",
@@ -5004,11 +5004,18 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 	},
 	sinistea: {
 		tier: "LC",
+		natDexTier: "Illegal",
+	},
+	sinisteaantique: {
+		natDexTier: "Illegal",
 	},
 	polteageist: {
 		tier: "UUBL",
 		doublesTier: "(DUU)",
-		natDexTier: "RU",
+		natDexTier: "Illegal",
+	},
+	polteageistantique: {
+		natDexTier: "Illegal",
 	},
 	hatenna: {
 		tier: "LC",
@@ -5219,7 +5226,7 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 	glastrier: {
 		tier: "ZU",
 		doublesTier: "(DUU)",
-		natDexTier: "RU",
+		natDexTier: "Illegal",
 	},
 	spectrier: {
 		tier: "Uber",

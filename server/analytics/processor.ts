@@ -129,7 +129,13 @@ const SPECIES_RENAMES: {[name: string]: string} = {
 	'Toxtricity-Low-Key': 'Toxtricity-LK',
 	'Eiscue-Noice': 'Eiscue',
 	'Morpeko-Hangry': 'Morpeko',
-	'Minior-Meteor': 'Minior', // Shields Up and Shields Down forms aggregate under "Minior"
+	'Minior-Meteor': 'Minior',  // all Minior forms aggregate under "Minior"
+	'Minior-Orange': 'Minior',
+	'Minior-Yellow': 'Minior',
+	'Minior-Green': 'Minior',
+	'Minior-Blue': 'Minior',
+	'Minior-Indigo': 'Minior',
+	'Minior-Violet': 'Minior',
 };
 function normalizeSpecies(name: string | null | undefined): string | null {
 	if (!name) return name ?? null;
