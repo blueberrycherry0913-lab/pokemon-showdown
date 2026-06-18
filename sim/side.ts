@@ -1474,7 +1474,12 @@ export class Side {
 		let moveid = '';
 		let moveSlot: number | undefined;
 
-		if (!moveText) moveText = 1;
+		// Default (no explicit move, e.g. from autoChoose): first non-disabled move,
+		// falling back to slot 1, so a disabled move 1 doesn't error out an auto-resolve.
+		if (!moveText) {
+			const firstEnabled = request.moves.findIndex(m => m && !m.disabled);
+			moveText = (firstEnabled >= 0 ? firstEnabled : 0) + 1;
+		}
 		if (typeof moveText === 'number' || /^[0-9]+$/.test(String(moveText))) {
 			const moveIndex = Number(moveText) - 1;
 			if (moveIndex < 0 || moveIndex >= request.moves.length || !request.moves[moveIndex]) {
@@ -1522,11 +1527,23 @@ export class Side {
 				if (i > 10) throw new Error(`autoChoose failed: infinite looping`);
 			}
 		} else if (this.requestState === 'move') {
+			// Own active Pokémon first.
 			let i = 0;
-			while (!this.isChoiceDone()) {
+			while (this.choice.actions.length < this.active.length) {
 				if (!this.chooseMove()) throw new Error(`autoChoose crashed: ${this.choice.error}`);
-				i++;
-				if (i > 10) throw new Error(`autoChoose failed: infinite looping`);
+				if (++i > 10) throw new Error(`autoChoose failed: infinite looping`);
+			}
+			// Then any Mind Controlled foe Pokémon this side must also choose for (§20).
+			// Without this, isChoiceDone() never completes and the loop above over-chooses,
+			// throwing "more choices than unfainted Pokémon" — crashing the battle process
+			// whenever a side auto-resolves (bot `default`, human timeout) while controlling.
+			const controlledActive = (this.activeRequest as MoveRequest)?.controlledActive;
+			if (controlledActive?.length) {
+				i = 0;
+				while (this.choice.controlledActions.length < controlledActive.length) {
+					if (!this.chooseControlled()) throw new Error(`autoChoose controlled crashed: ${this.choice.error}`);
+					if (++i > 10) throw new Error(`autoChoose controlled failed: infinite looping`);
+				}
 			}
 		}
 		return true;
