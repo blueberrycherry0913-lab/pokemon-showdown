@@ -51,7 +51,9 @@ function parseArgs(argv) {
 }
 
 const args = parseArgs(process.argv);
-const GAMES = Number(args.games) || 50;
+// 0 = auto: in pool mode, run exactly one full pass (poolSize/2 games); else 50.
+// Resolved in the Harness constructor once the pool is loaded.
+let GAMES = Number(args.games) || 0;
 // Batched/resume: skip the first START games (advance the pool cursor by 2*START so
 // game START+1 draws the right teams) and run games START+1 .. GAMES. Lets a big pool
 // run be split into chunks against the same static team file (see --teams).
@@ -82,6 +84,9 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 class Harness {
 	constructor() {
 		this.nextTeam = teamSource(MODE, {file: TEAMS_FILE, strict: STRICT_POOL});
+		// Default game count: one full pass through the pool (poolSize/2) in pool mode,
+		// else 50. An explicit --games always wins.
+		if (!GAMES) GAMES = (MODE === 'pool' && this.nextTeam.poolSize) ? Math.floor(this.nextTeam.poolSize / 2) : 50;
 		this.aiByConn = new Map(); // conn -> Map(roomid -> WSPlayerAI)
 		this.game = null;          // current game state
 		this.stats = {a: 0, b: 0, ties: 0, crashes: 0, setupErrors: 0, turnsTotal: 0, completed: 0};

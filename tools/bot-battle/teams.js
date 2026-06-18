@@ -199,7 +199,7 @@ function teamSource(mode, opts = {}) {
 	}
 	let poolIndex = 0;
 	let useGenerated = false; // toggled in 'both' mode
-	return function nextTeam() {
+	const nextTeam = function() {
 		const havePool = pool.length > 0;
 		if (mode === 'pool' || (mode === 'both' && havePool && !useGenerated)) {
 			const t = pool[poolIndex % pool.length];
@@ -210,6 +210,10 @@ function teamSource(mode, opts = {}) {
 		if (mode === 'both') useGenerated = false;
 		return generateTeam();
 	};
+	// Number of teams in the pool — lets run.js default to exactly one full pass
+	// (poolSize/2 games) when --games is omitted in pool mode.
+	nextTeam.poolSize = pool.length;
+	return nextTeam;
 }
 
 module.exports = {FORMAT, generateTeam, loadPool, teamSource, SPECIES_POOL};

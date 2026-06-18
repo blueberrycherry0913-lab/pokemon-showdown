@@ -20,11 +20,38 @@ server just sees two players battling.
 
 It prints a win-rate/crash summary and exits. `Ctrl+C` stops it early.
 
+## Two ways to run: quick (everyday) vs full smoke test (occasional)
+
+| Launcher | What it does | When |
+|---|---|---|
+| **`run-quick.bat`** | 8 games of `mode=both` (your `default-teams.txt` + random teams). Override with flags, e.g. `run-quick.bat --games=5 --watch` or `--mode=pool --teams=myteams.txt`. | **The norm** — sanity-check whatever you're working on. |
+| **`run-smoke.bat`** | The big one: pre-screens **every (species, ability) variant** offline for crashes, generates balanced-coverage teams (every fully-evolved Gen1/Gen8/Cosmic + Osteokhan, ≥5 games each, both basic abilities), then plays one full live pass (~61 games). | **Opt-in**, when you want to "test everything" after big changes. |
+
+Both are plain launchers around `node run.js`; nothing is enabled server-side.
+
+### The throttle toggle (needed only for big runs)
+
+The server caps each user to **12 battles + team validations per 3 minutes** (anti-DoS,
+`server/monitor.ts`). That's fine for ≤6 games but kills longer runs (you'll see
+`handshake failed` / a *"Due to high load"* popup around game 6). To allow a full smoke
+test, set **`exports.nothrottle = true;`** in `config/config.js` and restart the server;
+set it back to `false` for normal use. This is the toggle that turns the extensive test
+on/off — it's `config.js` (git-ignored, local to your server), not committed.
+
+The full pipeline by hand (what `run-smoke.bat` runs):
+```
+node prescreen-variants.js        # offline crash screen -> prescreen-crashers.json
+node gen-smoke-teams.js           # coverage teams -> smoke-teams.txt (excludes crashers)
+node run.js --mode=pool --teams=smoke-teams.txt --names=TesterBotRuby,TesterBotSapphire
+```
+If the server crashes mid-run, restart it and resume with `--start=<last completed game>`.
+
 ## Flags
 
 | Flag | Default | Meaning |
 |---|---|---|
-| `--games=N` | 50 | number of games to play |
+| `--games=N` | auto | number of games. Omitted in **pool** mode = exactly one full pass (poolSize/2 games); otherwise 50 |
+| `--start=K` | 0 | skip the first K games (advance the pool cursor by 2K) and run K+1…games — resume a pool run in batches against the same file |
 | `--mode=random\|pool\|both` | both | team source (see below) |
 | `--teams=PATH` | teams.txt | team file for pool/both (export or packed format) |
 | `--strict-pool` | off | skip pool teams that fail the validator (default: use anyway) |
