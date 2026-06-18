@@ -114,7 +114,7 @@ class Harness {
 
 		for (let i = START + 1; i <= GAMES; i++) {
 			await this.playGame(i);
-			await sleep(300); // let rooms settle between games
+			await sleep(1200); // let the server fully tear down the room before the next challenge
 		}
 
 		this.printSummary();
@@ -156,8 +156,13 @@ class Harness {
 		}
 		if (!roomid.startsWith('battle-')) return;
 
-		// First battle line of the game pins the room id.
-		if (this.game && !this.game.roomid) {
+		// Pin the room id on the authoritative room-join line (`|init|battle`), NOT the
+		// first battle- line seen. A trailing line from the PREVIOUS game's room (chat,
+		// |leave|, late |request|) would otherwise mis-pin this game to the old room, so
+		// finishGame's /leave targeted an already-left room while the bots stayed joined
+		// to the real one — rooms accumulated until the server throttled new challenges
+		// (~6-12 games in, surfacing as "handshake failed / accepted=false").
+		if (this.game && !this.game.roomid && (line.startsWith('|init|battle') || line.startsWith('|player|') || line.startsWith('|turn|'))) {
 			this.game.roomid = roomid;
 			clearTimeout(this.game.handshakeTimer);
 			console.log(`[game ${this.game.index}] battle room opened: ${roomid}`);
@@ -169,7 +174,10 @@ class Harness {
 		this.makeAI(conn, roomid).receive(line);
 
 		// Drive game-state tracking off connection A's view (avoids double counting).
+		// Once the room is pinned, ignore stray lines from any OTHER room (a previous
+		// game's trailing |win|/|tie| must not end this game).
 		if (side !== 'a' || !this.game || this.game.ended) return;
+		if (this.game.roomid !== roomid) return; // only this game's pinned room (ignores stray/old-room lines)
 		this.game.log.push(line);
 		if (line.startsWith('|turn|')) {
 			const t = parseInt(line.slice(6), 10);
