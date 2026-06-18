@@ -5017,6 +5017,9 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 	polteageistantique: {
 		natDexTier: "Illegal",
 	},
+	sinistchamasterpiece: {
+		natDexTier: "Illegal",
+	},
 	hatenna: {
 		tier: "LC",
 	},
