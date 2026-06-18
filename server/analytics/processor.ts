@@ -129,13 +129,15 @@ const SPECIES_RENAMES: {[name: string]: string} = {
 	'Toxtricity-Low-Key': 'Toxtricity-LK',
 	'Eiscue-Noice': 'Eiscue',
 	'Morpeko-Hangry': 'Morpeko',
-	'Minior-Meteor': 'Minior',  // all Minior forms aggregate under "Minior"
+	'Minior-Meteor': 'Minior',  // all Minior forms (Shields Up/Down + color variants) aggregate under "Minior"
 	'Minior-Orange': 'Minior',
 	'Minior-Yellow': 'Minior',
 	'Minior-Green': 'Minior',
 	'Minior-Blue': 'Minior',
 	'Minior-Indigo': 'Minior',
 	'Minior-Violet': 'Minior',
+	'Cramorant-Gulping': 'Cramorant',  // battle-only gulp forms aggregate under "Cramorant"
+	'Cramorant-Gorging': 'Cramorant',
 };
 function normalizeSpecies(name: string | null | undefined): string | null {
 	if (!name) return name ?? null;
