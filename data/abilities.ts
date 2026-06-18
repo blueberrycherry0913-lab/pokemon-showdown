@@ -2685,7 +2685,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	justified: {
 		onSourceModifyDamage(damage, source, target, move) {
 			if (move.type === 'Dark') {
-				return this.chainModify(0.75);
+				return this.chainModify(0.5);
 			}
 		},
 		onDamagingHit(damage, target, source, move) {
@@ -2693,7 +2693,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.boost({ atk: 1, spa: 1 }, target);
 			}
 		},
-		shortDesc: "Take 25% less damage from Dark-type moves, and raises Attack and Special Attack by +1 stage when hit by one.",
+		shortDesc: "Take 50% less damage from Dark-type moves, and raises Attack and Special Attack by +1 stage when hit by one.",
 		origin: 'Buffed',
 		flags: {},
 		name: "Justified",
@@ -3547,7 +3547,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				}
 			}
 		},
-		shortDesc: "Immune to being Charmed, Taunt, and foe-inflicted stat changes.",
+		shortDesc: "Immune to being Charmed, Intimidate, Awe-Inspiring, and foe-inflicted stat changes.",
 		origin: 'Altered',
 		flags: { breakable: 1 },
 		name: "Oblivious",
@@ -4413,7 +4413,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		rating: 3,
 		num: 282,
 	},
-	queenlymajesty: {
+	royalmajesty: {
 		onFoeTryMove(target, source, move) {
 			const targetAllExceptions = ['perishsong', 'flowershield', 'rototiller'];
 			if (move.target === 'foeSide' || (move.target === 'all' && !targetAllExceptions.includes(move.id))) {
@@ -4423,14 +4423,14 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			const dazzlingHolder = this.effectState.target;
 			if ((source.isAlly(dazzlingHolder) || move.target === 'all') && move.priority > 0.1) {
 				this.attrLastMove('[still]');
-				this.add('cant', dazzlingHolder, 'ability: Queenly Majesty', move, `[of] ${target}`);
+				this.add('cant', dazzlingHolder, 'ability: Royal Majesty', move, `[of] ${target}`);
 				return false;
 			}
 		},
 		shortDesc: "Blocks priority moves of priority +1 or higher, barring Protection moves.",
-		origin: 'Unchanged',
+		origin: 'Renamed',
 		flags: { breakable: 1 },
-		name: "Queenly Majesty",
+		name: "Royal Majesty",
 		rating: 2.5,
 		num: 214,
 	},
@@ -5706,11 +5706,18 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 10140,
 	},
 	constrictor: {
-		shortDesc: "Pokémon Interlocked with this Pokémon take 1/16 MaxHP damage each turn.",
-		origin: 'Standby',
+		onResidualOrder: 26,
+		onResidual(pokemon) {
+			if (!pokemon.volatiles['interlocked']) return;
+			const partner = (pokemon.volatiles['interlocked'] as any).partner as Pokemon | undefined;
+			if (!partner || partner.fainted) return;
+			this.damage(Math.floor(partner.baseMaxhp / 6), partner, pokemon, this.effect);
+		},
+		shortDesc: "Pokémon Interlocked with this Pokémon take 1/6 MaxHP damage each turn.",
+		origin: 'Custom',
 		flags: {},
 		name: "Constrictor",
-		rating: 2,
+		rating: 2.5,
 		num: 10141,
 	},
 	emotionalsilencer: {
@@ -8111,7 +8118,14 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.add('-immune', target, 'mindcontrolled', '[from] ability: Empty Head');
 			}
 		},
-		shortDesc: "Immune to Mind Control, confusion, and the move Hypnosis.",
+		onTryBoost(boost, target, source, effect) {
+			// Ignore all stat changes — neither self-inflicted nor foe-inflicted affect this Pokémon.
+			let b: BoostID;
+			for (b in boost) {
+				delete boost[b];
+			}
+		},
+		shortDesc: "Immune to Mind Control, confusion, and Hypnosis; also ignores all stat changes.",
 		origin: 'Custom',
 		flags: { breakable: 1 },
 		name: "Empty Head",
@@ -8734,5 +8748,44 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		name: "Energy Absorb",
 		rating: 3,
 		num: 10156,
+	},
+
+	// --- Row 454: Solvent Saliva ---
+	solventsaliva: {
+		onDamagingHit(damage, target, source, move) {
+			if (target.fainted) return;
+			// Auto-trigger if the holder just interlocked the target this hit.
+			const autoTrigger = !!(target.volatiles['interlocked'] &&
+				(target.volatiles['interlocked'] as any).partner === source);
+			if (!autoTrigger && (!move.flags['contact'] || !this.randomChance(3, 10))) return;
+			// 50/50: Stunned or Corroded
+			const status = this.random(2) === 0 ? 'stun' : 'cor';
+			target.trySetStatus(status, source, this.effect);
+		},
+		shortDesc: "30% chance to Stun or Corrode on contact; auto-triggers when inflicting Interlocked.",
+		origin: 'Custom',
+		flags: {},
+		name: "Solvent Saliva",
+		rating: 2.5,
+		num: 10157,
+	},
+
+	// --- Row 455: Rock Cannon ---
+	rockcannon: {
+		onModifyMove(move) {
+			if (move.type !== 'Rock') return;
+			delete move.flags['contact'];
+		},
+		onFractionalPriorityPriority: -1,
+		onFractionalPriority(priority, pokemon, target, move) {
+			// Act as if x3 Speed within priority bracket (ignores boost stages).
+			if (move.type === 'Rock') return 0.1;
+		},
+		shortDesc: "Rock-type moves lose contact and go first within their priority bracket.",
+		origin: 'Custom',
+		flags: {},
+		name: "Rock Cannon",
+		rating: 3,
+		num: 10158,
 	},
 };
