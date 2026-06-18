@@ -3547,7 +3547,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				}
 			}
 		},
-		shortDesc: "Immune to being Charmed, Intimidate, Awe-Inspiring, and foe-inflicted stat changes.",
+		shortDesc: "Immune to Charmed, Intimidate, Awe-Inspiring, Dark-type status moves, and foe-inflicted stat changes.",
 		origin: 'Altered',
 		flags: { breakable: 1 },
 		name: "Oblivious",
