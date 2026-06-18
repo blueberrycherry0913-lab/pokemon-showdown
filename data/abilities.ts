@@ -3534,20 +3534,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return null;
 			}
 		},
-		onTryBoost(boost, target, source, effect) {
-			if (source && target !== source) {
-				let b: BoostID;
-				for (b in boost) {
-					if (boost[b]! < 0) {
-						delete boost[b];
-						if (!(effect as ActiveMove).secondaries) {
-							this.add('-fail', target, 'unboost', b, '[from] ability: Oblivious', `[of] ${target}`);
-						}
-					}
-				}
-			}
-		},
-		shortDesc: "Immune to Charmed, Intimidate, Awe-Inspiring, Dark-type status moves, and foe-inflicted stat changes.",
+		shortDesc: "Immune to Charmed, Intimidate, Awe-Inspiring, and Dark-type status moves.",
 		origin: 'Altered',
 		flags: { breakable: 1 },
 		name: "Oblivious",
