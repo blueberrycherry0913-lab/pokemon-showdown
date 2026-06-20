@@ -400,6 +400,7 @@ export const Aliases: import('../sim/dex').AliasesTable = {
 	ultranecro: "Necrozma-Ultra",
 	ultranecrozma: "Necrozma-Ultra",
 	unecro: "Necrozma-Ultra",
+	ninetalesfire: "Ninetales",
 	alotales: "Ninetales-Alola",
 	alolatales: "Ninetales-Alola",
 	goon: "Obstagoon",

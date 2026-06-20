@@ -1154,7 +1154,10 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 	},
 	ninetales: {
 		num: 38,
-		name: "Ninetales",
+		name: "Ninetales-Fire",
+		baseSpecies: "Ninetales",
+		forme: "Fire",
+		baseForme: "Fire",
 		types: ["Fire", "Fairy"],
 		genderRatio: { M: 0.25, F: 0.75 },
 		baseStats: {hp: 80, atk: 75, def: 75, spa: 95, spd: 110, spe: 105},
@@ -1167,7 +1170,7 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		evoItem: "Fire Stone",
 		eggGroups: ["Field"],
 		otherFormes: ["Ninetales-Alola", "Ninetales-Ice"],
-		formeOrder: ["Ninetales", "Ninetales-Alola", "Ninetales-Ice"],
+		formeOrder: ["Ninetales-Fire", "Ninetales-Alola", "Ninetales-Ice"],
 	},
 	ninetalesalola: {
 		num: 38,
@@ -16471,7 +16474,9 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 	},
 	toxtricity: {
 		num: 849,
-		name: "Toxtricity",
+		name: "Toxtricity-Amped",
+		baseSpecies: "Toxtricity",
+		forme: "Amped",
 		baseForme: "Amped",
 		types: ["Electric", "Poison"],
 		baseStats: { hp: 75, atk: 110, def: 70, spa: 115, spd: 70, spe: 85 },
@@ -16483,7 +16488,7 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		evoLevel: 30,
 		eggGroups: ["Human-Like"],
 		otherFormes: ["Toxtricity-Low-Key"],
-		formeOrder: ["Toxtricity", "Toxtricity-Low-Key"],
+		formeOrder: ["Toxtricity-Amped", "Toxtricity-Low-Key"],
 		canGigantamax: "G-Max Stun Shock",
 	},
 	toxtricitylowkey: {
