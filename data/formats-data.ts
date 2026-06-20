@@ -327,6 +327,11 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 		doublesTier: "DOU",
 		natDexTier: "Illegal",
 	},
+	ninetalesice: {
+		tier: "ZU",
+		doublesTier: "DUU",
+		natDexTier: "RU",
+	},
 	igglybuff: {
 		tier: "LC",
 	},
