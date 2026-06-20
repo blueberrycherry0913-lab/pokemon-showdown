@@ -77,6 +77,111 @@ function isCosmicAddition(species: any): boolean {
 	return COSMIC_ADDITION_NUMS.has(species.num);
 }
 
+// --- National Dex move legality (used by natdexmod below) -------------------
+// Goal: the server verifier accepts exactly the moves the client teambuilder
+// offers. The teambuilder treats a move as legal if it appears ANYWHERE in the
+// species' evolution / forme learnset chain (full National Dex availability,
+// including any custom moves the user added to data/learnsets.ts). We cannot use
+// the engine's getFullLearnset here: under the champions mod it deliberately
+// stops at the species' own entry (learnsetParent returns null for prevo — a
+// quirk of the real Pokémon Champions game where every species has a
+// self-contained learnset), which would wrongly reject prevo-inherited moves
+// like Venusaur's Grass Whistle that the teambuilder still shows. We also avoid
+// the standard checkCanLearn machinery, which walks Dex.forGen / Dex.mod('genX')
+// for event/egg/transfer sources and would crash on the deleted gen 1-8 mods.
+//
+// Instead we replicate the client's firstLearnsetid + nextLearnsetid walk
+// (play.pokemonshowdown.com/src/battle-dex-search.ts) reading getLearnsetData
+// directly, so the two stay in lock-step.
+
+// Special-forme learnset redirects — mirror of the client's nextLearnsetid.
+const LEARNSET_REDIRECTS: { [id: string]: string } = {
+	gastrodoneast: 'gastrodon',
+	pumpkaboosuper: 'pumpkaboo',
+	sinisteaantique: 'sinistea',
+	tatsugiristretchy: 'tatsugiri',
+};
+
+// The first species id in the chain that actually owns learnset data.
+function firstLearnsetid(dex: any, species: any): string {
+	if (dex.species.getLearnsetData(species.id).learnset) return species.id;
+	let baseLearnsetid = dex.toID(species.baseSpecies);
+	if (typeof species.battleOnly === 'string' && species.battleOnly !== species.baseSpecies) {
+		baseLearnsetid = dex.toID(species.battleOnly);
+	}
+	if (baseLearnsetid && dex.species.getLearnsetData(baseLearnsetid).learnset) return baseLearnsetid;
+	return '';
+}
+
+// Walk one step back along the chain (battleOnly → changesFrom → prevo, plus the
+// Cap-Pikachu base-evo and Rockruff-Dusk special cases). Mirrors the client.
+function nextLearnsetid(dex: any, learnsetid: string, species: any): string {
+	if (learnsetid === 'lycanrocdusk' || (species.id === 'rockruff' && learnsetid === 'rockruff')) {
+		return 'rockruffdusk';
+	}
+	const lsetSpecies = dex.species.get(learnsetid);
+	if (!lsetSpecies.exists) return '';
+	if (LEARNSET_REDIRECTS[lsetSpecies.id]) return LEARNSET_REDIRECTS[lsetSpecies.id];
+
+	const next = lsetSpecies.battleOnly || lsetSpecies.changesFrom || lsetSpecies.prevo;
+	if (next) return dex.toID(Array.isArray(next) ? next[0] : next);
+
+	if (!lsetSpecies.prevo && lsetSpecies.baseSpecies && dex.species.get(lsetSpecies.baseSpecies).prevo) {
+		let baseEvo = dex.species.get(lsetSpecies.baseSpecies);
+		while (baseEvo.prevo) baseEvo = dex.species.get(baseEvo.prevo);
+		return baseEvo.id;
+	}
+	return '';
+}
+
+// Gen 3 / Gen 4 HM moves. These can't be transferred up to modern gens, so a
+// species only "knows" them in gen 9 if it has a gen 5+ source for them.
+const GEN3_HMS = new Set(['cut', 'fly', 'surf', 'strength', 'flash', 'rocksmash', 'waterfall', 'dive']);
+const GEN4_HMS = new Set(['cut', 'fly', 'surf', 'strength', 'rocksmash', 'waterfall', 'rockclimb']);
+
+// True iff this learnset source list is gen-9-available, replicating the client
+// teambuilder's global source-string builder (build-indexes lines 1147-1184).
+// Ordinary moves are available from any source; gen 3/4 HM moves need a gen 5+
+// source. Only consulted for nonstandard species (see natDexCanLearn) — standard
+// species get every raw learnset move via the champions-table override loop.
+function sourcesReachGen9(sources: string[], moveid: string): boolean {
+	const gens = sources.map(s => parseInt(s.charAt(0)));
+	const minGen = Math.min(...gens);
+	if (minGen <= 4 && (GEN3_HMS.has(moveid) || GEN4_HMS.has(moveid))) {
+		let available = false;
+		if (minGen === 3) available = true;
+		if (available) available = !GEN3_HMS.has(moveid);
+		if (available || gens.includes(4)) available = true;
+		if (available) available = !GEN4_HMS.has(moveid);
+		if (available) return true;
+		return gens.some(g => g > 4);
+	}
+	return true;
+}
+
+// True if `moveid` appears anywhere in `species`'s full learnset chain, matching
+// exactly what the teambuilder offers. The client's champions learnset table is
+// built per-ancestor: a STANDARD species contributes every move in its raw
+// learnset (build-indexes loop 1, marked '9a' unconditionally), while a
+// NONSTANDARD species (custom / Past / CAP / etc.) only contributes moves whose
+// sources reach gen 9 (the HM-filtered global fallback, loop 2). We mirror that
+// distinction per chain step.
+function natDexCanLearn(dex: any, species: any, moveid: string): boolean {
+	let learnsetid = firstLearnsetid(dex, species);
+	const seen = new Set<string>();
+	while (learnsetid && !seen.has(learnsetid)) {
+		seen.add(learnsetid);
+		const learnset = dex.species.getLearnsetData(learnsetid).learnset;
+		const sources = learnset && learnset[moveid];
+		if (sources) {
+			const lsetSpecies = dex.species.get(learnsetid);
+			if (!lsetSpecies.isNonstandard || sourcesReachGen9(sources, moveid)) return true;
+		}
+		learnsetid = nextLearnsetid(dex, learnsetid, species);
+	}
+	return false;
+}
+
 export const Rulesets: import('../../../sim/dex-formats').ModdedFormatDataTable = {
 	// Restrict Testing Standard to Gen 1 lineage (Bulbasaur-Mew), Gen 8 lineage
 	// (Grookey-Calyrex), or Cosmic Additions (Xatu, Beheeyem, Minior).
@@ -214,14 +319,27 @@ export const Rulesets: import('../../../sim/dex-formats').ModdedFormatDataTable 
 					}
 					return [`${set.name || set.species} is not available yet.`];
 				}
-				// Move validation temporarily lifted — all moves pass regardless of isNonstandard tag.
-				// for (const moveid of set.moves) {
-				// 	const move = this.dex.moves.get(moveid);
-				// 	if (move.isNonstandard === 'Unobtainable' && move.gen === this.dex.gen || move.id === 'lightofruin') {
-				// 		if (this.ruleTable.has(`+move:${move.id}`)) continue;
-				// 		return [`${set.name}'s move ${move.name} does not exist in the National Dex.`];
-				// 	}
-				// }
+				// National Dex move-legality check. Mirrors the client teambuilder's
+				// canLearn (see natDexCanLearn above): a move is legal if it appears
+				// anywhere in the species' full evolution/forme learnset chain. This is
+				// the move verifier — it rejects moves the species can't learn while
+				// honoring every custom move the user added to data/learnsets.ts.
+				// Mega formes were already converted to their base species + stone in
+				// onChangeSet above, so set.species is the pre-mega form whose learnset
+				// (e.g. Venusaur) is what we validate against.
+				const moveSpecies = this.dex.species.get(set.species);
+				if (!(moveSpecies as any).canLearnAnyMove) {
+					const problems: string[] = [];
+					for (const moveid of set.moves) {
+						const move = this.dex.moves.get(moveid);
+						if (!move.exists) continue;
+						if (this.ruleTable.has(`+move:${move.id}`)) continue;
+						if (!natDexCanLearn(this.dex, moveSpecies, move.id)) {
+							problems.push(`${set.name || set.species} can't learn ${move.name}.`);
+						}
+					}
+					if (problems.length) return problems;
+				}
 			}
 			if (!set.item) return;
 			const item = this.dex.items.get(set.item);
