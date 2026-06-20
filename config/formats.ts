@@ -45,6 +45,19 @@ const DOMAIN_SETTER_IDS = new Set(Object.keys(DOMAIN_SETTER_BY_TYPE));
 // Gen 1 legendary/mythical Pokémon banned in Testing Standard (not in Mythics and Megas).
 const GEN1_LEGENDARIES = new Set(['articuno', 'zapdos', 'moltres', 'mewtwo', 'mew']);
 
+// Playtest-only species banned from all battle formats.
+const PLAYTEST_SPECIES_BANS: string[] = [
+	'TESTER', 'Falcuatro',
+];
+
+// Playtest-only moves (name contains "TEST") banned from all battle formats.
+const PLAYTEST_MOVE_BANS: string[] = [
+	'MindControlled TEST', 'Corrosion (TEST)', 'Mark (TEST)', 'Frostbite (TEST)',
+	'Freeze (TEST)', 'Charmed (TEST)', 'Stunned (TEST)', 'Interlocked (TEST)',
+	'Death Grip (TEST)', 'Rainbow (TEST)', 'Full Moon (TEST)', 'New Moon (TEST)',
+	'Fog (TEST)',
+];
+
 // Species banned in both formats — regional forward-evolutions of non-Gen-1 lines or Galar
 // fossil chimeras that slip through the Gen 1 Only clause due to having no Gen 1 lineage anchor.
 const SHARED_EXPLICIT_BANS: string[] = [
@@ -153,6 +166,9 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			...SHARED_EXPLICIT_BANS,
 			// Gen 8 legendaries/mythicals (legal in Mythics and Megas).
 			...GEN8_LEGENDARY_BANS,
+			// Playtest-only species and moves.
+			...PLAYTEST_SPECIES_BANS,
+			...PLAYTEST_MOVE_BANS,
 		],
 		restricted: [],
 		// Type Order STAB (§6 of master reference) + Tera Crystal STAB (§11), as a single
@@ -447,6 +463,9 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			'Hidden Power',
 			// Fossil chimeras + non-Gen-1 regional forward-evos that slip Gen 1 Only.
 			...SHARED_EXPLICIT_BANS,
+			// Playtest-only species and moves.
+			...PLAYTEST_SPECIES_BANS,
+			...PLAYTEST_MOVE_BANS,
 		],
 		restricted: [],
 		// All battle handlers (STAB, domain stat boost, blanket type effects, etc.) are
