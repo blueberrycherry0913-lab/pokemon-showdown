@@ -1652,7 +1652,9 @@ export class BattleActions {
 			move.hit = 0;
 		}
 
-		if (!target.runImmunity(move, !suppressMessages)) {
+		// Corrosive Poison moves bypass Steel's immunity here too (same logic as hitStepTypeImmunity).
+		const isCorrosiveVsSteel = move.flags['corrosive'] && move.type === 'Poison' && target.hasType('Steel');
+		if (!isCorrosiveVsSteel && !target.runImmunity(move, !suppressMessages)) {
 			return false;
 		}
 
