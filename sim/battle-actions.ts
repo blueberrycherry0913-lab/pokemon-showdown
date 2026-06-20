@@ -689,7 +689,12 @@ export class BattleActions {
 
 		const hitResults = [];
 		for (const i of targets.keys()) {
-			hitResults[i] = targets[i].runImmunity(move, !move.smartTarget);
+			// Corrosive Poison moves bypass Steel's type immunity specifically (damage is set to 2× in getDamage).
+			if (move.flags['corrosive'] && move.type === 'Poison' && targets[i].hasType('Steel')) {
+				hitResults[i] = true;
+			} else {
+				hitResults[i] = targets[i].runImmunity(move, !move.smartTarget);
+			}
 		}
 
 		return hitResults;
@@ -1888,6 +1893,11 @@ export class BattleActions {
 		// Bone category moves have a neutral damage floor: immune targets (typeMod 0 after getEffectiveness
 		// default-returns 0 for immune matchups) are treated as neutral, never less than 1×.
 		if (move.flags['bone'] && typeMod < 0) typeMod = 0;
+		// Corrosive Poison moves deal 2× vs Steel (immunity bypassed in hitStepTypeImmunity;
+		// getEffectiveness returns 0 for immune matchups, so typeMod is 0 here — override to 1).
+		if (move.flags['corrosive'] && move.type === 'Poison' && target.hasType('Steel') && typeMod <= 0) {
+			typeMod = 1;
+		}
 		target.getMoveHitData(move).typeMod = typeMod;
 		if (typeMod > 0) {
 			if (!suppressMessages) this.battle.add('-supereffective', target);
