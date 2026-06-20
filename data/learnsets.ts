@@ -1291,15 +1291,21 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	},
 	beedrill: {
 		learnset: {
+			acid: ["9L1"],
+			acidspray: ["9L1"],
 			blightbrush: ["9L1"],
 			bugbuzz: ["9L1"],
+			causticdelivery: ["9L1"],
+			corrosivegas: ["9L1"],
 			crosspoison: ["9L1"],
+			dissolver: ["9L1"],
 			lunge: ["9L1"],
 			poisonsting: ["9L1"],
 			signalbeam: ["9L1"],
 			skittersmack: ["9L1"],
 			sludge: ["9L1"],
 			smog: ["9L1"],
+			wastespill: ["9L1"],
 
 			acrobatics: ["7M", "6M", "5M"],
 			aerialace: ["7M", "6M", "5M", "4M", "3M"],
