@@ -235,6 +235,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 		learnset: {
 			blightbrush: ["9L1"],
 			crosspoison: ["9L1"],
+			vinelash: ["9L1"],
 			leafage: ["9L1"],
 			poisonsting: ["9L1"],
 			sludge: ["9L1"],
@@ -19203,6 +19204,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 		learnset: {
 			liquidation: ["9L1"],
 			shallowslam: ["9L1"],
+			speargun: ["9L1"],
 
 			agility: ["8M", "8L20", "8V", "7L29", "7V", "6L29", "5L56", "4L56", "3L61"],
 			aquaring: ["8L25", "7L21", "6L21", "5L27", "4L27"],
@@ -85925,6 +85927,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	barraskewda: {
 		learnset: {
 			agility: ["9M", "9L18", "8M", "8L18"],
+			speargun: ["9L1"],
 			aquajet: ["9L1", "8L1"],
 			assurance: ["8M"],
 			attract: ["8M"],

@@ -1498,6 +1498,29 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 	// entry) and then modified. The §1.5 weather-coupled blanket immunities
 	// (Ice+Steel/Snowstorm, Water/Heavy Rain, Fire/Harsh Sun) also hook in here.
 
+	// Rooted — a 2-turn trapping volatile applied by Vine Lash (and potentially other
+	// vine-category moves). Prevents the target from switching out; no chip damage.
+	rooted: {
+		name: 'rooted',
+		duration: 2,
+		onStart(pokemon, source) {
+			this.add('-activate', pokemon, 'move: Vine Lash', '[of] ' + source);
+		},
+		onTrapPokemon(pokemon) {
+			pokemon.trapped = true;
+		},
+		onMaybeTrapPokemon(pokemon) {
+			pokemon.maybeTrapped = true;
+		},
+		onResidualOrder: 11,
+		onResidual(pokemon) {
+			this.add('-activate', pokemon, 'move: Vine Lash');
+		},
+		onEnd(pokemon) {
+			this.add('-end', pokemon, 'Vine Lash');
+		},
+	},
+
 	// Sandstorm — chip 1/16 (§2). Rock/Ground/Steel immunity is canon
 	// (enforced by runStatusImmunity('sandstorm') before onWeather fires).
 	// §2: boosts Special Defense of Rock AND Ground types by ×1.3.
