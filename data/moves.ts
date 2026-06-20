@@ -52,14 +52,12 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		name: "Acid",
 		pp: 30,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, metronome: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, corrosive: 1 },
 		secondary: {
 			chance: 10,
-			boosts: {
-				spd: -1,
-			},
+			status: 'cor',
 		},
-		target: "allAdjacentFoes",
+		target: "normal",
 		type: "Poison",
 		contestType: "Clever",
 	},
@@ -98,19 +96,17 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	acidspray: {
 		num: 491,
 		accuracy: 100,
-		basePower: 40,
+		basePower: 60,
 		category: "Special",
 		name: "Acid Spray",
 		pp: 20,
 		priority: 0,
-		flags: { protect: 1, mirror: 1, metronome: 1, bullet: 1 },
+		flags: { protect: 1, mirror: 1, metronome: 1, corrosive: 1 },
 		secondary: {
-			chance: 100,
-			boosts: {
-				spd: -2,
-			},
+			chance: 10,
+			status: 'cor',
 		},
-		target: "normal",
+		target: "allAdjacentFoes",
 		type: "Poison",
 		contestType: "Beautiful",
 	},
@@ -2877,18 +2873,12 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		accuracy: 100,
 		basePower: 0,
 		category: "Status",
-		isNonstandard: "Unobtainable",
 		name: "Corrosive Gas",
-		pp: 40,
+		pp: 30,
 		priority: 0,
-		flags: { protect: 1, reflectable: 1, mirror: 1, allyanim: 1, metronome: 1 },
-		onHit(target, source) {
-			const item = target.takeItem(source);
-			if (item) {
-				this.add('-enditem', target, item.name, '[from] move: Corrosive Gas', `[of] ${source}`);
-			} else {
-				this.add('-fail', target, 'move: Corrosive Gas');
-			}
+		flags: { protect: 1, mirror: 1, wind: 1, corrosive: 1 },
+		onHit(target, source, move) {
+			target.trySetStatus('cor', source, move);
 		},
 		target: "allAdjacent",
 		type: "Poison",
@@ -22183,5 +22173,53 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		},
 		target: "normal",
 		type: "Psychic",
+	},
+	wastespill: {
+		num: -51,
+		accuracy: 100,
+		basePower: 90,
+		category: "Special",
+		name: "Waste Spill",
+		pp: 10,
+		priority: 0,
+		flags: { protect: 1, mirror: 1, corrosive: 1 },
+		secondary: {
+			chance: 10,
+			status: 'cor',
+		},
+		target: "allAdjacentFoes",
+		type: "Poison",
+	},
+	dissolver: {
+		num: -52,
+		accuracy: 100,
+		basePower: 40,
+		category: "Physical",
+		name: "Dissolver",
+		pp: 30,
+		priority: 0,
+		flags: { contact: 1, protect: 1, mirror: 1, corrosive: 1 },
+		secondary: {
+			chance: 25,
+			status: 'cor',
+		},
+		target: "normal",
+		type: "Poison",
+	},
+	causticdelivery: {
+		num: -53,
+		accuracy: 100,
+		basePower: 95,
+		category: "Physical",
+		name: "Caustic Delivery",
+		pp: 10,
+		priority: 0,
+		flags: { contact: 1, protect: 1, mirror: 1, corrosive: 1, piercing: 1 },
+		secondary: {
+			chance: 10,
+			status: 'cor',
+		},
+		target: "normal",
+		type: "Poison",
 	},
 };
