@@ -8775,4 +8775,20 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		rating: 3,
 		num: 10158,
 	},
+	freezer: {
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Ice') return this.chainModify(0.5);
+		},
+		onDamagingHit(damage, target, source, move) {
+			if (move.type === 'Ice') {
+				this.boost({ atk: 1, spa: 1 }, target, target, this.effect);
+			}
+		},
+		shortDesc: "Reduces Ice-type moves by 50%; Ice hits boost Atk and SpA by +1.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Freezer",
+		rating: 3,
+		num: 10159,
+	},
 };
