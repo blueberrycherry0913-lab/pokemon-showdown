@@ -8763,12 +8763,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			if (move.type !== 'Rock') return;
 			delete move.flags['contact'];
 		},
-		onFractionalPriorityPriority: -1,
-		onFractionalPriority(priority, pokemon, target, move) {
-			// Act as if x3 Speed within priority bracket (ignores boost stages).
-			if (move.type === 'Rock') return 0.1;
-		},
-		shortDesc: "Rock-type moves lose contact and go first within their priority bracket.",
+		shortDesc: "Rock-type moves lose contact and act as if the user has 3× base Speed (ignores boosts).",
 		origin: 'Custom',
 		flags: {},
 		name: "Rock Cannon",

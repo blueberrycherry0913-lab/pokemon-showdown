@@ -3061,6 +3061,18 @@ export class Battle {
 				// in Gen 4, Pokemon with decrease fractional priority act in reverse speed order
 				// ignores Trick Room, does not ignore boosts and Simple
 				action.speed = -action.pokemon.getStat('spe', false, false);
+			} else if (
+				action.choice === 'move' &&
+				action.pokemon.hasAbility('rockcannon') &&
+				(action.move as ActiveMove)?.type === 'Rock'
+			) {
+				// Rock Cannon: Rock-type moves use base speed × 3, ignoring boost stages.
+				// Still respects Trick Room.
+				let speed = action.pokemon.storedStats.spe * 3;
+				const trickRoomCheck = this.ruleTable.has('twisteddimensionmod') ?
+					!this.field.getPseudoWeather('trickroom') : this.field.getPseudoWeather('trickroom');
+				if (trickRoomCheck) speed = 10000 - speed;
+				action.speed = this.trunc(speed, 13);
 			} else {
 				action.speed = action.pokemon.getActionSpeed();
 			}
