@@ -82,7 +82,7 @@ interface MoveFlags {
 	// Tags with inherent mechanical effects — see engine implementations noted below.
 	bone?: 1; // Ignores ALL immunities: type-based (ignoreImmunity), ability-based (bypasses TryHit event including Wonder Guard), item-based (Air Balloon), and semi-invulnerability. Always deals at least neutral (1×) damage. (mechanics: hitStep* functions in sim/battle-actions.ts)
 	bursting?: 1; // On hit, also strikes each adjacent target at 25% of base power. Splash respects type chart and defenses normally. (mechanics: TODO)
-	corrosive?: 1; // Poison-type moves: bypass Steel's immunity and deal 2× SE vs. Steel. (mechanics: hitStepTypeImmunity + getDamage in sim/battle-actions.ts)
+	corrosive?: 1; // Poison-type trade-off: 2× SE vs Steel (bypasses immunity) but neutral vs Water/Grass/Fairy (loses normal SE). (mechanics: hitStepTypeImmunity + getDamage in sim/battle-actions.ts)
 	piercing?: 1; // Ignores positive defensive stat boosts (Def/SpD) on the target. (mechanics: onModifyMove in config/formats.ts sets move.ignorePositiveDefensive)
 }
 

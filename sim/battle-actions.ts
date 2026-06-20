@@ -1893,10 +1893,13 @@ export class BattleActions {
 		// Bone category moves have a neutral damage floor: immune targets (typeMod 0 after getEffectiveness
 		// default-returns 0 for immune matchups) are treated as neutral, never less than 1×.
 		if (move.flags['bone'] && typeMod < 0) typeMod = 0;
-		// Corrosive Poison moves deal 2× vs Steel (immunity bypassed in hitStepTypeImmunity;
-		// getEffectiveness returns 0 for immune matchups, so typeMod is 0 here — override to 1).
-		if (move.flags['corrosive'] && move.type === 'Poison' && target.hasType('Steel') && typeMod <= 0) {
-			typeMod = 1;
+		// Corrosive Poison moves are a trade: SE vs Steel only. Lose SE vs Water/Grass/Fairy (→ 1×).
+		// Steel: immunity bypassed in hitStepTypeImmunity; getEffectiveness returns 0 for immune matchups
+		// so typeMod is 0 here — override to 1 (2×).
+		// Water/Grass/Fairy: normally SE (typeMod > 0) → force neutral (0).
+		if (move.flags['corrosive'] && move.type === 'Poison') {
+			if (target.hasType('Steel') && typeMod <= 0) typeMod = 1;
+			else if ((target.hasType('Water') || target.hasType('Grass') || target.hasType('Fairy')) && typeMod > 0) typeMod = 0;
 		}
 		target.getMoveHitData(move).typeMod = typeMod;
 		if (typeMod > 0) {
