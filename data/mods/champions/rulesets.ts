@@ -95,15 +95,25 @@ function isCosmicAddition(species: any): boolean {
 // directly, so the two stay in lock-step.
 
 // Special-forme learnset redirects — mirror of the client's nextLearnsetid.
+// Also includes renamed base species where toID(name) !== dex key.
 const LEARNSET_REDIRECTS: { [id: string]: string } = {
 	gastrodoneast: 'gastrodon',
 	pumpkaboosuper: 'pumpkaboo',
 	sinisteaantique: 'sinistea',
 	tatsugiristretchy: 'tatsugiri',
+	// Renamed base species: species.id = toID(newName) but learnset is keyed by original dex key
+	ninetalesfire: 'ninetales',
+	cocommander: 'exeggutor',
+	indeedeem: 'indeedee',
+	toxtricityamped: 'toxtricity',
+	tauroscombat: 'taurospaldeacombat',
+	taurosblaze: 'taurospaldeablaze',
+	taurosaqua: 'taurospaldeaaqua',
 };
 
 // The first species id in the chain that actually owns learnset data.
 function firstLearnsetid(dex: any, species: any): string {
+	if (LEARNSET_REDIRECTS[species.id]) return LEARNSET_REDIRECTS[species.id];
 	if (dex.species.getLearnsetData(species.id).learnset) return species.id;
 	let baseLearnsetid = dex.toID(species.baseSpecies);
 	if (typeof species.battleOnly === 'string' && species.battleOnly !== species.baseSpecies) {
