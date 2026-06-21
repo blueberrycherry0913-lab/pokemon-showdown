@@ -8042,9 +8042,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	// --- Row 410: Heavy Sleeper ---
 	heavysleeper: {
 		onSourceModifyDamage(damage, source, target, move) {
+			// Only applies while asleep: converts the sleep +10% damage penalty into a -10% bonus.
+			// The slp condition already skips its own 1.1× for Heavy Sleeper holders (see conditions.ts),
+			// so the net effect while asleep is 0.9× instead of 1.1× (or 1.0× without this ability).
+			if (target.status !== 'slp') return;
 			return this.chainModify(0.9);
 		},
-		shortDesc: "While asleep: no +10% dmg taken, no damage-threshold wake; lockout still applies.",
+		shortDesc: "While asleep: takes 10% less dmg, no damage-threshold wake; lockout still applies.",
 		origin: 'Custom',
 		flags: { breakable: 1 },
 		name: "Heavy Sleeper",
