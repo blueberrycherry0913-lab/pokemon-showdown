@@ -131,7 +131,6 @@ function nextLearnsetid(dex: any, learnsetid: string, species: any): string {
 	}
 	const lsetSpecies = dex.species.get(learnsetid);
 	if (!lsetSpecies.exists) return '';
-	if (LEARNSET_REDIRECTS[lsetSpecies.id]) return LEARNSET_REDIRECTS[lsetSpecies.id];
 
 	const next = lsetSpecies.battleOnly || lsetSpecies.changesFrom || lsetSpecies.prevo;
 	if (next) return dex.toID(Array.isArray(next) ? next[0] : next);
