@@ -1272,17 +1272,19 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onBeforeMove(pokemon, target, move) {
 			// Comatose Pokémon use Comatose's perpetual-sleep logic, not this condition's lockout
 			if (pokemon.hasAbility('comatose')) return;
-			// Sleep Talk and Snore can still be used while asleep — don't count those turns
-			if (move.id === 'sleeptalk' || move.id === 'snore') return;
 			if (pokemon.status !== 'slp' || !pokemon.hp) return;
+			// Always tick the counter — Sleep Talk / Snore do not bypass the 2-turn lockout clock.
+			// (Previously they returned early before incrementing, letting Rest+Sleep Talk run forever.)
 			pokemon.statusState.sleepTurns++;
 			// Early Bird halves the lockout from 2 turns to 1
 			const wakeThreshold = pokemon.hasAbility('earlybird') ? 1 : 2;
 			if (pokemon.statusState.sleepTurns > wakeThreshold) {
 				pokemon.cureStatus();
 				if (pokemon.hasAbility('earlybird')) this.boost({ spe: 2 }, pokemon, pokemon, null);
-				return;
+				return; // void = move proceeds; Sleep Talk will self-fail (Pokémon no longer asleep)
 			}
+			// Sleep Talk and Snore bypass the lockout within the 2-turn window but the turn still counted
+			if (move.id === 'sleeptalk' || move.id === 'snore') return;
 			// Dream Guide: holder and active allies can attack despite sleep lockout (turns still accumulate)
 			if (pokemon.hasAbility('dreamguide') ||
 				pokemon.allies().some(p => p.hasAbility('dreamguide'))) return;
