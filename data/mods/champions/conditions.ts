@@ -40,6 +40,8 @@ const CELESTIAL_IDS = [
 	'fullmoon',
 	'newmoon',
 ];
+// Must stay in sync with DOMAIN_MIN_TEAM_SIZE in config/formats.ts.
+const DOMAIN_MIN_TEAM_SIZE = 3;
 
 export const Conditions: import('../../../sim/dex-conditions').ConditionDataTable = {
 
@@ -52,6 +54,15 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return this.clampIntRange(n, 1, 6);
 		},
 		onFieldStart(field, source, effect) {
+			// Require ≥DOMAIN_MIN_TEAM_SIZE same-type team members (min duration rule, §3).
+			// durationCallback already set effectState.duration = count of type-matched team members.
+			if (source && this.effectState.duration < DOMAIN_MIN_TEAM_SIZE) {
+				const condName = this.dex.conditions.get(this.effectState.id).name; // e.g. "Fire Domain"
+				const typeName = condName.replace(' Domain', '');
+				this.add('-fail', source, 'move: ' + condName);
+				this.hint(`${typeName} Domain requires at least ${DOMAIN_MIN_TEAM_SIZE} ${typeName}-type Pokémon on your team (you have ${this.effectState.duration}).`);
+				return false;
+			}
 			// One Domain per team (§3): remove this side's previously-set Domain, if any.
 			for (const id of DOMAIN_IDS) {
 				const pw = field.pseudoWeather[id];
@@ -86,6 +97,15 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return this.clampIntRange(n, 1, 6);
 		},
 		onFieldStart(field, source, effect) {
+			// Require ≥DOMAIN_MIN_TEAM_SIZE same-type team members (min duration rule, §3).
+			// durationCallback already set effectState.duration = count of type-matched team members.
+			if (source && this.effectState.duration < DOMAIN_MIN_TEAM_SIZE) {
+				const condName = this.dex.conditions.get(this.effectState.id).name; // e.g. "Fire Domain"
+				const typeName = condName.replace(' Domain', '');
+				this.add('-fail', source, 'move: ' + condName);
+				this.hint(`${typeName} Domain requires at least ${DOMAIN_MIN_TEAM_SIZE} ${typeName}-type Pokémon on your team (you have ${this.effectState.duration}).`);
+				return false;
+			}
 			// One Domain per team (§3): remove this side's previously-set Domain, if any.
 			for (const id of DOMAIN_IDS) {
 				const pw = field.pseudoWeather[id];
@@ -120,6 +140,15 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return this.clampIntRange(n, 1, 6);
 		},
 		onFieldStart(field, source, effect) {
+			// Require ≥DOMAIN_MIN_TEAM_SIZE same-type team members (min duration rule, §3).
+			// durationCallback already set effectState.duration = count of type-matched team members.
+			if (source && this.effectState.duration < DOMAIN_MIN_TEAM_SIZE) {
+				const condName = this.dex.conditions.get(this.effectState.id).name; // e.g. "Fire Domain"
+				const typeName = condName.replace(' Domain', '');
+				this.add('-fail', source, 'move: ' + condName);
+				this.hint(`${typeName} Domain requires at least ${DOMAIN_MIN_TEAM_SIZE} ${typeName}-type Pokémon on your team (you have ${this.effectState.duration}).`);
+				return false;
+			}
 			// One Domain per team (§3): remove this side's previously-set Domain, if any.
 			for (const id of DOMAIN_IDS) {
 				const pw = field.pseudoWeather[id];
@@ -154,6 +183,15 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return this.clampIntRange(n, 1, 6);
 		},
 		onFieldStart(field, source, effect) {
+			// Require ≥DOMAIN_MIN_TEAM_SIZE same-type team members (min duration rule, §3).
+			// durationCallback already set effectState.duration = count of type-matched team members.
+			if (source && this.effectState.duration < DOMAIN_MIN_TEAM_SIZE) {
+				const condName = this.dex.conditions.get(this.effectState.id).name; // e.g. "Fire Domain"
+				const typeName = condName.replace(' Domain', '');
+				this.add('-fail', source, 'move: ' + condName);
+				this.hint(`${typeName} Domain requires at least ${DOMAIN_MIN_TEAM_SIZE} ${typeName}-type Pokémon on your team (you have ${this.effectState.duration}).`);
+				return false;
+			}
 			// One Domain per team (§3): remove this side's previously-set Domain, if any.
 			for (const id of DOMAIN_IDS) {
 				const pw = field.pseudoWeather[id];
@@ -188,6 +226,15 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return this.clampIntRange(n, 1, 6);
 		},
 		onFieldStart(field, source, effect) {
+			// Require ≥DOMAIN_MIN_TEAM_SIZE same-type team members (min duration rule, §3).
+			// durationCallback already set effectState.duration = count of type-matched team members.
+			if (source && this.effectState.duration < DOMAIN_MIN_TEAM_SIZE) {
+				const condName = this.dex.conditions.get(this.effectState.id).name; // e.g. "Fire Domain"
+				const typeName = condName.replace(' Domain', '');
+				this.add('-fail', source, 'move: ' + condName);
+				this.hint(`${typeName} Domain requires at least ${DOMAIN_MIN_TEAM_SIZE} ${typeName}-type Pokémon on your team (you have ${this.effectState.duration}).`);
+				return false;
+			}
 			// One Domain per team (§3): remove this side's previously-set Domain, if any.
 			for (const id of DOMAIN_IDS) {
 				const pw = field.pseudoWeather[id];
@@ -222,6 +269,15 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return this.clampIntRange(n, 1, 6);
 		},
 		onFieldStart(field, source, effect) {
+			// Require ≥DOMAIN_MIN_TEAM_SIZE same-type team members (min duration rule, §3).
+			// durationCallback already set effectState.duration = count of type-matched team members.
+			if (source && this.effectState.duration < DOMAIN_MIN_TEAM_SIZE) {
+				const condName = this.dex.conditions.get(this.effectState.id).name; // e.g. "Fire Domain"
+				const typeName = condName.replace(' Domain', '');
+				this.add('-fail', source, 'move: ' + condName);
+				this.hint(`${typeName} Domain requires at least ${DOMAIN_MIN_TEAM_SIZE} ${typeName}-type Pokémon on your team (you have ${this.effectState.duration}).`);
+				return false;
+			}
 			// One Domain per team (§3): remove this side's previously-set Domain, if any.
 			for (const id of DOMAIN_IDS) {
 				const pw = field.pseudoWeather[id];
@@ -256,6 +312,15 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return this.clampIntRange(n, 1, 6);
 		},
 		onFieldStart(field, source, effect) {
+			// Require ≥DOMAIN_MIN_TEAM_SIZE same-type team members (min duration rule, §3).
+			// durationCallback already set effectState.duration = count of type-matched team members.
+			if (source && this.effectState.duration < DOMAIN_MIN_TEAM_SIZE) {
+				const condName = this.dex.conditions.get(this.effectState.id).name; // e.g. "Fire Domain"
+				const typeName = condName.replace(' Domain', '');
+				this.add('-fail', source, 'move: ' + condName);
+				this.hint(`${typeName} Domain requires at least ${DOMAIN_MIN_TEAM_SIZE} ${typeName}-type Pokémon on your team (you have ${this.effectState.duration}).`);
+				return false;
+			}
 			// One Domain per team (§3): remove this side's previously-set Domain, if any.
 			for (const id of DOMAIN_IDS) {
 				const pw = field.pseudoWeather[id];
@@ -290,6 +355,15 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return this.clampIntRange(n, 1, 6);
 		},
 		onFieldStart(field, source, effect) {
+			// Require ≥DOMAIN_MIN_TEAM_SIZE same-type team members (min duration rule, §3).
+			// durationCallback already set effectState.duration = count of type-matched team members.
+			if (source && this.effectState.duration < DOMAIN_MIN_TEAM_SIZE) {
+				const condName = this.dex.conditions.get(this.effectState.id).name; // e.g. "Fire Domain"
+				const typeName = condName.replace(' Domain', '');
+				this.add('-fail', source, 'move: ' + condName);
+				this.hint(`${typeName} Domain requires at least ${DOMAIN_MIN_TEAM_SIZE} ${typeName}-type Pokémon on your team (you have ${this.effectState.duration}).`);
+				return false;
+			}
 			// One Domain per team (§3): remove this side's previously-set Domain, if any.
 			for (const id of DOMAIN_IDS) {
 				const pw = field.pseudoWeather[id];
@@ -324,6 +398,15 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return this.clampIntRange(n, 1, 6);
 		},
 		onFieldStart(field, source, effect) {
+			// Require ≥DOMAIN_MIN_TEAM_SIZE same-type team members (min duration rule, §3).
+			// durationCallback already set effectState.duration = count of type-matched team members.
+			if (source && this.effectState.duration < DOMAIN_MIN_TEAM_SIZE) {
+				const condName = this.dex.conditions.get(this.effectState.id).name; // e.g. "Fire Domain"
+				const typeName = condName.replace(' Domain', '');
+				this.add('-fail', source, 'move: ' + condName);
+				this.hint(`${typeName} Domain requires at least ${DOMAIN_MIN_TEAM_SIZE} ${typeName}-type Pokémon on your team (you have ${this.effectState.duration}).`);
+				return false;
+			}
 			// One Domain per team (§3): remove this side's previously-set Domain, if any.
 			for (const id of DOMAIN_IDS) {
 				const pw = field.pseudoWeather[id];
@@ -358,6 +441,15 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return this.clampIntRange(n, 1, 6);
 		},
 		onFieldStart(field, source, effect) {
+			// Require ≥DOMAIN_MIN_TEAM_SIZE same-type team members (min duration rule, §3).
+			// durationCallback already set effectState.duration = count of type-matched team members.
+			if (source && this.effectState.duration < DOMAIN_MIN_TEAM_SIZE) {
+				const condName = this.dex.conditions.get(this.effectState.id).name; // e.g. "Fire Domain"
+				const typeName = condName.replace(' Domain', '');
+				this.add('-fail', source, 'move: ' + condName);
+				this.hint(`${typeName} Domain requires at least ${DOMAIN_MIN_TEAM_SIZE} ${typeName}-type Pokémon on your team (you have ${this.effectState.duration}).`);
+				return false;
+			}
 			// One Domain per team (§3): remove this side's previously-set Domain, if any.
 			for (const id of DOMAIN_IDS) {
 				const pw = field.pseudoWeather[id];
@@ -392,6 +484,15 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return this.clampIntRange(n, 1, 6);
 		},
 		onFieldStart(field, source, effect) {
+			// Require ≥DOMAIN_MIN_TEAM_SIZE same-type team members (min duration rule, §3).
+			// durationCallback already set effectState.duration = count of type-matched team members.
+			if (source && this.effectState.duration < DOMAIN_MIN_TEAM_SIZE) {
+				const condName = this.dex.conditions.get(this.effectState.id).name; // e.g. "Fire Domain"
+				const typeName = condName.replace(' Domain', '');
+				this.add('-fail', source, 'move: ' + condName);
+				this.hint(`${typeName} Domain requires at least ${DOMAIN_MIN_TEAM_SIZE} ${typeName}-type Pokémon on your team (you have ${this.effectState.duration}).`);
+				return false;
+			}
 			// One Domain per team (§3): remove this side's previously-set Domain, if any.
 			for (const id of DOMAIN_IDS) {
 				const pw = field.pseudoWeather[id];
@@ -426,6 +527,15 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return this.clampIntRange(n, 1, 6);
 		},
 		onFieldStart(field, source, effect) {
+			// Require ≥DOMAIN_MIN_TEAM_SIZE same-type team members (min duration rule, §3).
+			// durationCallback already set effectState.duration = count of type-matched team members.
+			if (source && this.effectState.duration < DOMAIN_MIN_TEAM_SIZE) {
+				const condName = this.dex.conditions.get(this.effectState.id).name; // e.g. "Fire Domain"
+				const typeName = condName.replace(' Domain', '');
+				this.add('-fail', source, 'move: ' + condName);
+				this.hint(`${typeName} Domain requires at least ${DOMAIN_MIN_TEAM_SIZE} ${typeName}-type Pokémon on your team (you have ${this.effectState.duration}).`);
+				return false;
+			}
 			// One Domain per team (§3): remove this side's previously-set Domain, if any.
 			for (const id of DOMAIN_IDS) {
 				const pw = field.pseudoWeather[id];
@@ -460,6 +570,15 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return this.clampIntRange(n, 1, 6);
 		},
 		onFieldStart(field, source, effect) {
+			// Require ≥DOMAIN_MIN_TEAM_SIZE same-type team members (min duration rule, §3).
+			// durationCallback already set effectState.duration = count of type-matched team members.
+			if (source && this.effectState.duration < DOMAIN_MIN_TEAM_SIZE) {
+				const condName = this.dex.conditions.get(this.effectState.id).name; // e.g. "Fire Domain"
+				const typeName = condName.replace(' Domain', '');
+				this.add('-fail', source, 'move: ' + condName);
+				this.hint(`${typeName} Domain requires at least ${DOMAIN_MIN_TEAM_SIZE} ${typeName}-type Pokémon on your team (you have ${this.effectState.duration}).`);
+				return false;
+			}
 			// One Domain per team (§3): remove this side's previously-set Domain, if any.
 			for (const id of DOMAIN_IDS) {
 				const pw = field.pseudoWeather[id];
@@ -494,6 +613,15 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return this.clampIntRange(n, 1, 6);
 		},
 		onFieldStart(field, source, effect) {
+			// Require ≥DOMAIN_MIN_TEAM_SIZE same-type team members (min duration rule, §3).
+			// durationCallback already set effectState.duration = count of type-matched team members.
+			if (source && this.effectState.duration < DOMAIN_MIN_TEAM_SIZE) {
+				const condName = this.dex.conditions.get(this.effectState.id).name; // e.g. "Fire Domain"
+				const typeName = condName.replace(' Domain', '');
+				this.add('-fail', source, 'move: ' + condName);
+				this.hint(`${typeName} Domain requires at least ${DOMAIN_MIN_TEAM_SIZE} ${typeName}-type Pokémon on your team (you have ${this.effectState.duration}).`);
+				return false;
+			}
 			// One Domain per team (§3): remove this side's previously-set Domain, if any.
 			for (const id of DOMAIN_IDS) {
 				const pw = field.pseudoWeather[id];
@@ -528,6 +656,15 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return this.clampIntRange(n, 1, 6);
 		},
 		onFieldStart(field, source, effect) {
+			// Require ≥DOMAIN_MIN_TEAM_SIZE same-type team members (min duration rule, §3).
+			// durationCallback already set effectState.duration = count of type-matched team members.
+			if (source && this.effectState.duration < DOMAIN_MIN_TEAM_SIZE) {
+				const condName = this.dex.conditions.get(this.effectState.id).name; // e.g. "Fire Domain"
+				const typeName = condName.replace(' Domain', '');
+				this.add('-fail', source, 'move: ' + condName);
+				this.hint(`${typeName} Domain requires at least ${DOMAIN_MIN_TEAM_SIZE} ${typeName}-type Pokémon on your team (you have ${this.effectState.duration}).`);
+				return false;
+			}
 			// One Domain per team (§3): remove this side's previously-set Domain, if any.
 			for (const id of DOMAIN_IDS) {
 				const pw = field.pseudoWeather[id];
@@ -562,6 +699,15 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return this.clampIntRange(n, 1, 6);
 		},
 		onFieldStart(field, source, effect) {
+			// Require ≥DOMAIN_MIN_TEAM_SIZE same-type team members (min duration rule, §3).
+			// durationCallback already set effectState.duration = count of type-matched team members.
+			if (source && this.effectState.duration < DOMAIN_MIN_TEAM_SIZE) {
+				const condName = this.dex.conditions.get(this.effectState.id).name; // e.g. "Fire Domain"
+				const typeName = condName.replace(' Domain', '');
+				this.add('-fail', source, 'move: ' + condName);
+				this.hint(`${typeName} Domain requires at least ${DOMAIN_MIN_TEAM_SIZE} ${typeName}-type Pokémon on your team (you have ${this.effectState.duration}).`);
+				return false;
+			}
 			// One Domain per team (§3): remove this side's previously-set Domain, if any.
 			for (const id of DOMAIN_IDS) {
 				const pw = field.pseudoWeather[id];
@@ -596,6 +742,15 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return this.clampIntRange(n, 1, 6);
 		},
 		onFieldStart(field, source, effect) {
+			// Require ≥DOMAIN_MIN_TEAM_SIZE same-type team members (min duration rule, §3).
+			// durationCallback already set effectState.duration = count of type-matched team members.
+			if (source && this.effectState.duration < DOMAIN_MIN_TEAM_SIZE) {
+				const condName = this.dex.conditions.get(this.effectState.id).name; // e.g. "Fire Domain"
+				const typeName = condName.replace(' Domain', '');
+				this.add('-fail', source, 'move: ' + condName);
+				this.hint(`${typeName} Domain requires at least ${DOMAIN_MIN_TEAM_SIZE} ${typeName}-type Pokémon on your team (you have ${this.effectState.duration}).`);
+				return false;
+			}
 			// One Domain per team (§3): remove this side's previously-set Domain, if any.
 			for (const id of DOMAIN_IDS) {
 				const pw = field.pseudoWeather[id];
@@ -630,6 +785,15 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return this.clampIntRange(n, 1, 6);
 		},
 		onFieldStart(field, source, effect) {
+			// Require ≥DOMAIN_MIN_TEAM_SIZE same-type team members (min duration rule, §3).
+			// durationCallback already set effectState.duration = count of type-matched team members.
+			if (source && this.effectState.duration < DOMAIN_MIN_TEAM_SIZE) {
+				const condName = this.dex.conditions.get(this.effectState.id).name; // e.g. "Fire Domain"
+				const typeName = condName.replace(' Domain', '');
+				this.add('-fail', source, 'move: ' + condName);
+				this.hint(`${typeName} Domain requires at least ${DOMAIN_MIN_TEAM_SIZE} ${typeName}-type Pokémon on your team (you have ${this.effectState.duration}).`);
+				return false;
+			}
 			// One Domain per team (§3): remove this side's previously-set Domain, if any.
 			for (const id of DOMAIN_IDS) {
 				const pw = field.pseudoWeather[id];
@@ -664,6 +828,15 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			return this.clampIntRange(n, 1, 6);
 		},
 		onFieldStart(field, source, effect) {
+			// Require ≥DOMAIN_MIN_TEAM_SIZE same-type team members (min duration rule, §3).
+			// durationCallback already set effectState.duration = count of type-matched team members.
+			if (source && this.effectState.duration < DOMAIN_MIN_TEAM_SIZE) {
+				const condName = this.dex.conditions.get(this.effectState.id).name; // e.g. "Fire Domain"
+				const typeName = condName.replace(' Domain', '');
+				this.add('-fail', source, 'move: ' + condName);
+				this.hint(`${typeName} Domain requires at least ${DOMAIN_MIN_TEAM_SIZE} ${typeName}-type Pokémon on your team (you have ${this.effectState.duration}).`);
+				return false;
+			}
 			// One Domain per team (§3): remove this side's previously-set Domain, if any.
 			for (const id of DOMAIN_IDS) {
 				const pw = field.pseudoWeather[id];
