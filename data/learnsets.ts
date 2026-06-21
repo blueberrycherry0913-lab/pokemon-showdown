@@ -14299,8 +14299,12 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	},
 	muk: {
 		learnset: {
+			acid: ["9L1"],
 			blightbrush: ["9L1"],
+			causticdelivery: ["9L1"],
+			corrosivegas: ["9L1"],
 			crosspoison: ["9L1"],
+			dissolver: ["9L1"],
 			dive: ["9L1"],
 			liquidation: ["9L1"],
 			poisonsting: ["9L1"],
@@ -14308,6 +14312,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			sludge: ["9L1"],
 			smog: ["9L1"],
 			surf: ["9L1"],
+			wastespill: ["9L1"],
 			watergun: ["9L1"],
 			waterpulse: ["9L1"],
 
@@ -17548,15 +17553,19 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	},
 	weezing: {
 		learnset: {
+			acid: ["9L1"],
 			aerialace: ["9L1"],
 			aircutter: ["9L1"],
 			airslash: ["9L1"],
 			blightbrush: ["9L1"],
 			breezeboost: ["9L1"],
+			causticdelivery: ["9L1"],
 			crosspoison: ["9L1"],
+			dissolver: ["9L1"],
 			gust: ["9L1"],
 			poisonsting: ["9L1"],
 			skystrike: ["9L1"],
+			wastespill: ["9L1"],
 
 			acidspray: ["9M"],
 			assurance: ["9L16", "8M", "8L16", "7L12", "6L12", "5L12", "4L15"],

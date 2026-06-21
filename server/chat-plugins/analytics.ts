@@ -553,26 +553,33 @@ function renderDashboard(scope: AnalyticsScope): string {
 
 export const commands: Chat.Commands = {
 	analytics(target, room, user) {
+		this.checkCan('rangeban'); // admin only
 		return this.parse('/join view-analytics');
 	},
 	battlestats(target, room, user) {
+		this.checkCan('rangeban'); // admin only
 		return this.parse('/join view-analytics');
 	},
 	analyticsfull(target, room, user) {
+		this.checkCan('rangeban'); // admin only
 		return this.parse('/join view-analyticsfull');
 	},
 	analyticsraw(target, room, user) {
+		this.checkCan('rangeban'); // admin only
 		return this.parse('/join view-analyticsfull');
 	},
 
 	// Bot analytics (separate dataset — automated bot games only).
 	analyticsbots(target, room, user) {
+		this.checkCan('rangeban'); // admin only
 		return this.parse('/join view-analyticsbots');
 	},
 	botanalytics(target, room, user) {
+		this.checkCan('rangeban'); // admin only
 		return this.parse('/join view-analyticsbots');
 	},
 	analyticsbotsfull(target, room, user) {
+		this.checkCan('rangeban'); // admin only
 		return this.parse('/join view-analyticsbotsfull');
 	},
 
@@ -636,26 +643,25 @@ export const commands: Chat.Commands = {
 
 export const pages: Chat.PageTable = {
 	analytics(args, user) {
+		this.checkCan('rangeban'); // admin only
 		this.title = '[Battle Analytics]';
 		return renderDashboard('players');
 	},
 
 	analyticsbots(args, user) {
+		this.checkCan('rangeban'); // admin only
 		this.title = '[Bot Battle Analytics]';
 		return renderDashboard('bots');
 	},
 
 	analyticsfull(args, user) {
+		this.checkCan('rangeban'); // admin only
 		this.title = '[Full Battle Data]';
-		// --- Access gate ---
-		// To restrict this page later, uncomment the line below; only users with
-		// the given global permission (e.g. console/admin access) will be able to
-		// open it. Left open for now during testing.
-		// this.checkCan('rangeban');
 		return buildFullDataPage('players');
 	},
 
 	analyticsbotsfull(args, user) {
+		this.checkCan('rangeban'); // admin only
 		this.title = '[Full Bot Battle Data]';
 		return buildFullDataPage('bots');
 	},
