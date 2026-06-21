@@ -41,6 +41,17 @@ const DOMAIN_SETTER_BY_TYPE: {[id: string]: string} = {
 	domainsettercosmic: 'Cosmic',
 };
 const DOMAIN_SETTER_IDS = new Set(Object.keys(DOMAIN_SETTER_BY_TYPE));
+// Domain moves: maps move ID → the type it requires ≥3 team members of (for min-duration rule).
+const DOMAIN_MOVE_TYPE: {[id: string]: string} = {
+	domainnormal: 'Normal', domainfire: 'Fire', domainwater: 'Water',
+	domainelectric: 'Electric', domaingrass: 'Grass', domainice: 'Ice',
+	domainfighting: 'Fighting', domainpoison: 'Poison', domainground: 'Ground',
+	domainair: 'Flying', domainpsychic: 'Psychic', domainbug: 'Bug',
+	domainrock: 'Rock', domainghost: 'Ghost', domaindragon: 'Dragon',
+	domaindark: 'Dark', domainsteel: 'Steel', domainfairy: 'Fairy',
+	domaincosmic: 'Cosmic',
+};
+const DOMAIN_MIN_TEAM_SIZE = 3;
 
 // Gen 1 legendary/mythical Pokémon banned in Testing Standard (not in Mythics and Megas).
 const GEN1_LEGENDARIES = new Set(['articuno', 'zapdos', 'moltres', 'mewtwo', 'mew']);
@@ -117,6 +128,51 @@ function validateDomainSetter(this: any, set: any): string[] | void {
 	if (!species.types.includes(requiredType as any)) {
 		return [`${set.name || set.species} cannot use ${ability2} (type mismatch: needs ${requiredType}).`];
 	}
+}
+
+// Team-level Domain minimum-size validation shared by both custom formats.
+// Domain Setter abilities and Domain moves require ≥3 team members of the matching type
+// (so the minimum duration is 3 turns rather than 1).
+function validateDomainTeamSize(this: any, team: any[]): string[] | void {
+	const problems: string[] = [];
+
+	// Helper: count team members that have a given type.
+	const countType = (type: string) =>
+		team.filter((s: any) => this.dex.species.get(s.species).types.includes(type)).length;
+
+	// Domain Setter awakened ability check.
+	for (const set of team) {
+		const ability2 = (set as any).ability2 as string | undefined;
+		if (!ability2) continue;
+		const id = this.toID(ability2);
+		if (!DOMAIN_SETTER_IDS.has(id)) continue;
+		const requiredType = DOMAIN_SETTER_BY_TYPE[id];
+		if (countType(requiredType) < DOMAIN_MIN_TEAM_SIZE) {
+			problems.push(
+				`${set.name || set.species} has a ${requiredType} Domain Setter ability, but the team only has ` +
+				`${countType(requiredType)} ${requiredType}-type Pokémon. A Domain Setter requires at least ` +
+				`${DOMAIN_MIN_TEAM_SIZE} team members of that type (minimum duration = ${DOMAIN_MIN_TEAM_SIZE} turns).`
+			);
+		}
+	}
+
+	// Domain move check.
+	for (const set of team) {
+		for (const move of set.moves) {
+			const id = this.toID(move);
+			if (!DOMAIN_MOVE_TYPE[id]) continue;
+			const requiredType = DOMAIN_MOVE_TYPE[id];
+			if (countType(requiredType) < DOMAIN_MIN_TEAM_SIZE) {
+				problems.push(
+					`${set.name || set.species} has ${move}, but the team only has ` +
+					`${countType(requiredType)} ${requiredType}-type Pokémon. Domain moves require at least ` +
+					`${DOMAIN_MIN_TEAM_SIZE} team members of that type (minimum duration = ${DOMAIN_MIN_TEAM_SIZE} turns).`
+				);
+			}
+		}
+	}
+
+	return problems.length ? problems : undefined;
 }
 
 export const Formats: import('../sim/dex-formats').FormatList = [
@@ -439,10 +495,14 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			return problems.length ? problems : undefined;
 		},
 		onValidateTeam(team) {
+			const problems: string[] = [];
 			const count = team.filter((set: any) => DOMAIN_SETTER_IDS.has(this.toID(set.ability2))).length;
 			if (count > 1) {
-				return ['Only one Pokémon per team may have a Domain Setter as their Awakened ability.'];
+				problems.push('Only one Pokémon per team may have a Domain Setter as their Awakened ability.');
 			}
+			const sizeProblems = validateDomainTeamSize.call(this, team);
+			if (sizeProblems) problems.push(...sizeProblems);
+			return problems.length ? problems : undefined;
 		},
 	},
 	{
@@ -637,10 +697,14 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			return validateDomainSetter.call(this, set);
 		},
 		onValidateTeam(team: any[]) {
+			const problems: string[] = [];
 			const count = team.filter((set: any) => DOMAIN_SETTER_IDS.has(this.toID(set.ability2))).length;
 			if (count > 1) {
-				return ['Only one Pokémon per team may have a Domain Setter as their Awakened ability.'];
+				problems.push('Only one Pokémon per team may have a Domain Setter as their Awakened ability.');
 			}
+			const sizeProblems = validateDomainTeamSize.call(this, team);
+			if (sizeProblems) problems.push(...sizeProblems);
+			return problems.length ? problems : undefined;
 		},
 	},
 ];
