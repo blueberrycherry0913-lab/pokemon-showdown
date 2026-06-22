@@ -18727,13 +18727,13 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { snatch: 1, metronome: 1, wind: 1 },
 		sideCondition: 'tailwind',
 		condition: {
-			duration: 6,
+			duration: 5,
 			durationCallback(target, source, effect) {
 				if (source?.hasAbility('persistent')) {
 					this.add('-activate', source, 'ability: Persistent', '[move] Tailwind');
-					return 8;
+					return 7;
 				}
-				return 6;
+				return 5;
 			},
 			onSideStart(side, source) {
 				if (source?.hasAbility('persistent')) {
