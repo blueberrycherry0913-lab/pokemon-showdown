@@ -129,9 +129,9 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			if (move?.effectType === 'Move' && target.getMoveHitData(move).crit) {
 				const isAlly = source && source.side === target.side;
 				if (isAlly) {
-					// Ally crit: set Attack to +3 stages (not max)
+					// Ally crit: boost Attack up to +3 stages, but never lower it
 					const delta = 3 - (target.boosts.atk ?? 0);
-					if (delta !== 0) this.boost({ atk: delta }, target, target);
+					if (delta > 0) this.boost({ atk: delta }, target, target);
 				} else {
 					// Foe crit: max Attack to +6
 					this.boost({ atk: 12 }, target, target);
