@@ -429,20 +429,6 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 				return null;
 			}
 		},
-		// Flying types gain +1 Speed stage whenever Tailwind is set by EITHER side of the
-		// field (§1.5), including their own. SideConditionStart fires globally from
-		// Side.addSideCondition (sim/side.ts). The own-side Tailwind ×2 speed is still
-		// applied by the canon tailwind condition and stacks with this stage boost.
-		onSideConditionStart(targetSide, source, sideCondition) {
-			if (sideCondition.id !== 'tailwind') return;
-			for (const pokemon of this.getAllActive()) {
-				if (pokemon.hasType('Flying')) {
-					this.add('-activate', pokemon, 'typeEffect', '[type]Flying', '[msg]Tailwind Speed Boost');
-					this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Flying'}));
-					this.boost({ spe: 1 }, pokemon, pokemon);
-				}
-			}
-		},
 		// Steel types cannot be phazed (§1.5): immune to forced-switch effects (Roar,
 		// Whirlwind, Dragon Tail, Circle Throw, etc.). DragOut fires for both the
 		// forceSwitch action and damaging forceSwitch moves.
@@ -670,16 +656,6 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 				this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: target.species.name, ipl: target.side.id, ty: 'Dark'}));
 				this.add('-immune', target);
 				return null;
-			}
-		},
-		onSideConditionStart(targetSide: any, source: any, sideCondition: any) {
-			if (sideCondition.id !== 'tailwind') return;
-			for (const pokemon of this.getAllActive()) {
-				if (pokemon.hasType('Flying')) {
-					this.add('-activate', pokemon, 'typeEffect', '[type]Flying', '[msg]Tailwind Speed Boost');
-					this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Flying'}));
-					this.boost({ spe: 1 }, pokemon, pokemon);
-				}
 			}
 		},
 		onDragOut(pokemon: any) {
