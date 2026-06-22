@@ -946,6 +946,19 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			if (defender !== this.effectState.source) return;
 			return this.chainModify(0.25);
 		},
+		// Doubles-exclusive: the Charmed Pokémon's single-target foe moves are redirected
+		// at the Charmer. (RedirectTarget only fires when activePerHalf > 1, so this is a
+		// no-op in singles where the Charmer is already the only foe.)
+		onRedirectTarget(target, source, source2, move) {
+			const charmer = this.effectState.source;
+			if (!charmer || !charmer.isActive || charmer.fainted) return;
+			if (charmer.side === source.side) return; // only redirect moves aimed at a foe
+			const redirectTarget = ['randomNormal', 'adjacentFoe'].includes(move.target) ? 'normal' : move.target;
+			if (this.validTarget(charmer, source, redirectTarget)) {
+				if (move.smartTarget) move.smartTarget = false;
+				return charmer;
+			}
+		},
 	},
 
 	// §4 Interlocked volatile — shared two-Pokémon binding status.
