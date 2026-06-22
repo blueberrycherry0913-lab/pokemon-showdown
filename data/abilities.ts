@@ -96,24 +96,16 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	airlock: {
 		onSwitchIn(pokemon) {
-			// Air Lock does not activate when Skill Swapped or when Neutralizing Gas leaves the field
 			this.add('-ability', pokemon, 'Air Lock');
-			((this.effect as any).onStart as (p: Pokemon) => void).call(this, pokemon);
+			if (this.field.weather) {
+				this.field.clearWeather();
+			}
 		},
-		onStart(pokemon) {
-			pokemon.abilityState.ending = false; // Clear the ending flag
-			this.eachEvent('WeatherChange', this.effect);
-		},
-		onEnd(pokemon) {
-			pokemon.abilityState.ending = true;
-			this.eachEvent('WeatherChange', this.effect);
-		},
-		suppressWeather: true,
-		shortDesc: "Eliminates the effects of weather while Pokémon is on the field, but does not remove it.",
-		origin: 'Unchanged',
+		shortDesc: "When this Pokémon enters battle, the current weather is fully removed.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Air Lock",
-		rating: 1.5,
+		rating: 2,
 		num: 76,
 	},
 	analytic: {
@@ -135,11 +127,19 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onHit(target, source, move) {
 			if (!target.hp) return;
 			if (move?.effectType === 'Move' && target.getMoveHitData(move).crit) {
-				this.boost({ atk: 12 }, target, target);
+				const isAlly = source && source.side === target.side;
+				if (isAlly) {
+					// Ally crit: set Attack to +3 stages (not max)
+					const delta = 3 - (target.boosts.atk ?? 0);
+					if (delta !== 0) this.boost({ atk: delta }, target, target);
+				} else {
+					// Foe crit: max Attack to +6
+					this.boost({ atk: 12 }, target, target);
+				}
 			}
 		},
-		shortDesc: "Maxes Attack (set to +6 stages) after taking a critical hit.",
-		origin: 'Unchanged',
+		shortDesc: "Maxes Attack after a foe's critical hit; sets Attack to +3 stages after an ally's critical hit.",
+		origin: 'Nerfed',
 		flags: {},
 		name: "Anger Point",
 		rating: 1,
@@ -713,47 +713,24 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 34,
 	},
 	clearbody: {
-		onAfterEachBoost(boost, target, source, effect) {
-			if (this.effectState.reverting) return;
-			// Record each stat change (positive or negative, self or foe) with the turn it was applied
-			const log: AnyObject[] = this.effectState.boostLog || (this.effectState.boostLog = []);
-			const entry: AnyObject = { turn: this.turn };
-			let hasChange = false;
-			let i: BoostID;
-			for (i in boost) {
-				if (boost[i] !== 0) {
-					entry[i] = boost[i];
-					hasChange = true;
-				}
-			}
-			if (hasChange) log.push(entry);
-		},
-		onResidualOrder: 28,
-		onResidual(pokemon) {
-			const log: AnyObject[] = this.effectState.boostLog;
-			if (!log || !log.length) return;
-			// Find entries that were applied 2 or more turns ago
-			const expired = log.filter((entry: AnyObject) => this.turn - entry.turn >= 2);
-			if (!expired.length) return;
-			// Accumulate revert deltas
-			const rev: Partial<Record<BoostID, number>> = {};
-			for (const entry of expired) {
+		onTryBoost(boost, target, source, effect) {
+			if (source && target !== source) {
+				let showMsg = false;
 				let i: BoostID;
-				for (i in entry) {
-					if (i === 'turn') continue;
-					rev[i] = (rev[i] || 0) - (entry[i] as number);
+				for (i in boost) {
+					if ((boost[i] as number) < 0) {
+						delete boost[i];
+						showMsg = true;
+					}
+				}
+				if (showMsg && !(effect as ActiveMove).secondaries && effect.id !== 'octolock') {
+					this.add("-fail", target, "unboost", "[from] ability: Clear Body", `[of] ${target}`);
 				}
 			}
-			// Apply revert with guard to prevent re-logging
-			this.effectState.reverting = true;
-			this.boost(rev as Record<BoostID, number>, pokemon, pokemon, null);
-			this.effectState.reverting = false;
-			// Remove expired entries from the log
-			this.effectState.boostLog = log.filter((entry: AnyObject) => this.turn - entry.turn < 2);
 		},
-		shortDesc: "The Pokémon's stat changes, both self and foe inflicted, return to normal 2 turns after infliction.",
-		origin: 'Reworked',
-		flags: {},
+		shortDesc: "Pokemon cannot have its stats dropped by a foe.",
+		origin: 'Unchanged',
+		flags: {breakable: 1},
 		name: "Clear Body",
 		rating: 2,
 		num: 29,
