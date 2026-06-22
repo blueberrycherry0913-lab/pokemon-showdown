@@ -7817,17 +7817,18 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			this.effectState.firstTurn = true;
 		},
 		// signature is (accuracy, target=ability holder, source=attacker, move)
-		onAccuracyPriority: -1,
-		onAccuracy(accuracy, target, source, move) {
-			if (!this.effectState.firstTurn || !move) return;
+		onModifyAccuracyPriority: -1,
+		onModifyAccuracy(accuracy, target, source, move) {
+			// Never-miss moves pass accuracy === true (a boolean), so they still hit.
+			if (!this.effectState.firstTurn || typeof accuracy !== 'number') return;
 			if (move.type === 'Psychic' || move.type === 'Dark') return;
 			this.add('-activate', target, 'ability: Psychic Vision');
-			return false;
+			return 0;
 		},
 		onResidual(pokemon) {
 			this.effectState.firstTurn = false;
 		},
-		shortDesc: "On switch-in, all non-Psychic, non-Dark moves miss this Pokemon for its first turn.",
+		shortDesc: "On switch-in, non-Psychic/Dark moves with accuracy checks miss for its first turn.",
 		origin: 'Custom',
 		flags: {},
 		name: "Psychic Vision",
