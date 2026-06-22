@@ -490,8 +490,8 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	bind: {
 		name: "Bind",
-		desc: "Prevents the target from switching for four or five turns (seven turns if the user is holding Grip Claw). Causes damage to the target equal to 1/8 of its maximum HP (1/6 if the user is holding Binding Band), rounded down, at the end of each turn during effect. The target can still switch out if it is holding Shed Shell or uses Baton Pass, Flip Turn, Parting Shot, Shed Tail, Teleport, U-turn, or Volt Switch. The effect ends if either the user or the target leaves the field, or if the target uses Mortal Spin, Rapid Spin, or Substitute successfully. This effect is not stackable or reset by using this or another binding move.",
-		shortDesc: "Traps and damages the target for 4-5 turns.",
+		desc: "Deals damage and inflicts Death Grip. For 3 turns, the user and target are both trapped and must target each other, and the target loses 1/8 of its maximum HP at the end of each turn. Ends early if either Pokemon leaves the field. Ghost-types are immune.",
+		shortDesc: "Inflicts Death Grip: 3-turn mutual trap; target loses 1/8 HP/turn.",
 		gen8: {
 			desc: "Prevents the target from switching for four or five turns (seven turns if the user is holding Grip Claw). Causes damage to the target equal to 1/8 of its maximum HP (1/6 if the user is holding Binding Band), rounded down, at the end of each turn during effect. The target can still switch out if it is holding Shed Shell or uses Baton Pass, Flip Turn, Parting Shot, Teleport, U-turn, or Volt Switch. The effect ends if either the user or the target leaves the field, or if the target uses Rapid Spin or Substitute successfully. This effect is not stackable or reset by using this or another binding move.",
 		},
@@ -903,8 +903,8 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	charm: {
 		name: "Charm",
-		desc: "Lowers the target's Attack by 2 stages.",
-		shortDesc: "Lowers the target's Attack by 2.",
+		desc: "Inflicts Charmed on the target for 3 turns. While Charmed, the target's damaging moves against the user deal 1/4 damage, and in double battles its single-target moves are forced to target the user.",
+		shortDesc: "Charms the target for 3 turns (1/4 dmg vs user).",
 	},
 	chatter: {
 		name: "Chatter",
@@ -6893,8 +6893,8 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	tailwind: {
 		name: "Tailwind",
-		desc: "For 4 turns, the user and its party members have their Speed doubled. Fails if this move is already in effect for the user's side.",
-		shortDesc: "For 4 turns, allies' Speed is doubled.",
+		desc: "For 5 turns (7 turns if the user has the Persistent ability), the user and its party members have their Speed doubled. Fails if this move is already in effect for the user's side.",
+		shortDesc: "For 5 turns, allies' Speed is doubled.",
 		gen4: {
 			desc: "For 3 turns, the user and its party members have their Speed doubled. Fails if this move is already in effect for the user's side.",
 			shortDesc: "For 3 turns, allies' Speed is doubled.",
@@ -7698,8 +7698,8 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	wrap: {
 		name: "Wrap",
-		desc: "Prevents the target from switching for four or five turns (seven turns if the user is holding Grip Claw). Causes damage to the target equal to 1/8 of its maximum HP (1/6 if the user is holding Binding Band), rounded down, at the end of each turn during effect. The target can still switch out if it is holding Shed Shell or uses Baton Pass, Flip Turn, Parting Shot, Shed Tail, Teleport, U-turn, or Volt Switch. The effect ends if either the user or the target leaves the field, or if the target uses Mortal Spin, Rapid Spin, or Substitute successfully. This effect is not stackable or reset by using this or another binding move.",
-		shortDesc: "Traps and damages the target for 4-5 turns.",
+		desc: "Deals damage and inflicts Death Grip. For 3 turns, the user and target are both trapped and must target each other, and the target loses 1/8 of its maximum HP at the end of each turn. Ends early if either Pokemon leaves the field. Ghost-types are immune.",
+		shortDesc: "Inflicts Death Grip: 3-turn mutual trap; target loses 1/8 HP/turn.",
 		gen8: {
 			desc: "Prevents the target from switching for four or five turns (seven turns if the user is holding Grip Claw). Causes damage to the target equal to 1/8 of its maximum HP (1/6 if the user is holding Binding Band), rounded down, at the end of each turn during effect. The target can still switch out if it is holding Shed Shell or uses Baton Pass, Flip Turn, Parting Shot, Teleport, U-turn, or Volt Switch. The effect ends if either the user or the target leaves the field, or if the target uses Rapid Spin or Substitute successfully. This effect is not stackable or reset by using this or another binding move.",
 		},

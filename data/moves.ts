@@ -1283,7 +1283,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	bind: {
 		num: 20,
-		accuracy: 85,
+		accuracy: 100,
 		basePower: 15,
 		category: "Physical",
 		name: "Bind",
@@ -2297,16 +2297,15 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	charm: {
 		num: 204,
-		accuracy: 100,
+		accuracy: 80,
 		basePower: 0,
 		category: "Status",
 		name: "Charm",
 		pp: 20,
 		priority: 0,
 		flags: { protect: 1, reflectable: 1, mirror: 1, allyanim: 1, metronome: 1, emotion: 1 },
-		boosts: {
-			atk: -2,
-		},
+		// §4 rework: Charm inflicts the Charmed volatile instead of lowering Attack.
+		volatileStatus: 'charmed',
 		target: "normal",
 		type: "Fairy",
 		zMove: { boost: { def: 1 } },
@@ -20930,7 +20929,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	wrap: {
 		num: 35,
-		accuracy: 90,
+		accuracy: 100,
 		basePower: 15,
 		category: "Physical",
 		name: "Wrap",
