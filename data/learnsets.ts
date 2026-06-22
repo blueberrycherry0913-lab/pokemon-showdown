@@ -6050,6 +6050,8 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	},
 	ninetalesice: {
 		learnset: {
+			iceball: ["9L1"],
+			iciclecrash: ["9L1"],
 			ember: ["9L1"],
 			faecurrent: ["9L1"],
 			fairywind: ["9L1"],
@@ -21337,6 +21339,12 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	},
 	taurospaldeacombat: {
 		learnset: {
+			aurasphere: ["9L1"],
+			chistrike: ["9L1"],
+			fightingspirit: ["9L1"],
+			fury: ["9L1"],
+			smash: ["9L1"],
+			truestrength: ["9L1"],
 			neutralburst: ["9L1"],
 			powersurge: ["9L1"],
 			ripple: ["9L1"],
@@ -21396,6 +21404,17 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	},
 	taurospaldeablaze: {
 		learnset: {
+			aurasphere: ["9L1"],
+			chistrike: ["9L1"],
+			ember: ["9L1"],
+			fightingspirit: ["9L1"],
+			firelash: ["9L1"],
+			flamewheel: ["9L1"],
+			fury: ["9L1"],
+			heater: ["9L1"],
+			searingshot: ["9L1"],
+			smash: ["9L1"],
+			truestrength: ["9L1"],
 			neutralburst: ["9L1"],
 			powersurge: ["9L1"],
 			ripple: ["9L1"],
@@ -21460,6 +21479,15 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	},
 	taurospaldeaaqua: {
 		learnset: {
+			aurasphere: ["9L1"],
+			chistrike: ["9L1"],
+			dive: ["9L1"],
+			fightingspirit: ["9L1"],
+			fury: ["9L1"],
+			shallowslam: ["9L1"],
+			smash: ["9L1"],
+			truestrength: ["9L1"],
+			watergun: ["9L1"],
 			neutralburst: ["9L1"],
 			powersurge: ["9L1"],
 			ripple: ["9L1"],
@@ -86016,6 +86044,14 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	},
 	toxtricity: {
 		learnset: {
+			blightbrush: ["9L1"],
+			crosspoison: ["9L1"],
+			poisonsting: ["9L1"],
+			shock: ["9L1"],
+			sludge: ["9L1"],
+			smog: ["9L1"],
+			sparking: ["9L1"],
+			supercellslam: ["9L1"],
 			acid: ["9L1", "8L1"],
 			acidspray: ["9M", "9L1", "8L1"],
 			attract: ["8M"],
@@ -87389,6 +87425,15 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	},
 	indeedee: {
 		learnset: {
+			confusion: ["9L1"],
+			neutralburst: ["9L1"],
+			powersurge: ["9L1"],
+			psinudge: ["9L1"],
+			psycheslam: ["9L1"],
+			psychocut: ["9L1"],
+			ripple: ["9L1"],
+			slam: ["9L1"],
+			tackle: ["9L1"],
 			afteryou: ["9L25", "8L25"],
 			allyswitch: ["8M"],
 			aromatherapy: ["8L30"],
