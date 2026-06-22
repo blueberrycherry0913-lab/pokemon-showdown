@@ -7546,10 +7546,12 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 
 	// --- Row 381: Air Supiriority ---
 	airsupiriority: {
-		onModifyMove(move) {
-			if (move.type === 'Flying') move.accuracy = true;
+		onStart(pokemon) {
+			if (!pokemon.side.sideConditions['tailwind']) {
+				pokemon.side.addSideCondition('tailwind', pokemon);
+			}
 		},
-		shortDesc: "Flying-type attacks cannot miss.",
+		shortDesc: "Sets Tailwind for the user's side on switch-in.",
 		origin: 'Custom',
 		flags: {},
 		name: "Air Supiriority",

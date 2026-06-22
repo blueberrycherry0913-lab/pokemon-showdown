@@ -285,6 +285,10 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		onModifySpePriority: 5,
 		onModifySpe(spe, pokemon) {
 			if (pokemonInActiveDomain(this, pokemon)) return this.chainModify([6144, 5120]);
+			// Flying types benefit from the opposing side's Tailwind (§1.5)
+			if (pokemon.hasType('Flying') && pokemon.side.foe.sideConditions['tailwind']) {
+				return this.chainModify([3, 2]);
+			}
 		},
 		// Normal blanket effects (§1.5), applied as flat end-of-calc damage multipliers:
 		//  - Inverse-STAB: a Normal-type attacker deals ×1.1 on NON-STAB moves (move type is
@@ -569,6 +573,9 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		onModifySpePriority: 5,
 		onModifySpe(spe: number, pokemon: any) {
 			if (pokemonInActiveDomain(this, pokemon)) return this.chainModify([6144, 5120]);
+			if (pokemon.hasType('Flying') && pokemon.side.foe.sideConditions['tailwind']) {
+				return this.chainModify([3, 2]);
+			}
 		},
 		onModifyDamage(damage: number, source: any, target: any, move: any) {
 			if (source.hasType('Normal') && !source.hasType(move.type) && !move.forceSTAB) {

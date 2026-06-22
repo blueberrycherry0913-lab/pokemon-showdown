@@ -21713,6 +21713,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			dragonrage: ["7V"],
 			dreameater: ["8V", "7M", "7V", "6M", "5M", "4M", "3T"],
 			drillrun: ["9M", "8M", "8V", "7T", "6T", "5T"],
+			flipturn: ["9L1"],
 			earthquake: ["9M"],
 			echoedvoice: ["7M", "6M", "5M"],
 			endure: ["9M", "8M", "7V", "4M", "3T"],
