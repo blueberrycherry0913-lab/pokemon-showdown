@@ -95,8 +95,12 @@ const GEN8_LEGENDARY_BANS: string[] = [
 
 function pokemonInActiveDomain(battle: any, pokemon: any): boolean {
 	if (battle.field.pseudoWeather['antidomain']) return false;
+	// Domains apply based on the Pokémon's ORIGINAL (pre-Terastallization) types (§3).
+	// A Pokémon that Tera'd into a new type does NOT gain that Domain; one that Tera'd
+	// into a type it already had still benefits via its original typing.
+	const types: string[] = pokemon.getTypes(false, true);
 	for (const id in DOMAIN_TYPE_BY_ID) {
-		if (battle.field.pseudoWeather[id] && pokemon.hasType(DOMAIN_TYPE_BY_ID[id])) return true;
+		if (battle.field.pseudoWeather[id] && types.includes(DOMAIN_TYPE_BY_ID[id])) return true;
 	}
 	return false;
 }

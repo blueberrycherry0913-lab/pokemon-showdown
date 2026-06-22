@@ -84,7 +84,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
 			if (this.field.pseudoWeather['antidomain']) return;
-			if (source.hasType('Normal') && move.type === 'Normal') return this.chainModify([6144, 5120]);
+			if (source.getTypes(false, true).includes('Normal') && move.type === 'Normal') return this.chainModify([6144, 5120]);
 		},
 	},
 
@@ -127,7 +127,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
 			if (this.field.pseudoWeather['antidomain']) return;
-			if (source.hasType('Fire') && move.type === 'Fire') return this.chainModify([6144, 5120]);
+			if (source.getTypes(false, true).includes('Fire') && move.type === 'Fire') return this.chainModify([6144, 5120]);
 		},
 	},
 
@@ -170,7 +170,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
 			if (this.field.pseudoWeather['antidomain']) return;
-			if (source.hasType('Water') && move.type === 'Water') return this.chainModify([6144, 5120]);
+			if (source.getTypes(false, true).includes('Water') && move.type === 'Water') return this.chainModify([6144, 5120]);
 		},
 	},
 
@@ -213,7 +213,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
 			if (this.field.pseudoWeather['antidomain']) return;
-			if (source.hasType('Electric') && move.type === 'Electric') return this.chainModify([6144, 5120]);
+			if (source.getTypes(false, true).includes('Electric') && move.type === 'Electric') return this.chainModify([6144, 5120]);
 		},
 	},
 
@@ -256,7 +256,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
 			if (this.field.pseudoWeather['antidomain']) return;
-			if (source.hasType('Grass') && move.type === 'Grass') return this.chainModify([6144, 5120]);
+			if (source.getTypes(false, true).includes('Grass') && move.type === 'Grass') return this.chainModify([6144, 5120]);
 		},
 	},
 
@@ -299,7 +299,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
 			if (this.field.pseudoWeather['antidomain']) return;
-			if (source.hasType('Ice') && move.type === 'Ice') return this.chainModify([6144, 5120]);
+			if (source.getTypes(false, true).includes('Ice') && move.type === 'Ice') return this.chainModify([6144, 5120]);
 		},
 	},
 
@@ -342,7 +342,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
 			if (this.field.pseudoWeather['antidomain']) return;
-			if (source.hasType('Fighting') && move.type === 'Fighting') return this.chainModify([6144, 5120]);
+			if (source.getTypes(false, true).includes('Fighting') && move.type === 'Fighting') return this.chainModify([6144, 5120]);
 		},
 	},
 
@@ -385,7 +385,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
 			if (this.field.pseudoWeather['antidomain']) return;
-			if (source.hasType('Poison') && move.type === 'Poison') return this.chainModify([6144, 5120]);
+			if (source.getTypes(false, true).includes('Poison') && move.type === 'Poison') return this.chainModify([6144, 5120]);
 		},
 	},
 
@@ -428,7 +428,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
 			if (this.field.pseudoWeather['antidomain']) return;
-			if (source.hasType('Ground') && move.type === 'Ground') return this.chainModify([6144, 5120]);
+			if (source.getTypes(false, true).includes('Ground') && move.type === 'Ground') return this.chainModify([6144, 5120]);
 		},
 	},
 
@@ -471,7 +471,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
 			if (this.field.pseudoWeather['antidomain']) return;
-			if (source.hasType('Flying') && move.type === 'Flying') return this.chainModify([6144, 5120]);
+			if (source.getTypes(false, true).includes('Flying') && move.type === 'Flying') return this.chainModify([6144, 5120]);
 		},
 	},
 
@@ -514,7 +514,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
 			if (this.field.pseudoWeather['antidomain']) return;
-			if (source.hasType('Psychic') && move.type === 'Psychic') return this.chainModify([6144, 5120]);
+			if (source.getTypes(false, true).includes('Psychic') && move.type === 'Psychic') return this.chainModify([6144, 5120]);
 		},
 	},
 
@@ -557,7 +557,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
 			if (this.field.pseudoWeather['antidomain']) return;
-			if (source.hasType('Bug') && move.type === 'Bug') return this.chainModify([6144, 5120]);
+			if (source.getTypes(false, true).includes('Bug') && move.type === 'Bug') return this.chainModify([6144, 5120]);
 		},
 	},
 
@@ -600,7 +600,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
 			if (this.field.pseudoWeather['antidomain']) return;
-			if (source.hasType('Rock') && move.type === 'Rock') return this.chainModify([6144, 5120]);
+			if (source.getTypes(false, true).includes('Rock') && move.type === 'Rock') return this.chainModify([6144, 5120]);
 		},
 	},
 
@@ -643,7 +643,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
 			if (this.field.pseudoWeather['antidomain']) return;
-			if (source.hasType('Ghost') && move.type === 'Ghost') return this.chainModify([6144, 5120]);
+			if (source.getTypes(false, true).includes('Ghost') && move.type === 'Ghost') return this.chainModify([6144, 5120]);
 		},
 	},
 
@@ -686,7 +686,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
 			if (this.field.pseudoWeather['antidomain']) return;
-			if (source.hasType('Dragon') && move.type === 'Dragon') return this.chainModify([6144, 5120]);
+			if (source.getTypes(false, true).includes('Dragon') && move.type === 'Dragon') return this.chainModify([6144, 5120]);
 		},
 	},
 
@@ -729,7 +729,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
 			if (this.field.pseudoWeather['antidomain']) return;
-			if (source.hasType('Dark') && move.type === 'Dark') return this.chainModify([6144, 5120]);
+			if (source.getTypes(false, true).includes('Dark') && move.type === 'Dark') return this.chainModify([6144, 5120]);
 		},
 	},
 
@@ -772,7 +772,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
 			if (this.field.pseudoWeather['antidomain']) return;
-			if (source.hasType('Steel') && move.type === 'Steel') return this.chainModify([6144, 5120]);
+			if (source.getTypes(false, true).includes('Steel') && move.type === 'Steel') return this.chainModify([6144, 5120]);
 		},
 	},
 
@@ -815,7 +815,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
 			if (this.field.pseudoWeather['antidomain']) return;
-			if (source.hasType('Fairy') && move.type === 'Fairy') return this.chainModify([6144, 5120]);
+			if (source.getTypes(false, true).includes('Fairy') && move.type === 'Fairy') return this.chainModify([6144, 5120]);
 		},
 	},
 
@@ -858,7 +858,7 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onModifyAccuracy(accuracy, target, source, move) {
 			if (typeof accuracy !== 'number') return;
 			if (this.field.pseudoWeather['antidomain']) return;
-			if (source.hasType('Cosmic') && move.type === 'Cosmic') return this.chainModify([6144, 5120]);
+			if (source.getTypes(false, true).includes('Cosmic') && move.type === 'Cosmic') return this.chainModify([6144, 5120]);
 		},
 	},
 

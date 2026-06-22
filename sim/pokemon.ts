@@ -1372,6 +1372,20 @@ export class Pokemon {
 		}
 		if (this.battle.gen > 2) this.setAbility(pokemon.ability, this, null, true, true);
 
+		// Champions dual-ability system: Transform/Imposter must also copy the target's
+		// Awakened (H-slot) ability, not just the basic ability.
+		if (this.battle.gen > 2) {
+			const oldAbility2 = this.getAbility2();
+			if (oldAbility2.id) {
+				this.battle.singleEvent('End', oldAbility2, this.abilityState2, this, null);
+			}
+			this.ability2 = pokemon.ability2;
+			this.abilityState2 = this.battle.initEffectState({ id: this.ability2, target: this });
+			if (this.ability2 && oldAbility2.id !== this.ability2) {
+				this.battle.singleEvent('Start', this.getAbility2(), this.abilityState2, this, this);
+			}
+		}
+
 		// Change formes based on held items (for Transform)
 		// Only ever relevant in Generation 4 since Generation 3 didn't have item-based forme changes
 		if (this.battle.gen === 4) {
