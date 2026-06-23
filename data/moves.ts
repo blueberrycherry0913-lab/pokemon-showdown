@@ -17929,7 +17929,6 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 				}
 			}
 		},
-		secondary: {}, // Sheer Force-boosted
 		target: "normal",
 		type: "Rock",
 	},
