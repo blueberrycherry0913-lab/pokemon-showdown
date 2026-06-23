@@ -622,14 +622,14 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 66,
 	},
 	bulletproof: {
-		onSourceModifyDamage(damage, source, target, move) {
-			if (move.flags['bullet'] || move.flags['ball'] || move.flags['heavyprojectile']) {
-				this.debug('Bulletproof damage reduction');
-				return this.chainModify(0.25);
+		onTryHit(target, source, move) {
+			if (move.flags['bullet'] || move.flags['ball']) {
+				this.add('-immune', target, '[from] ability: Bulletproof');
+				return null;
 			}
 		},
-		shortDesc: "Pokémon takes 75% less damage from Bullet, Ball, and Heavy Projectile attacks.",
-		origin: 'Reworked',
+		shortDesc: "Pokémon is immune to Bullet and Ball moves.",
+		origin: 'Altered',
 		flags: { breakable: 1 },
 		name: "Bulletproof",
 		rating: 3,
@@ -1959,9 +1959,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			if (this.checkMoveMakesContact(move, source, target, true)) {
 				this.add('-ability', target, 'Gooey');
 				this.boost({ spe: -1, atk: -1 }, source, target, null, true);
+				if (!source.volatiles['interlocked'] && !target.volatiles['interlocked']) {
+					source.addVolatile('interlocked', target);
+					target.addVolatile('interlocked', source);
+				}
 			}
 		},
-		shortDesc: "When a foe makes contact with the Pokémon, they will have their Speed and Attack dropped by -1 stage.",
+		shortDesc: "On contact: lowers attacker's Speed and Attack by 1 stage. Also initiates Interlocked.",
 		origin: 'Buffed',
 		flags: {},
 		name: "Gooey",
@@ -5876,9 +5880,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			if (this.checkMoveMakesContact(move, source, target, true)) {
 				this.add('-ability', target, 'Tangling Hair');
 				this.boost({ atk: -1, spe: -1 }, source, target, null, true);
+				if (!source.volatiles['interlocked'] && !target.volatiles['interlocked']) {
+					source.addVolatile('interlocked', target);
+					target.addVolatile('interlocked', source);
+				}
 			}
 		},
-		shortDesc: "On contact: lowers the attacker's Speed and Attack by 1 stage.",
+		shortDesc: "On contact: lowers attacker's Speed and Attack by 1 stage. Also initiates Interlocked.",
 		origin: 'Buffed',
 		flags: {},
 		name: "Tangling Hair",
@@ -5890,9 +5898,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			if (this.checkMoveMakesContact(move, source, target, true)) {
 				this.add('-ability', target, 'Tangling Vines');
 				this.boost({ atk: -1, spe: -1 }, source, target, null, true);
+				if (!source.volatiles['interlocked'] && !target.volatiles['interlocked']) {
+					source.addVolatile('interlocked', target);
+					target.addVolatile('interlocked', source);
+				}
 			}
 		},
-		shortDesc: "On contact: lowers the attacker's Speed and Attack by 1 stage.",
+		shortDesc: "On contact: lowers attacker's Speed and Attack by 1 stage. Also initiates Interlocked.",
 		origin: 'Custom',
 		flags: {},
 		name: "Tangling Vines",
@@ -8777,12 +8789,36 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 10159,
 	},
 
-	// --- Red Hot (Standby) ---
-	redHot: {
-		shortDesc: "Standby.",
-		origin: 'Standby',
+	// --- Red Hot ---
+	redhot: {
+		onDamagingHit(damage, target, source, move) {
+			if (this.checkMoveMakesContact(move, source, target, true)) {
+				if (this.randomChance(3, 10)) {
+					source.trySetStatus('brn', target);
+				}
+			}
+		},
+		shortDesc: "30% chance to burn targets that make contact with this Pokémon.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
 		name: "Red Hot",
-		rating: 0,
+		rating: 2,
 		num: 10160,
+	},
+
+	// --- Rotation ---
+	rotation: {
+		onTryHit(target, source, move) {
+			if (move.flags['ball'] || move.flags['bursting'] || move.flags['beam'] || move.flags['heavyprojectile']) {
+				this.add('-immune', target, '[from] ability: Rotation');
+				return null;
+			}
+		},
+		shortDesc: "Pokémon is immune to Ball, Bursting, Beam, and Heavy Projectile moves.",
+		origin: 'Custom',
+		flags: { breakable: 1 },
+		name: "Rotation",
+		rating: 2,
+		num: 10161,
 	},
 };
