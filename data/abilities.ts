@@ -8307,18 +8307,14 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	garbageeater: {
 		onStart(pokemon) {
 			const hazards = ['spikes', 'toxicspikes', 'stealthrock', 'stickyweb'] as const;
-			let absorbed = 0;
-			for (const hazard of hazards) {
-				if (pokemon.side.removeSideCondition(hazard)) {
-					this.add('-sideend', pokemon.side, this.dex.conditions.get(hazard).name, '[from] ability: Garbage Eater', `[of] ${pokemon}`);
-					absorbed++;
-				}
-			}
-			if (absorbed > 0) {
-				this.heal(Math.floor(pokemon.baseMaxhp / 16) * absorbed, pokemon, pokemon);
-			}
+			const present = hazards.filter(h => pokemon.side.sideConditions[h]);
+			if (!present.length) return;
+			const chosen = this.sample(present);
+			pokemon.side.removeSideCondition(chosen);
+			this.add('-sideend', pokemon.side, this.dex.conditions.get(chosen).name, '[from] ability: Garbage Eater', `[of] ${pokemon}`);
+			this.heal(Math.floor(pokemon.baseMaxhp / 12), pokemon, pokemon);
 		},
-		shortDesc: "On switch-in, absorbs all entry hazards on user's side; heals 1/16 MaxHP per hazard.",
+		shortDesc: "On switch-in, absorbs 1 random entry hazard on user's side; heals 1/12 MaxHP.",
 		origin: 'Custom',
 		flags: {},
 		name: "Garbage Eater",

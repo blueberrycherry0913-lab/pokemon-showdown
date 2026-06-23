@@ -17326,12 +17326,16 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 					this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Bug'}));
 					return;
 				}
-				// Ground blanket effect (§1.5): absorbs Spikes side-wide on switch-in.
+				// Ground blanket effect (§1.5): absorbs 1 layer of Spikes on switch-in.
 				if (pokemon.hasType('Ground')) {
-					this.add('-activate', pokemon, 'typeEffect', '[type]Ground', '[msg]Absorbed Spikes');
+					this.add('-activate', pokemon, 'typeEffect', '[type]Ground', '[msg]Absorbed 1 layer of Spikes');
 					this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Ground'}));
-					this.add('-sideend', pokemon.side, 'Spikes', `[of] ${pokemon}`);
-					pokemon.side.removeSideCondition('spikes', pokemon);
+					if (this.effectState.layers <= 1) {
+						this.add('-sideend', pokemon.side, 'Spikes', `[of] ${pokemon}`);
+						pokemon.side.removeSideCondition('spikes', pokemon);
+					} else {
+						this.effectState.layers--;
+					}
 					return;
 				}
 				const damageAmounts = [0, 3, 4, 6]; // 1/8, 1/6, 1/4
@@ -17656,8 +17660,8 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 					pokemon.side.removeSideCondition('stealthrock', pokemon);
 					return;
 				}
-				// Flat damage: 10% grounded, 20% ungrounded. Typing irrelevant.
-				const fraction = pokemon.isGrounded() ? 0.1 : 0.2;
+				// Flat damage: 15% grounded, 25% ungrounded. Typing irrelevant.
+				const fraction = pokemon.isGrounded() ? 0.15 : 0.25;
 				this.damage(Math.floor(pokemon.maxhp * fraction));
 			},
 		},
@@ -17665,8 +17669,8 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		type: "Rock",
 		zMove: { boost: { def: 1 } },
 		contestType: "Cool",
-		shortDesc: "Hurts foes on switch-in. Grounded: 10%, Ungrounded: 20%.",
-		desc: "Sets jagged rocks on the foe's side. Pokémon switching in take 10% max HP if grounded, or 20% if ungrounded. Type does not affect damage. Rock-types absorb the hazard. Bug-types are immune.",
+		shortDesc: "Hurts foes on switch-in. Grounded: 15%, Ungrounded: 25%.",
+		desc: "Sets jagged rocks on the foe's side. Pokémon switching in take 15% max HP if grounded, or 25% if ungrounded. Type does not affect damage. Rock-types absorb the hazard. Bug-types are immune.",
 	},
 	steameruption: {
 		num: 592,
@@ -19619,10 +19623,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 					return;
 				}
 				if (pokemon.hasType('Poison')) {
-					this.add('-activate', pokemon, 'typeEffect', '[type]Poison', '[msg]Absorbed Toxic Spikes');
+					this.add('-activate', pokemon, 'typeEffect', '[type]Poison', '[msg]Absorbed 1 layer of Toxic Spikes');
 					this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Poison'}));
-					this.add('-sideend', pokemon.side, 'move: Toxic Spikes', `[of] ${pokemon}`);
-					pokemon.side.removeSideCondition('toxicspikes', pokemon);
+					if (this.effectState.layers <= 1) {
+						this.add('-sideend', pokemon.side, 'move: Toxic Spikes', `[of] ${pokemon}`);
+						pokemon.side.removeSideCondition('toxicspikes', pokemon);
+					} else {
+						this.effectState.layers--;
+					}
 				} else if (pokemon.hasType('Steel') || pokemon.hasItem('heavydutyboots') || pokemon.hasAbility('lightfooted') || pokemon.hasAbility('tinyfeet')) {
 					// do nothing
 				} else if (this.effectState.layers >= 2) {
