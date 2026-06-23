@@ -1656,9 +1656,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 	},
 
 	// Side condition created by the Protective Resonance ability when the holder uses a
-	// sound move. A 2-turn screen that halves all incoming damage to the holder's side.
+	// sound move. A 3-turn screen that halves all incoming damage to the holder's side.
 	protectiveresonance: {
-		duration: 2,
+		duration: 3,
 		onSideStart(side) {
 			this.add('-sidestart', side, 'ability: Protective Resonance');
 		},
