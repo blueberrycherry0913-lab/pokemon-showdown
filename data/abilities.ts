@@ -8310,7 +8310,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			const present = hazards.filter(h => pokemon.side.sideConditions[h]);
 			if (!present.length) return;
 			const chosen = this.sample(present);
-			pokemon.side.removeSideCondition(chosen);
+			pokemon.side.removeSideCondition(chosen, pokemon);
 			this.add('-sideend', pokemon.side, this.dex.conditions.get(chosen).name, '[from] ability: Garbage Eater', `[of] ${pokemon}`);
 			this.heal(Math.floor(pokemon.baseMaxhp / 12), pokemon, pokemon);
 		},

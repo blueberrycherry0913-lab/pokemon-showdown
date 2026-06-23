@@ -412,6 +412,11 @@ export const Conditions: import('../sim/dex-conditions').ConditionDataTable = {
 			}
 			const hitMove = new this.dex.Move(data.moveData) as ActiveMove;
 
+			// Analytics: a resolving future move never goes through useMoveInner, so it
+			// has no stored Threat Power. Compute it here (caster vs the current target)
+			// so the damage event credits the defender's Threat Absorbed correctly.
+			(hitMove as any).analyticsThreatPower = this.actions.analyticsThreatPower(data.source, target, hitMove);
+
 			this.actions.trySpreadMoveHit([target], data.source, hitMove, true);
 			if (data.source.isActive && data.source.hasItem('lifeorb') && this.gen >= 5) {
 				this.singleEvent('AfterMoveSecondarySelf', data.source.getItem(), data.source.itemState, data.source, target, data.source.getItem());

@@ -2543,6 +2543,13 @@ export class Battle {
 				eventType = 'residual';
 				srcLabel = 'confusion';
 				setInflictor(target.volatiles['confusion']?.source);
+			} else if ((effect as ActiveMove).flags?.['futuremove']) {
+				// Future Sight / Doom Desire resolving — this is genuine attack damage
+				// from a damaging move, dealt by the original caster (passed as `source`
+				// from the slot condition). Classify as direct and keep the caster as the
+				// inflictor; never let a same-named target volatile reroute it to residual.
+				eventType = 'direct';
+				srcLabel = effect.name;
 			} else if (target.volatiles[effect.id as ID]) {
 				// Other volatile residual (Leech Seed, Death Grip, etc.) — credit the
 				// original inflicting Pokémon, not whoever is currently active (§2.2)

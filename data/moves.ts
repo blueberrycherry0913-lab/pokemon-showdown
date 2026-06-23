@@ -2188,14 +2188,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		onAfterHit(target, source, move) {
 			if (!move.hasSheerForce && source.hp) {
 				for (const side of source.side.foeSidesWithConditions()) {
-					side.addSideCondition('spikes');
+					side.addSideCondition('spikes', source);
 				}
 			}
 		},
 		onAfterSubDamage(damage, target, source, move) {
 			if (!move.hasSheerForce && source.hp) {
 				for (const side of source.side.foeSidesWithConditions()) {
-					side.addSideCondition('spikes');
+					side.addSideCondition('spikes', source);
 				}
 			}
 		},
@@ -7169,7 +7169,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		self: {
 			onHit(source) {
 				for (const side of source.side.foeSidesWithConditions()) {
-					side.addSideCondition('stealthrock');
+					side.addSideCondition('stealthrock', source);
 				}
 			},
 		},
@@ -17918,14 +17918,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		onAfterHit(target, source, move) {
 			if (!move.hasSheerForce && source.hp) {
 				for (const side of source.side.foeSidesWithConditions()) {
-					side.addSideCondition('stealthrock');
+					side.addSideCondition('stealthrock', source);
 				}
 			}
 		},
 		onAfterSubDamage(damage, target, source, move) {
 			if (!move.hasSheerForce && source.hp) {
 				for (const side of source.side.foeSidesWithConditions()) {
-					side.addSideCondition('stealthrock');
+					side.addSideCondition('stealthrock', source);
 				}
 			}
 		},
