@@ -8795,13 +8795,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	// --- Red Hot ---
 	redhot: {
 		onDamagingHit(damage, target, source, move) {
-			if (this.checkMoveMakesContact(move, source, target, true)) {
-				if (this.randomChance(3, 10)) {
-					source.trySetStatus('brn', target);
+			if (this.checkMoveMakesContact(move, source, target)) {
+				if (this.randomChance(1, 2)) {
+					target.trySetStatus('brn', source);
 				}
 			}
 		},
-		shortDesc: "30% chance to burn targets that make contact with this Pokémon.",
+		shortDesc: "50% chance to burn the target when this Pokémon uses a contact move.",
 		origin: 'Custom',
 		flags: { breakable: 1 },
 		name: "Red Hot",
