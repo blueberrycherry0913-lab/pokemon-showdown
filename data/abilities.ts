@@ -8244,7 +8244,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				source.side.addSideCondition('protectiveresonance', source, move);
 			}
 		},
-		shortDesc: "This Pokémon's sound moves grant its side a 2-turn screen that halves incoming damage.",
+		shortDesc: "This Pokémon's sound moves grant its side a 3-turn screen that halves incoming damage.",
 		origin: 'Custom',
 		flags: {},
 		name: "Protective Resonance",
