@@ -8776,4 +8776,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		rating: 3,
 		num: 10159,
 	},
+
+	// --- Red Hot (Standby) ---
+	redHot: {
+		shortDesc: "Standby.",
+		origin: 'Standby',
+		name: "Red Hot",
+		rating: 0,
+		num: 10160,
+	},
 };
