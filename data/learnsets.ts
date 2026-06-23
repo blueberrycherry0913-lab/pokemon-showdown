@@ -19220,6 +19220,8 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			heater: ["9L1"],
 			flamwheel: ["9L1"],
 			firelash: ["9L1"],
+			flareblitz: ["9L1"],
+			flamecharge: ["9L1"],
 			ember: ["9L1"],
 			searingshot: ["9L1"],
 			flamethrower: ["9L1"],
