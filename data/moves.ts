@@ -17660,8 +17660,8 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 					pokemon.side.removeSideCondition('stealthrock', pokemon);
 					return;
 				}
-				// Flat damage: 15% grounded, 25% ungrounded. Typing irrelevant.
-				const fraction = pokemon.isGrounded() ? 0.15 : 0.25;
+				// Flat damage: 10% grounded, 25% ungrounded. Typing irrelevant.
+				const fraction = pokemon.isGrounded() ? 0.1 : 0.25;
 				this.damage(Math.floor(pokemon.maxhp * fraction));
 			},
 		},
@@ -17669,8 +17669,8 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		type: "Rock",
 		zMove: { boost: { def: 1 } },
 		contestType: "Cool",
-		shortDesc: "Hurts foes on switch-in. Grounded: 15%, Ungrounded: 25%.",
-		desc: "Sets jagged rocks on the foe's side. Pokémon switching in take 15% max HP if grounded, or 25% if ungrounded. Type does not affect damage. Rock-types absorb the hazard. Bug-types are immune.",
+		shortDesc: "Hurts foes on switch-in. Grounded: 10%, Ungrounded: 25%.",
+		desc: "Sets jagged rocks on the foe's side. Pokémon switching in take 10% max HP if grounded, or 25% if ungrounded. Type does not affect damage. Rock-types absorb the hazard. Bug-types are immune.",
 	},
 	steameruption: {
 		num: 592,
