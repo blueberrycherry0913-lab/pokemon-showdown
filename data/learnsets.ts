@@ -19217,6 +19217,12 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			liquidation: ["9L1"],
 			shallowslam: ["9L1"],
 			speargun: ["9L1"],
+			heater: ["9L1"],
+			flamwheel: ["9L1"],
+			firelash: ["9L1"],
+			ember: ["9L1"],
+			searingshot: ["9L1"],
+			flamethrower: ["9L1"],
 
 			agility: ["8M", "8L20", "8V", "7L29", "7V", "6L29", "5L56", "4L56", "3L61"],
 			aquaring: ["8L25", "7L21", "6L21", "5L27", "4L27"],
