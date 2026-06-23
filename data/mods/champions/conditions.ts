@@ -866,7 +866,10 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 
 	mindcontrolled: {
 		name: 'mindcontrolled',
-		// No turn-based duration — we track "instances" manually.
+		duration: 3,
+		// Instance tracking removes this before duration in normal play (flinch+1 or 2 MC turns).
+		// duration: 3 is a hard fallback so MC never lasts beyond 3 turns even if moveThisTurn
+		// is never set (e.g. Mind Probe path where controlled requests may not fire correctly).
 		// Two move-slots must be consumed before MC expires:
 		//   • flinch counts as one instance (Hypno-faster case)
 		//   • each forced MC'd move counts as one instance
