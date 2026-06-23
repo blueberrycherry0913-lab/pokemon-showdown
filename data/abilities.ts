@@ -1957,11 +1957,12 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	gooey: {
 		onDamagingHit(damage, target, source, move) {
 			if (this.checkMoveMakesContact(move, source, target, true)) {
-				this.add('-ability', target, 'Gooey');
-				this.boost({ spe: -1, atk: -1 }, source, target, null, true);
 				if (!source.volatiles['interlocked'] && !target.volatiles['interlocked']) {
+					this.add('-ability', target, 'Gooey');
 					source.addVolatile('interlocked', target);
 					target.addVolatile('interlocked', source);
+					if (source.volatiles['interlocked']) source.volatiles['interlocked'].statDropped = true;
+					this.boost({ spe: -1, atk: -1 }, source, target, null, true);
 				}
 			}
 		},
@@ -5878,11 +5879,12 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	tanglinghair: {
 		onDamagingHit(damage, target, source, move) {
 			if (this.checkMoveMakesContact(move, source, target, true)) {
-				this.add('-ability', target, 'Tangling Hair');
-				this.boost({ atk: -1, spe: -1 }, source, target, null, true);
 				if (!source.volatiles['interlocked'] && !target.volatiles['interlocked']) {
+					this.add('-ability', target, 'Tangling Hair');
 					source.addVolatile('interlocked', target);
 					target.addVolatile('interlocked', source);
+					if (source.volatiles['interlocked']) source.volatiles['interlocked'].statDropped = true;
+					this.boost({ atk: -1, spe: -1 }, source, target, null, true);
 				}
 			}
 		},
@@ -5896,11 +5898,12 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	tanglingvines: {
 		onDamagingHit(damage, target, source, move) {
 			if (this.checkMoveMakesContact(move, source, target, true)) {
-				this.add('-ability', target, 'Tangling Vines');
-				this.boost({ atk: -1, spe: -1 }, source, target, null, true);
 				if (!source.volatiles['interlocked'] && !target.volatiles['interlocked']) {
+					this.add('-ability', target, 'Tangling Vines');
 					source.addVolatile('interlocked', target);
 					target.addVolatile('interlocked', source);
+					if (source.volatiles['interlocked']) source.volatiles['interlocked'].statDropped = true;
+					this.boost({ atk: -1, spe: -1 }, source, target, null, true);
 				}
 			}
 		},

@@ -4933,7 +4933,7 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		types: ["Fighting"],
 		gender: "M",
 		baseStats: { hp: 75, atk: 95, def: 95, spa: 35, spd: 70, spe: 95 },
-		abilities: { 0: "Limber", 1: "Technician", H: "Technician" },
+		abilities: { 0: "Limber", 1: "Rotation", H: "Technician" },
 		heightm: 1.4,
 		weightkg: 48,
 		color: "Brown",

@@ -982,6 +982,10 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onEnd(target) {
 			this.add('-end', target, 'interlocked');
+			// Reverse stat drops applied by Gooey/Tangling Hair/Tangling Vines when Interlocked ends.
+			if (this.effectState.statDropped) {
+				this.boost({ atk: 1, spe: 1 }, target, target);
+			}
 			// Guard against recursion: Showdown calls onEnd BEFORE deleting volatiles[id],
 			// so without this flag A's onEnd removes B's volatile → B's onEnd fires → sees
 			// A's volatile still present → removes it again → infinite loop.
@@ -1007,6 +1011,10 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onSwitchOut(target) {
 			// Phasing moves (Roar, Dragon Tail, etc.) bypass trapping and force a switch.
 			// clearVolatile() runs after SwitchOut without firing onEnd, so clean up partner here.
+			// Also reverse stat drops: clearVolatile() won't trigger onEnd for this Pokémon.
+			if (this.effectState.statDropped) {
+				this.boost({ atk: 1, spe: 1 }, target, target);
+			}
 			const partner = this.effectState.partner;
 			if (partner && !partner.fainted && partner.volatiles['interlocked']) {
 				partner.volatiles['interlocked'].ending = true;
