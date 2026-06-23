@@ -122,6 +122,8 @@ export class Pokemon {
 	/** Awakened (hidden) ability — auto-assigned in champions mod; empty in other formats. */
 	ability2: ID;
 	abilityState2: EffectState;
+	/** Original awakened ability, restored on switch-out (mirrors baseAbility for ability2). */
+	baseAbility2: ID;
 
 	item: ID;
 	itemState: EffectState;
@@ -436,6 +438,7 @@ export class Pokemon {
 		} else {
 			this.ability2 = '' as ID;
 		}
+		this.baseAbility2 = this.ability2;
 		this.abilityState2 = this.battle.initEffectState({ id: this.ability2, target: this });
 
 		this.item = toID(set.item);
@@ -1555,6 +1558,12 @@ export class Pokemon {
 
 		this.transformed = false;
 		this.ability = this.baseAbility;
+		// Restore the awakened ability too, so a transformed Ditto/Imposter regains its own
+		// awakened (e.g. Imposter) on switch-out and re-triggers it on the next switch-in.
+		if (this.ability2 !== this.baseAbility2) {
+			this.ability2 = this.baseAbility2;
+			this.abilityState2 = this.battle.initEffectState({ id: this.ability2, target: this });
+		}
 		this.hpType = this.baseHpType;
 		this.hpPower = this.baseHpPower;
 		if (this.canTerastallize === false) this.canTerastallize = this.teraType;
