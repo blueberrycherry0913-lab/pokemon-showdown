@@ -16593,7 +16593,7 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		name: "Grapploct",
 		types: ["Fighting", "Water"],
 		baseStats: { hp: 85, atk: 120, def: 90, spa: 70, spd: 80, spe: 50 },
-		abilities: { 0: "Limber", 1: "Technician", H: "Constrictor" },
+		abilities: { 0: "Limber", 1: "Constrictor", H: "Suction Cups" },
 		heightm: 1.6,
 		weightkg: 39,
 		color: "Blue",

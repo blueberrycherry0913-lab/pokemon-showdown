@@ -981,6 +981,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		noCopy: true,
 		onStart(target, source) {
 			this.effectState.partner = source;
+			if (target.hasAbility('suctioncups') || source.hasAbility('suctioncups')) {
+				this.effectState.duration += 2;
+			}
 			this.add('-start', target, 'interlocked', `[of] ${source}`);
 		},
 		onEnd(target) {
@@ -1080,6 +1083,9 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			this.effectState.partner = source;
 			// isVictim is NOT set here — it must be set by the call site on the victim's copy only.
 			// (Both copies' onStart receive the same args so we can't distinguish victim from aggressor here.)
+			if (target.hasAbility('suctioncups') || source.hasAbility('suctioncups')) {
+				this.effectState.duration += 2;
+			}
 			this.add('-start', target, 'deathgrip', `[of] ${source}`);
 		},
 		onEnd(target) {

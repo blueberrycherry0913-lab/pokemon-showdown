@@ -5534,9 +5534,17 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			this.add('-activate', pokemon, 'ability: Suction Cups');
 			return null;
 		},
+		onTakeItem(item, pokemon, source) {
+			if (!this.activeMove) throw new Error("Battle.activeMove is null");
+			if (!pokemon.hp) return;
+			if ((source && source !== pokemon) || this.activeMove.id === 'knockoff') {
+				this.add('-activate', pokemon, 'ability: Suction Cups');
+				return false;
+			}
+		},
 		flags: { breakable: 1 },
-		shortDesc: "Negates all moves that force this Pokémon to switch out.",
-		origin: 'Unchanged',
+		shortDesc: "Negates forced switches, prevents item removal, extends Interlocked/Death Grip by 2 turns.",
+		origin: 'Buffed',
 		name: "Suction Cups",
 		rating: 1,
 		num: 21,
