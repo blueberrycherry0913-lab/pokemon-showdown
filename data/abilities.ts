@@ -1587,6 +1587,22 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		rating: 1,
 		num: 194,
 	},
+	escapetunneler: {
+		// The player toggles this pre-turn (like Tera/Mega). When engaged, the chosen move
+		// self-switches ONLY if it's a contact Ground-type damaging move. move.quickTunnel is
+		// set in runMove from the move choice; the qualify check runs here after type changes.
+		onModifyMove(move, pokemon) {
+			if (move.quickTunnel && move.category !== 'Status' && move.type === 'Ground' && move.flags['contact']) {
+				move.selfSwitch = true;
+			}
+		},
+		shortDesc: "May choose pre-turn to have this Pokémon's contact Ground-type moves switch it out.",
+		origin: 'Custom',
+		flags: {},
+		name: "Escape Tunneler",
+		rating: 3,
+		num: 10140,
+	},
 	fairyaura: {
 		onStart(pokemon) {
 			if (this.suppressingAbility(pokemon)) return;
@@ -4434,22 +4450,6 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		name: "Quick Feet",
 		rating: 2.5,
 		num: 95,
-	},
-	quicktunneler: {
-		// The player toggles this pre-turn (like Tera/Mega). When engaged, the chosen move
-		// self-switches ONLY if it's a contact Ground-type damaging move. move.quickTunnel is
-		// set in runMove from the move choice; the qualify check runs here after type changes.
-		onModifyMove(move, pokemon) {
-			if (move.quickTunnel && move.category !== 'Status' && move.type === 'Ground' && move.flags['contact']) {
-				move.selfSwitch = true;
-			}
-		},
-		shortDesc: "May choose pre-turn to have this Pokémon's contact Ground-type moves switch it out.",
-		origin: 'Custom',
-		flags: {},
-		name: "Quick Tunneler",
-		rating: 3,
-		num: 10140,
 	},
 	raindish: {
 		onWeather(target, source, effect) {

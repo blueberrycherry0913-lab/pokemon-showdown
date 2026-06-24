@@ -862,8 +862,8 @@ export class Side {
 			}
 		}
 		if (quickTunnel) {
-			if (pokemon.ability !== 'quicktunneler' && pokemon.ability2 !== 'quicktunneler') {
-				return this.emitChoiceError(`Can't move: ${pokemon.name} doesn't have Quick Tunneler.`);
+			if (pokemon.ability !== 'escapetunneler' && pokemon.ability2 !== 'escapetunneler') {
+				return this.emitChoiceError(`Can't move: ${pokemon.name} doesn't have Escape Tunneler.`);
 			}
 		}
 		if (moveSlot === undefined) {
