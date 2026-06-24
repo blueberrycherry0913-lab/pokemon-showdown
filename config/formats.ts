@@ -218,6 +218,9 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 			// must be testable. Negating the umbrella cascades to its three child clauses
 			// (Evasion Abilities/Items/Moves), so this one line removes all of them.
 			'!Evasion Clause',
+			// Sleep is a reworked status (§4) — lift the one-foe-asleep restriction so
+			// sleep can be freely tested.
+			'!Sleep Clause Mod',
 		],
 		banlist: [
 			// With all IVs at 0, Hidden Power is always Fighting-type at low BP.

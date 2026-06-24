@@ -9338,7 +9338,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			grudge: ["9L1"],
 			rocksmash: ["9L1"],
 			shadowstrike: ["9L1"],
-			strength: ["9L1"],
+			truestrength: ["9L1"],
 
 			acrobatics: ["9M"],
 			assurance: ["9L26"],
@@ -10081,6 +10081,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	politoed: {
 		learnset: {
 			shallowslam: ["9L1"],
+			flipturn: ["9L1"],
 
 			amnesia: ["9M"],
 			attract: ["8M", "7M", "7V", "6M", "5M", "4M", "3M"],
@@ -13311,7 +13312,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
 			rocksmash: ["9L1"],
-			strength: ["9L1"],
+			truestrength: ["9L1"],
 
 			acrobatics: ["8M", "7M", "7L37", "6M", "6L37", "5M", "5L37"],
 			aerialace: ["8L20", "7M", "7L9", "6M", "6L9", "5M", "5L13", "4M", "4L13", "3M", "3S1"],
@@ -13426,7 +13427,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
-			strength: ["9L1"],
+			truestrength: ["9L1"],
 
 			assurance: ["8M"],
 			attract: ["8M"],
@@ -13486,7 +13487,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
-			strength: ["9L1"],
+			truestrength: ["9L1"],
 
 			assurance: ["8M"],
 			attract: ["8M"],
@@ -103446,7 +103447,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			storedpower: ["9L1"],
 			stormthrow: ["9L1"],
 			strangesteam: ["9L1"],
-			strength: ["9L1"],
+			truestrength: ["9L1"],
 			strengthsap: ["9L1"],
 			stringshot: ["9L1"],
 			struggle: ["9L1"],

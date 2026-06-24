@@ -5696,7 +5696,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	flipturn: {
 		num: 812,
 		accuracy: 100,
-		basePower: 60,
+		basePower: 65,
 		category: "Physical",
 		name: "Flip Turn",
 		pp: 20,
@@ -14248,8 +14248,8 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	pyroball: {
 		num: 780,
-		accuracy: 90,
-		basePower: 120,
+		accuracy: 100,
+		basePower: 80,
 		category: "Physical",
 		name: "Pyro Ball",
 		pp: 5,
@@ -20129,7 +20129,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	uturn: {
 		num: 369,
 		accuracy: 100,
-		basePower: 70,
+		basePower: 65,
 		category: "Physical",
 		name: "U-turn",
 		pp: 20,
@@ -20292,7 +20292,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	voltswitch: {
 		num: 521,
 		accuracy: 100,
-		basePower: 70,
+		basePower: 65,
 		category: "Special",
 		name: "Volt Switch",
 		pp: 20,
