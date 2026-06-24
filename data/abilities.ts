@@ -8651,9 +8651,9 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	elastic: {
 		onSourceModifyDamage(damage, source, target, move) {
 			if (move.type === 'Ice') return this.chainModify(2);
-			return this.chainModify(0.9);
+			return this.chainModify(0.75);
 		},
-		shortDesc: "Takes 0.9× direct damage, but 2× from Ice-type moves.",
+		shortDesc: "Takes 0.75× direct damage, but 2× from Ice-type moves.",
 		origin: 'Custom',
 		flags: { breakable: 1 },
 		name: "Elastic",
