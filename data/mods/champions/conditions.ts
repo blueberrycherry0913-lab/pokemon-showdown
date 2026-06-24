@@ -1111,6 +1111,13 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onBeforeMove(pokemon, target, move) {
 			const partner = this.effectState.partner;
 			if (!partner || partner.fainted) return;
+			// Paralyzing Tendrals (ability): while in Death Grip, the partner's holder makes
+			// this Pokémon flinch 30%/turn. Fighting types and Inner Focus are immune (§1.5).
+			if (partner.hasAbility('paralyzingtendrals') && !pokemon.hasType('Fighting') &&
+				!pokemon.hasAbility('innerfocus') && this.randomChance(3, 10)) {
+				this.add('cant', pokemon, 'flinch');
+				return false;
+			}
 			const singleFoeTargets = ['normal', 'adjacentFoe', 'any', 'randomNormal'];
 			if (
 				singleFoeTargets.includes(move.target as string) &&

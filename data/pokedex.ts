@@ -16830,7 +16830,7 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		name: "Sirfetch\u2019d",
 		types: ["Fighting"],
 		baseStats: { hp: 75, atk: 100, def: 75, spa: 40, spd: 75, spe: 70 },
-		abilities: { 0: "Steadfast", 1: "Scaleward", H: "Hero" },
+		abilities: { 0: "Battle Armor", 1: "Scaleward", H: "Hero" },
 		heightm: 0.8,
 		weightkg: 117,
 		color: "White",
