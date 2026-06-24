@@ -17610,7 +17610,7 @@ export const Pokedex: import('../sim/dex-species').SpeciesDataTable = {
 		name: "Kleavor",
 		types: ["Bug", "Rock"],
 		baseStats: { hp: 85, atk: 125, def: 120, spa: 40, spd: 75, spe: 80 },
-		abilities: { 0: "Breaking Point", 1: "Hyper Cutter", H: "Sheer Force" },
+		abilities: { 0: "Breaking Point", 1: "Hyper Cutter", H: "Sharpness" },
 		heightm: 1.8,
 		weightkg: 89,
 		color: "Brown",
