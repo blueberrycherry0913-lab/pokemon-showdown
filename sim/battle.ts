@@ -3155,7 +3155,7 @@ export class Battle {
 			this.actions.runMove(action.move, action.pokemon, action.targetLoc, {
 				sourceEffect: action.sourceEffect, zMove: action.zmove,
 				maxMove: action.maxMove, originalTarget: action.originalTarget,
-				externalMove: action.externalMove,
+				externalMove: action.externalMove, quickTunnel: action.quickTunnel,
 			});
 
 			if (isFirstOfPair && this.speedTieFirstMoveLogCheckpoint !== null) {

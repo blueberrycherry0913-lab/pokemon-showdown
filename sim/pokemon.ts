@@ -1169,6 +1169,9 @@ export class Pokemon {
 			if ((this.ability === 'telepathy' || this.ability2 === 'telepathy') && !this.m.telepathyUsed) {
 				data.canTelepathy = true;
 			}
+			if (this.ability === 'quicktunneler' || this.ability2 === 'quicktunneler') {
+				data.canQuickTunnel = true;
+			}
 		}
 
 		return data;

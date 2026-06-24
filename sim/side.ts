@@ -48,6 +48,7 @@ export interface ChosenAction {
 	useTelepathy?: boolean; // if true, Telepathy foresight was player-activated this action
 	priority?: number; // priority of the action
 	externalMove?: boolean; // if true, skip PP deduction when resolving (Mind Control self-hit)
+	quickTunnel?: boolean; // Quick Tunneler: player toggled this move to self-switch (contact Ground moves only)
 }
 
 /** One single turn's choice for one single player. */
@@ -124,6 +125,7 @@ export interface PokemonMoveRequestData {
 	maxMoves?: DynamaxOptions;
 	canTerastallize?: string;
 	canTelepathy?: boolean;
+	canQuickTunnel?: boolean;
 }
 export interface DynamaxOptions {
 	maxMoves: ({ move: string, target: MoveTarget, disabled?: boolean })[];
@@ -575,7 +577,8 @@ export class Side {
 		moveText?: string | number,
 		targetLoc = 0,
 		event: 'mega' | 'megax' | 'megay' | 'zmove' | 'ultra' | 'dynamax' | 'terastallize' | 'telepathy' | '' = '',
-		terastallizeType?: string
+		terastallizeType?: string,
+		quickTunnel = false
 	) {
 		if (this.requestState !== 'move') {
 			return this.emitChoiceError(`Can't move: You need a ${this.requestState} response`);
@@ -858,6 +861,11 @@ export class Side {
 				return this.emitChoiceError(`Can't move: Telepathy already activated this turn.`);
 			}
 		}
+		if (quickTunnel) {
+			if (pokemon.ability !== 'quicktunneler' && pokemon.ability2 !== 'quicktunneler') {
+				return this.emitChoiceError(`Can't move: ${pokemon.name} doesn't have Quick Tunneler.`);
+			}
+		}
 		if (moveSlot === undefined) {
 			throw new Error(`moveSlot should have been set by this point`);
 		}
@@ -875,6 +883,7 @@ export class Side {
 			maxMove: maxMove ? maxMove.id : undefined,
 			terastallize: terastallize ? (terastallizeType || pokemon.teraType) : undefined,
 			useTelepathy: useTelepathy || undefined,
+			quickTunnel: quickTunnel || undefined,
 		});
 
 		if (pokemon.maybeDisabled && (this.battle.gameType === 'singles' || (
@@ -1250,6 +1259,8 @@ export class Side {
 				let event: 'mega' | 'megax' | 'megay' | 'zmove' | 'ultra' | 'dynamax' | 'terastallize' | '' = '';
 				// §11 Tera Crystal: the chosen Tera type, parsed from 'move N terastallize <type>'.
 				let terastallizeType: string | undefined;
+				// Quick Tunneler: independent of `event` so it can combine with mega/tera/etc.
+				let quickTunnel = false;
 				while (true) {
 					// If data ends with a number, treat it as a target location.
 					// We need to special case 'Conversion 2' so it doesn't get
@@ -1309,11 +1320,15 @@ export class Side {
 						if (event) return error();
 						event = 'telepathy';
 						data = data.slice(0, -10);
+					} else if (data.endsWith(' tunnel')) {
+						// Quick Tunneler toggle — independent of `event`, so don't error if one is set.
+						quickTunnel = true;
+						data = data.slice(0, -7);
 					} else {
 						break;
 					}
 				}
-				if (!this.chooseMove(data, targetLoc, event, terastallizeType)) return false;
+				if (!this.chooseMove(data, targetLoc, event, terastallizeType, quickTunnel)) return false;
 				break;
 			case 'switch':
 				if (!this.chooseSwitch(data)) return false;

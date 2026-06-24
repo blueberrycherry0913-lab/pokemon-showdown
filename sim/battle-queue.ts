@@ -53,6 +53,8 @@ export interface MoveAction {
 	sourceEffect?: Effect | null;
 	/** if true, skip PP deduction and LockMove (used for Mind Control self-hit) */
 	externalMove?: boolean;
+	/** Quick Tunneler: player toggled this move to self-switch (contact Ground moves only) */
+	quickTunnel?: boolean;
 	/** if true, this move is speed-tied with an opposing move; both execute before faints are processed */
 	speedTied?: boolean;
 }

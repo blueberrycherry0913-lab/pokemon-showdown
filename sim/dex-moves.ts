@@ -364,6 +364,8 @@ export interface ActiveMove extends MutableMove {
 	hasSheerForce?: boolean;
 	/** Is the move called by Dancer? Used to prevent infinite Dancer recursion. */
 	isExternal?: boolean;
+	/** Quick Tunneler: player toggled this move to self-switch (only honored on contact Ground moves). */
+	quickTunnel?: boolean;
 	lastHit?: boolean;
 	magnitude?: number;
 	pranksterBoosted?: boolean;

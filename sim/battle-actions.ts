@@ -212,7 +212,7 @@ export class BattleActions {
 		moveOrMoveName: Move | string, pokemon: Pokemon, targetLoc: number,
 		options?: {
 			sourceEffect?: Effect | null, zMove?: string, externalMove?: boolean,
-			maxMove?: string, originalTarget?: Pokemon,
+			maxMove?: string, originalTarget?: Pokemon, quickTunnel?: boolean,
 		}
 	) {
 		pokemon.activeMoveActions++;
@@ -242,6 +242,9 @@ export class BattleActions {
 		}
 
 		move.isExternal = externalMove;
+		// Quick Tunneler: flag the active move so the ability's onModifyMove can turn a
+		// contact Ground-type move into a self-switch (the player opted in pre-turn).
+		if (options?.quickTunnel) move.quickTunnel = true;
 
 		this.battle.setActiveMove(move, pokemon, target);
 
