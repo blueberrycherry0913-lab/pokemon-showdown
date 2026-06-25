@@ -2611,6 +2611,15 @@ export const ItemsText: { [id: IDEntry]: ItemText } = {
 		shortDesc: "(Gen 2) Holder is cured if it is poisoned. Single use.",
 	},
 
+	// Custom fan-game items
+
+	terastallizationcrystal: {
+		name: "Terastallization Crystal",
+		shortDesc: "Holder can Terastallize in battle (type chosen in-battle). Removable.",
+
+		start: "  [POKEMON] clings to shards of volatile energy!",
+	},
+
 	// CAP items
 
 	crucibellite: {

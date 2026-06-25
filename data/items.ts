@@ -8215,14 +8215,18 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
 	},
 
 	// Custom (fan-game §11): universal item that gates Terastallization. Any Pokémon may
-	// hold it; the Tera type is chosen in-battle (not preset). Knock Off / Trick / Thief
-	// cannot remove it (onTakeItem: false). The gate lives in data/mods/champions/scripts.ts
+	// hold it; the Tera type is chosen in-battle (not preset). Removable by Knock Off /
+	// Trick / Thief. The gate lives in data/mods/champions/scripts.ts
 	// (actions.canTerastallize), which requires item.teraCrystal.
 	terastallizationcrystal: {
 		name: "Terastallization Crystal",
 		spritenum: 753,
 		teraCrystal: true,
-		onTakeItem: false,
+		onStart(target) {
+			if (!target.ignoringItem()) {
+				this.add('-item', target, 'Terastallization Crystal');
+			}
+		},
 		num: -7,
 		gen: 9,
 	},
