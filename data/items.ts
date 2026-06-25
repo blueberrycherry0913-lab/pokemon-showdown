@@ -8223,7 +8223,7 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
 		spritenum: 753,
 		teraCrystal: true,
 		onStart(target) {
-			if (!target.ignoringItem()) {
+			if (!target.ignoringItem() && !target.terastallized) {
 				this.add('-item', target, 'Terastallization Crystal');
 			}
 		},
