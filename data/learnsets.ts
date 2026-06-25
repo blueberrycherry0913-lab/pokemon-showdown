@@ -9071,6 +9071,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
+			truestrength: ["9L1"],
 
 			acrobatics: ["9M", "7M", "6M", "5M"],
 			aerialace: ["7M", "6M", "5M", "4M", "3M"],
@@ -9202,6 +9203,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
+			truestrength: ["9L1"],
 
 			acrobatics: ["9M", "7M", "6M", "5M"],
 			aerialace: ["7M", "6M", "5M", "4M", "3M"],
@@ -9956,6 +9958,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
+			truestrength: ["9L1"],
 			shallowslam: ["9L1"],
 
 			amnesia: ["9M"],
@@ -10528,6 +10531,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
+			truestrength: ["9L1"],
 
 			attract: ["8M", "7M", "7V", "6M", "5M", "4M", "3M"],
 			bide: ["8V", "7V"],
@@ -10636,6 +10640,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
+			truestrength: ["9L1"],
 
 			attract: ["8M", "7M", "7V", "6M", "5M", "4M", "3M"],
 			bide: ["8V", "7V"],
@@ -10742,6 +10747,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
+			truestrength: ["9L1"],
 
 			assurance: ["8M"],
 			attract: ["8M", "7M", "7V", "6M", "5M", "4M", "3M"],
@@ -16826,6 +16832,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
+			truestrength: ["9L1"],
 
 			attract: ["8M", "7M", "7V", "6M", "5M", "4M", "3M"],
 			bodyslam: ["9M", "8M", "3T"],
@@ -16899,6 +16906,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
+			truestrength: ["9L1"],
 
 			attract: ["8M", "7M", "7V", "6M", "5M", "4M", "3M"],
 			aurasphere: ["9M", "8M"],
@@ -17014,6 +17022,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
+			truestrength: ["9L1"],
 
 			agility: ["9M", "9L28", "8M", "8L28", "8V", "7L1", "7V", "6L6", "5L6", "4L6", "3L7"],
 			attract: ["8M", "7M", "7V", "6M", "5M", "4M", "3M"],
@@ -17130,6 +17139,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			chistrike: ["9L1"],
 			fightingspirit: ["9L1"],
 			fury: ["9L1"],
+			truestrength: ["9L1"],
 
 			aerialace: ["9M", "7M", "6M", "5M", "4M"],
 			agility: ["9M", "9L28", "8M", "8L28", "7L37", "7V", "6L37", "5L37", "4L37", "3L37"],

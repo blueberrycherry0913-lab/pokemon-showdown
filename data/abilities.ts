@@ -4551,7 +4551,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			// when the ability has reverted to Trace/Imposter by re-entry.
 			pokemon.m.regenTurnOut = this.turn;
 		},
-		shortDesc: "Heals 10% MaxHP per turn while inactive, up to 30% after 3 turns.",
+		shortDesc: "Heals 10% MaxHP per turn while inactive, up to 50% after 5 turns.",
 		origin: 'Nerfed',
 		flags: {},
 		name: "Regenerator",
