@@ -7945,12 +7945,20 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		},
 		onBeforeMove(source, target, move) {
 			this.effectState.preTargetItem = target?.item ?? '';
+			this.effectState.preTargetItem2 = target?.item2 ?? '';
 		},
-		onAfterMoveSecondarySelf(source, target, move) {
+		onAfterMovePriority: -1,
+		onAfterMove(source, target, move) {
 			const pre = this.effectState.preTargetItem as string;
+			const pre2 = this.effectState.preTargetItem2 as string;
 			this.effectState.preTargetItem = '';
-			if (!target || !pre) return;
-			if (!target.item && source.item === pre) {
+			this.effectState.preTargetItem2 = '';
+			if (!target || (!pre && !pre2)) return;
+			// Boost if target lost an item and source gained it
+			const targetLostItem = (pre && !target.item) || (pre2 && !target.item2);
+			const sourceGainedIt = source.item === pre || source.item === pre2 ||
+				source.item2 === pre || source.item2 === pre2;
+			if (targetLostItem && sourceGainedIt) {
 				this.boost({ atk: 1, spa: 1 }, source);
 			}
 		},
