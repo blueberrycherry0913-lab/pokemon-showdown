@@ -2951,7 +2951,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	magician: {
 		onAfterMoveSecondarySelf(source, target, move) {
-			if (!move || source.switchFlag === true || !move.hitTargets || (source.item && source.item2) || source.volatiles['gem'] ||
+			if (!move || source.switchFlag === true || !move.hitTargets?.length || !move.totalDamage || (source.item && source.item2) || source.volatiles['gem'] ||
 				move.id === 'fling' || move.category === 'Status') return;
 			// Only steal when a chance secondary effect actually activated (not guaranteed effects like Knock Off)
 			if (!(move as any).magicianTrigger) return;
@@ -3807,7 +3807,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		// Steals item when making contact OR when being hit by a contact move.
 		// 50% chance, 75% if the Pickpocket user is faster than the target.
 		onAfterMove(source, target, move) {
-			if (target && target !== source && move?.flags['contact']) {
+			if (target && target !== source && move?.flags['contact'] && target.hurtThisTurn) {
 				if ((source.item && source.item2) || source.switchFlag || source.forceSwitchFlag || target.switchFlag === true) {
 					return;
 				}
