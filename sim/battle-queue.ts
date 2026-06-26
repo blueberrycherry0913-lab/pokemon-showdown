@@ -55,6 +55,8 @@ export interface MoveAction {
 	externalMove?: boolean;
 	/** Quick Tunneler: player toggled this move to self-switch (contact Ground moves only) */
 	quickTunnel?: boolean;
+	/** which held-item slot to Fling (when a Pokémon holds two items) */
+	flingSlot?: 1 | 2;
 	/** if true, this move is speed-tied with an opposing move; both execute before faints are processed */
 	speedTied?: boolean;
 }

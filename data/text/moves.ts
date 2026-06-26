@@ -455,8 +455,8 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	bestow: {
 		name: "Bestow",
-		desc: "The target receives the user's held item. Fails if the user has no item or is holding a Mail or Z-Crystal, if the target is already holding an item, if the user is a Kyogre holding a Blue Orb, a Groudon holding a Red Orb, a Giratina holding a Griseous Orb, an Arceus holding a Plate, a Genesect holding a Drive, a Silvally holding a Memory, a Pokemon that can Mega Evolve holding the Mega Stone for its species, or if the target is one of those Pokemon and the user is holding the respective item.",
-		shortDesc: "User passes its held item to the target.",
+		desc: "The user passes its last-acquired held item into one of the target's free item slots. A Pokemon may hold up to two items, so this works as long as the target has fewer than two items. Fails if the user has no item, if the target already holds two items, or if the item cannot be passed.",
+		shortDesc: "Passes the user's item into a free slot on the target.",
 		gen6: {
 			desc: "The target receives the user's held item. Fails if the user has no item or is holding a Mail, if the target is already holding an item, if the user is a Kyogre holding a Blue Orb, a Groudon holding a Red Orb, a Giratina holding a Griseous Orb, an Arceus holding a Plate, a Genesect holding a Drive, a Pokemon that can Mega Evolve holding the Mega Stone for its species, or if the target is one of those Pokemon and the user is holding the respective item.",
 		},
@@ -1195,8 +1195,8 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	covet: {
 		name: "Covet",
-		desc: "If this attack was successful and the user has not fainted, it steals the target's held item if the user is not holding one. The target's item is not stolen if it is a Mail or Z-Crystal, or if the target is a Kyogre holding a Blue Orb, a Groudon holding a Red Orb, a Giratina holding a Griseous Orb, an Arceus holding a Plate, a Genesect holding a Drive, a Silvally holding a Memory, or a Pokemon that can Mega Evolve holding the Mega Stone for its species. Items lost to this move cannot be regained with Recycle or the Harvest Ability.",
-		shortDesc: "If the user has no item, it steals the target's.",
+		desc: "If this attack is successful and the user has not fainted, it steals the target's last-acquired held item, placing it into one of the user's free item slots. A Pokemon may hold up to two items, but only ever gains a second item during battle, so this works as long as the user has fewer than two items. Items that cannot be removed are not stolen. Items lost to this move cannot be regained with Recycle or the Harvest Ability.",
+		shortDesc: "If the user has a free item slot, steals the foe's last item.",
 		gen6: {
 			desc: "If this attack was successful and the user has not fainted, it steals the target's held item if the user is not holding one. The target's item is not stolen if it is a Mail, or if the target is a Kyogre holding a Blue Orb, a Groudon holding a Red Orb, a Giratina holding a Griseous Orb, an Arceus holding a Plate, a Genesect holding a Drive, or a Pokemon that can Mega Evolve holding the Mega Stone for its species. Items lost to this move cannot be regained with Recycle or the Harvest Ability.",
 		},
@@ -2215,8 +2215,8 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	fling: {
 		name: "Fling",
-		desc: "The power of this move is based on the user's held item. The held item is lost and it activates for the target if applicable. If there is no target or the target avoids this move by protecting itself, the user's held item is still lost. The user can regain a thrown item with Recycle or the Harvest Ability. Fails if the user has no held item, if the held item cannot be thrown, if the user is under the effect of Embargo or Magic Room, or if the user has the Klutz Ability.",
-		shortDesc: "Flings the user's item at the target. Power varies.",
+		desc: "The power and effect of this move are based on the held item the user throws. If the user holds two items, the player chooses which one to fling; otherwise the user's only item is thrown. The chosen item is lost and activates for the target if applicable, and is lost even if there is no target or the target protects itself. The user can regain a thrown item with Recycle or the Harvest Ability. Fails if the user has no throwable item, if the user is under the effect of Embargo or Magic Room, or if the user has the Klutz Ability.",
+		shortDesc: "Flings a held item (player picks if holding two). Power varies.",
 		gen4: {
 			desc: "The power of this move is based on the user's held item. The held item is lost and it activates for the target if applicable. If the target avoids this move by protecting itself, the user's held item is still lost. The user can regain a thrown item with Recycle. Fails if the user has no held item, if the held item cannot be thrown, or if the user is under the effect of Embargo.",
 		},
@@ -3563,8 +3563,8 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	knockoff: {
 		name: "Knock Off",
-		desc: "If the target is holding an item that can be removed from it, ignoring the Sticky Hold Ability, this move's power is multiplied by 1.5. If the user has not fainted, the target loses its held item. This move cannot cause Pokemon with the Sticky Hold Ability to lose their held item or cause a Kyogre, a Groudon, a Giratina, an Arceus, a Genesect, a Silvally, a Zacian, or a Zamazenta to lose their Blue Orb, Red Orb, Griseous Orb, Plate, Drive, Memory, Rusted Sword, or Rusted Shield respectively. Items lost to this move cannot be regained with Recycle or the Harvest Ability.",
-		shortDesc: "1.5x damage if foe holds an item. Removes item.",
+		desc: "If the target is holding any item that can be removed from it, ignoring the Sticky Hold Ability, this move's power is multiplied by 1.5. If the user has not fainted, the target loses ALL of its held items (a Pokemon may hold up to two). This move cannot cause Pokemon with the Sticky Hold Ability to lose their held items, and items that cannot normally be removed are kept. Items lost to this move cannot be regained with Recycle or the Harvest Ability.",
+		shortDesc: "1.5x dmg if foe holds an item. Removes all its items.",
 		gen7: {
 			desc: "If the target is holding an item that can be removed from it, ignoring the Sticky Hold Ability, this move's power is multiplied by 1.5. If the user has not fainted, the target loses its held item. This move cannot remove Z-Crystals, cause Pokemon with the Sticky Hold Ability to lose their held item, cause Pokemon that can Mega Evolve to lose the Mega Stone for their species, or cause a Kyogre, a Groudon, a Giratina, an Arceus, a Genesect, or a Silvally to lose their Blue Orb, Red Orb, Griseous Orb, Plate, Drive, or Memory respectively. Items lost to this move cannot be regained with Recycle or the Harvest Ability.",
 		},
@@ -6806,8 +6806,8 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	switcheroo: {
 		name: "Switcheroo",
-		desc: "The user swaps its held item with the target's held item. Fails if either the user or the target is holding a Mail or Z-Crystal, if neither is holding an item, if the user is trying to give or take a Mega Stone to or from the species that can Mega Evolve with it, or if the user is trying to give or take a Blue Orb, a Red Orb, a Griseous Orb, a Plate, a Drive, or a Memory to or from a Kyogre, a Groudon, a Giratina, an Arceus, a Genesect, or a Silvally, respectively. The target is immune to this move if it has the Sticky Hold Ability.",
-		shortDesc: "User switches its held item with the target's.",
+		desc: "The user swaps its last-acquired held item with the target's last-acquired held item. A Pokemon may hold up to two items, and only this last-acquired item is swapped on each side. Fails if neither has a swappable item, or for items that cannot be passed. The target is immune to this move if it has the Sticky Hold Ability.",
+		shortDesc: "Swaps the user's and target's last-acquired items.",
 		gen6: {
 			desc: "The user swaps its held item with the target's held item. Fails if either the user or the target is holding a Mail, if neither is holding an item, if the user is trying to give or take a Mega Stone to or from the species that can Mega Evolve with it, or if the user is trying to give or take a Blue Orb, a Red Orb, a Griseous Orb, a Plate, or a Drive to or from a Kyogre, a Groudon, a Giratina, an Arceus, or a Genesect, respectively. The target is immune to this move if it has the Sticky Hold Ability.",
 		},
@@ -7027,8 +7027,8 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	thief: {
 		name: "Thief",
-		desc: "If this attack was successful and the user has not fainted, it steals the target's held item if the user is not holding one. The target's item is not stolen if it is a Mail or Z-Crystal, or if the target is a Kyogre holding a Blue Orb, a Groudon holding a Red Orb, a Giratina holding a Griseous Orb, an Arceus holding a Plate, a Genesect holding a Drive, a Silvally holding a Memory, or a Pokemon that can Mega Evolve holding the Mega Stone for its species. Items lost to this move cannot be regained with Recycle or the Harvest Ability.",
-		shortDesc: "If the user has no item, it steals the target's.",
+		desc: "If this attack is successful and the user has not fainted, it steals the target's last-acquired held item, placing it into one of the user's free item slots. A Pokemon may hold up to two items, but only ever gains a second item during battle, so this works as long as the user has fewer than two items. Items that cannot be removed are not stolen. Items lost to this move cannot be regained with Recycle or the Harvest Ability.",
+		shortDesc: "If the user has a free item slot, steals the foe's last item.",
 		gen6: {
 			desc: "If this attack was successful and the user has not fainted, it steals the target's held item if the user is not holding one. The target's item is not stolen if it is a Mail, or if the target is a Kyogre holding a Blue Orb, a Groudon holding a Red Orb, a Giratina holding a Griseous Orb, an Arceus holding a Plate, a Genesect holding a Drive, or a Pokemon that can Mega Evolve holding the Mega Stone for its species. Items lost to this move cannot be regained with Recycle or the Harvest Ability.",
 		},
@@ -7252,8 +7252,8 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	trick: {
 		name: "Trick",
-		desc: "The user swaps its held item with the target's held item. Fails if either the user or the target is holding a Mail or Z-Crystal, if neither is holding an item, if the user is trying to give or take a Mega Stone to or from the species that can Mega Evolve with it, or if the user is trying to give or take a Blue Orb, a Red Orb, a Griseous Orb, a Plate, a Drive, or a Memory to or from a Kyogre, a Groudon, a Giratina, an Arceus, a Genesect, or a Silvally, respectively. The target is immune to this move if it has the Sticky Hold Ability.",
-		shortDesc: "User switches its held item with the target's.",
+		desc: "The user swaps its last-acquired held item with the target's last-acquired held item. A Pokemon may hold up to two items, and only this last-acquired item is swapped on each side. Fails if neither has a swappable item, or for items that cannot be passed. The target is immune to this move if it has the Sticky Hold Ability.",
+		shortDesc: "Swaps the user's and target's last-acquired items.",
 		gen6: {
 			desc: "The user swaps its held item with the target's held item. Fails if either the user or the target is holding a Mail, if neither is holding an item, if the user is trying to give or take a Mega Stone to or from the species that can Mega Evolve with it, or if the user is trying to give or take a Blue Orb, a Red Orb, a Griseous Orb, a Plate, or a Drive to or from a Kyogre, a Groudon, a Giratina, an Arceus, or a Genesect, respectively. The target is immune to this move if it has the Sticky Hold Ability.",
 		},

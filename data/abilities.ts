@@ -2154,10 +2154,16 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onResidualSubOrder: 2,
 		onResidual(pokemon) {
 			if (this.field.isWeather(['sunnyday', 'desolateland']) || this.field.pseudoWeather['grassdomain'] || this.randomChance(1, 2)) {
-				if (pokemon.hp && !pokemon.item && this.dex.items.get(pokemon.lastItem).isBerry) {
-					pokemon.setItem(pokemon.lastItem);
+				if (!pokemon.hp) return;
+				// Restore a consumed Berry into a free slot (prefer slot 1).
+				if (!pokemon.item && this.dex.items.get(pokemon.lastItem).isBerry) {
+					pokemon.setItem(pokemon.lastItem, undefined, undefined, 1);
 					pokemon.lastItem = '';
 					this.add('-item', pokemon, pokemon.getItem(), '[from] ability: Harvest');
+				} else if (!pokemon.item2 && this.dex.items.get(pokemon.lastItem2).isBerry) {
+					pokemon.setItem(pokemon.lastItem2, undefined, undefined, 2);
+					pokemon.lastItem2 = '';
+					this.add('-item', pokemon, pokemon.getItem2(), '[from] ability: Harvest');
 				}
 			}
 		},
@@ -2945,7 +2951,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	magician: {
 		onAfterMoveSecondarySelf(source, target, move) {
-			if (!move || source.switchFlag === true || !move.hitTargets || source.item || source.volatiles['gem'] ||
+			if (!move || source.switchFlag === true || !move.hitTargets || (source.item && source.item2) || source.volatiles['gem'] ||
 				move.id === 'fling' || move.category === 'Status') return;
 			// Only steal when a chance secondary effect actually activated (not guaranteed effects like Knock Off)
 			if (!(move as any).magicianTrigger) return;
@@ -2953,10 +2959,11 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			this.speedSort(hitTargets);
 			for (const pokemon of hitTargets) {
 				if (pokemon !== source) {
-					const yourItem = pokemon.takeItem(source);
+					const slot = pokemon.item2 ? 2 : 1; // steal the target's last-acquired item
+					const yourItem = pokemon.takeItem(source, slot);
 					if (!yourItem) continue;
-					if (!source.setItem(yourItem)) {
-						pokemon.item = yourItem.id; // bypass setItem so we don't break choicelock or anything
+					if (!source.gainItem(yourItem)) {
+						if (slot === 2) pokemon.item2 = yourItem.id; else pokemon.item = yourItem.id; // bypass setItem so we don't break choicelock or anything
 						continue;
 					}
 					this.add('-item', source, yourItem, '[from] ability: Magician', `[of] ${pokemon}`);
@@ -2965,7 +2972,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 			}
 		},
 		flags: {},
-		shortDesc: "Steals a foe's held item when a chance secondary effect of this Pokémon's move activates.",
+		shortDesc: "Steals a foe's last item into a free slot when a chance secondary of its move activates.",
 		origin: 'Reworked',
 		name: "Magician",
 		rating: 1,
@@ -3800,13 +3807,14 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		// Steals item when making contact OR when being hit by a contact move.
 		onAfterMove(source, target, move) {
 			if (target && target !== source && move?.flags['contact']) {
-				if (source.item || source.switchFlag || source.forceSwitchFlag || target.switchFlag === true) {
+				if ((source.item && source.item2) || source.switchFlag || source.forceSwitchFlag || target.switchFlag === true) {
 					return;
 				}
-				const theirItem = target.takeItem(source);
+				const slot = target.item2 ? 2 : 1; // steal the target's last-acquired item
+				const theirItem = target.takeItem(source, slot);
 				if (!theirItem) return;
-				if (!source.setItem(theirItem)) {
-					target.item = theirItem.id;
+				if (!source.gainItem(theirItem)) {
+					if (slot === 2) target.item2 = theirItem.id; else target.item = theirItem.id;
 					return;
 				}
 				this.add('-enditem', target, theirItem, '[silent]', '[from] ability: Pickpocket', `[of] ${source}`);
@@ -3815,15 +3823,16 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		},
 		onAfterMoveSecondary(target, source, move) {
 			if (source && source !== target && move?.flags['contact']) {
-				if (target.item || target.switchFlag || target.forceSwitchFlag || source.switchFlag === true) {
+				if ((target.item && target.item2) || target.switchFlag || target.forceSwitchFlag || source.switchFlag === true) {
 					return;
 				}
-				const yourItem = source.takeItem(target);
+				const slot = source.item2 ? 2 : 1; // steal the attacker's last-acquired item
+				const yourItem = source.takeItem(target, slot);
 				if (!yourItem) {
 					return;
 				}
-				if (!target.setItem(yourItem)) {
-					source.item = yourItem.id;
+				if (!target.gainItem(yourItem)) {
+					if (slot === 2) source.item2 = yourItem.id; else source.item = yourItem.id;
 					return;
 				}
 				this.add('-enditem', source, yourItem, '[silent]', '[from] ability: Pickpocket', `[of] ${source}`);
@@ -3832,8 +3841,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		},
 		flags: {},
 		name: "Pickpocket",
-		shortDesc: "Steals foe's held item on contact — whether user makes contact or is hit by one.",
-		desc: "When this Pokémon uses a contact move or is hit by a contact move, it steals the target's held item. Activates only if this Pokémon has no item of its own.",
+		shortDesc: "Steals the foe's last item on contact (dealt or taken) if it has a free slot.",
+		desc: "When this Pokémon uses a contact move or is hit by a contact move, it steals the target's last-acquired held item into a free item slot. A Pokémon may hold up to two items, so this activates as long as this Pokémon has fewer than two items.",
 		origin: 'Buffed',
 		rating: 1,
 		num: 124,
@@ -6309,7 +6318,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		},
 		condition: {
 			onModifySpe(spe, pokemon) {
-				if (!pokemon.item && !pokemon.ignoringAbility()) {
+				if (!pokemon.item && !pokemon.item2 && !pokemon.ignoringAbility()) {
 					return this.chainModify(2);
 				}
 			},

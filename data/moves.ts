@@ -1192,13 +1192,15 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		priority: 0,
 		flags: { mirror: 1, bypasssub: 1, allyanim: 1, noassist: 1, failcopycat: 1 },
 		onHit(target, source, move) {
-			if (target.item) {
+			if (target.item && target.item2) {
 				return false;
 			}
-			const myItem = source.takeItem();
+			const srcSlot = source.item2 ? 2 : 1; // bestow the user's last-acquired item
+			const myItem = source.takeItem(undefined, srcSlot);
 			if (!myItem) return false;
-			if (!this.singleEvent('TakeItem', myItem, source.itemState, target, source, move, myItem) || !target.setItem(myItem)) {
-				source.item = myItem.id;
+			if (!this.singleEvent('TakeItem', myItem, source.slotItemState(srcSlot), target, source, move, myItem) ||
+				!target.gainItem(myItem)) {
+				if (srcSlot === 2) source.item2 = myItem.id; else source.item = myItem.id;
 				return false;
 			}
 			this.add('-item', target, myItem.name, '[from] move: Bestow', `[of] ${source}`);
@@ -3056,18 +3058,19 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, failmefirst: 1, noassist: 1, failcopycat: 1 },
 		onAfterHit(target, source, move) {
-			if (source.item || source.volatiles['gem']) {
+			if ((source.item && source.item2) || source.volatiles['gem']) {
 				return;
 			}
-			const yourItem = target.takeItem(source);
+			const slot = target.item2 ? 2 : 1; // steal the target's last-acquired item
+			const yourItem = target.takeItem(source, slot);
 			if (!yourItem) {
 				return;
 			}
 			if (
-				!this.singleEvent('TakeItem', yourItem, target.itemState, source, target, move, yourItem) ||
-				!source.setItem(yourItem)
+				!this.singleEvent('TakeItem', yourItem, target.slotItemState(slot), source, target, move, yourItem) ||
+				!source.gainItem(yourItem)
 			) {
-				target.item = yourItem.id; // bypass setItem so we don't break choicelock or anything
+				if (slot === 2) target.item2 = yourItem.id; else target.item = yourItem.id; // bypass setItem so we don't break choicelock or anything
 				return;
 			}
 			this.add('-item', source, yourItem, '[from] move: Covet', `[of] ${target}`);
@@ -5650,8 +5653,16 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { protect: 1, mirror: 1, allyanim: 1, metronome: 1, noparentalbond: 1 },
 		onPrepareHit(target, source, move) {
 			if (source.ignoringItem(true)) return false;
-			const item = source.getItem();
-			if (!this.singleEvent('TakeItem', item, source.itemState, source, source, move, item)) return false;
+			// Pick which held item to fling: the player's choice (move.flingSlot, set in runMove from
+			// the `fling <slot>` move-choice token) or, as a fallback, the last-acquired flingable item.
+			let slot = (move as any).flingSlot as 1 | 2 | undefined;
+			if (slot !== 1 && slot !== 2) {
+				slot = (source.item2 && source.getItem2().fling) ? 2 : 1;
+			}
+			(move as any).flingSlot = slot;
+			const item = slot === 2 ? source.getItem2() : source.getItem();
+			const itemState = source.slotItemState(slot);
+			if (!this.singleEvent('TakeItem', item, itemState, source, source, move, item)) return false;
 			if (!item.fling) return false;
 			move.basePower = item.fling.basePower;
 			this.debug(`BP: ${move.basePower}`);
@@ -5660,7 +5671,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 					this.singleEvent('EatItem', source.getAbility(), source.abilityState, source, source, move, item);
 				}
 				move.onHit = function (foe) {
-					if (this.singleEvent('Eat', item, source.itemState, foe, source, move)) {
+					if (this.singleEvent('Eat', item, itemState, foe, source, move)) {
 						this.runEvent('EatItem', foe, source, move, item);
 						if (item.id === 'leppaberry') foe.staleness = 'external';
 					}
@@ -5677,12 +5688,14 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 				}
 			}
 			source.addVolatile('fling');
+			if (source.volatiles['fling']) source.volatiles['fling'].flingSlot = slot;
 		},
 		condition: {
 			onUpdate(pokemon) {
-				const item = pokemon.getItem();
-				pokemon.setItem('');
-				pokemon.lastItem = item.id;
+				const slot: 1 | 2 = this.effectState.flingSlot === 2 ? 2 : 1;
+				const item = slot === 2 ? pokemon.getItem2() : pokemon.getItem();
+				pokemon.setItem('', undefined, undefined, slot);
+				if (slot === 2) pokemon.lastItem2 = item.id; else pokemon.lastItem = item.id;
 				pokemon.usedItemThisTurn = true;
 				this.add('-enditem', pokemon, item.name, '[from] move: Fling');
 				this.runEvent('AfterUseItem', pokemon, null, null, item);
@@ -9803,16 +9816,22 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		onBasePower(basePower, source, target, move) {
-			const item = target.getItem();
-			if (!this.singleEvent('TakeItem', item, target.itemState, target, target, move, item)) return;
-			if (item.id) {
-				return this.chainModify(1.5);
+			// Flat 1.5x if the target has at least one knockable item (either slot).
+			for (const slot of [1, 2] as const) {
+				const item = slot === 2 ? target.getItem2() : target.getItem();
+				if (!item.id) continue;
+				if (this.singleEvent('TakeItem', item, target.slotItemState(slot), target, target, move, item)) {
+					return this.chainModify(1.5);
+				}
 			}
 		},
 		onAfterHit(target, source) {
-			const item = target.takeItem();
-			if (item) {
-				this.add('-enditem', target, item.name, '[from] move: Knock Off', `[of] ${source}`);
+			// Knock Off strips BOTH item slots (last-acquired first).
+			for (const slot of [2, 1] as const) {
+				const item = target.takeItem(undefined, slot);
+				if (item) {
+					this.add('-enditem', target, item.name, '[from] move: Knock Off', `[of] ${source}`);
+				}
 			}
 		},
 		target: "normal",
@@ -14638,11 +14657,20 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		priority: 0,
 		flags: { snatch: 1, metronome: 1 },
 		onHit(pokemon, source, move) {
-			if (pokemon.item || !pokemon.lastItem) return false;
-			const item = pokemon.lastItem;
-			pokemon.lastItem = '';
-			this.add('-item', pokemon, this.dex.items.get(item), '[from] move: Recycle');
-			pokemon.setItem(item, source, move);
+			// Restore a consumed item into a free slot (prefer slot 1).
+			if (!pokemon.item && pokemon.lastItem) {
+				const item = pokemon.lastItem;
+				pokemon.lastItem = '';
+				this.add('-item', pokemon, this.dex.items.get(item), '[from] move: Recycle');
+				pokemon.setItem(item, source, move, 1);
+			} else if (!pokemon.item2 && pokemon.lastItem2) {
+				const item = pokemon.lastItem2;
+				pokemon.lastItem2 = '';
+				this.add('-item', pokemon, this.dex.items.get(item), '[from] move: Recycle');
+				pokemon.setItem(item, source, move, 2);
+			} else {
+				return false;
+			}
 		},
 		target: "self",
 		type: "Normal",
@@ -18502,30 +18530,32 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 			return !target.hasAbility('stickyhold');
 		},
 		onHit(target, source, move) {
-			const yourItem = target.takeItem(source);
-			const myItem = source.takeItem();
+			const ySlot = target.item2 ? 2 : 1; // swap each side's last-acquired item
+			const mSlot = source.item2 ? 2 : 1;
+			const yourItem = target.takeItem(source, ySlot);
+			const myItem = source.takeItem(undefined, mSlot);
 			if (yourItem === false || myItem === false || (!yourItem && !myItem)) {
-				if (yourItem) target.item = yourItem.id;
-				if (myItem) source.item = myItem.id;
+				if (yourItem) { if (ySlot === 2) target.item2 = yourItem.id; else target.item = yourItem.id; }
+				if (myItem) { if (mSlot === 2) source.item2 = myItem.id; else source.item = myItem.id; }
 				return false;
 			}
 			if (
-				(myItem && !this.singleEvent('TakeItem', myItem, source.itemState, target, source, move, myItem)) ||
-				(yourItem && !this.singleEvent('TakeItem', yourItem, target.itemState, source, target, move, yourItem))
+				(myItem && !this.singleEvent('TakeItem', myItem, source.slotItemState(mSlot), target, source, move, myItem)) ||
+				(yourItem && !this.singleEvent('TakeItem', yourItem, target.slotItemState(ySlot), source, target, move, yourItem))
 			) {
-				if (yourItem) target.item = yourItem.id;
-				if (myItem) source.item = myItem.id;
+				if (yourItem) { if (ySlot === 2) target.item2 = yourItem.id; else target.item = yourItem.id; }
+				if (myItem) { if (mSlot === 2) source.item2 = myItem.id; else source.item = myItem.id; }
 				return false;
 			}
 			this.add('-activate', source, 'move: Trick', `[of] ${target}`);
 			if (myItem) {
-				target.setItem(myItem);
+				target.setItem(myItem, undefined, undefined, ySlot);
 				this.add('-item', target, myItem, '[from] move: Switcheroo');
 			} else {
 				this.add('-enditem', target, yourItem, '[silent]', '[from] move: Switcheroo');
 			}
 			if (yourItem) {
-				source.setItem(yourItem);
+				source.setItem(yourItem, undefined, undefined, mSlot);
 				this.add('-item', source, yourItem, '[from] move: Switcheroo');
 			} else {
 				this.add('-enditem', source, myItem, '[silent]', '[from] move: Switcheroo');
@@ -19156,16 +19186,17 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, failmefirst: 1, noassist: 1, failcopycat: 1 },
 		onAfterHit(target, source, move) {
-			if (source.item || source.volatiles['gem']) {
+			if ((source.item && source.item2) || source.volatiles['gem']) {
 				return;
 			}
-			const yourItem = target.takeItem(source);
+			const slot = target.item2 ? 2 : 1; // steal the target's last-acquired item
+			const yourItem = target.takeItem(source, slot);
 			if (!yourItem) {
 				return;
 			}
-			if (!this.singleEvent('TakeItem', yourItem, target.itemState, source, target, move, yourItem) ||
-				!source.setItem(yourItem)) {
-				target.item = yourItem.id; // bypass setItem so we don't break choicelock or anything
+			if (!this.singleEvent('TakeItem', yourItem, target.slotItemState(slot), source, target, move, yourItem) ||
+				!source.gainItem(yourItem)) {
+				if (slot === 2) target.item2 = yourItem.id; else target.item = yourItem.id; // bypass setItem so we don't break choicelock or anything
 				return;
 			}
 			this.add('-enditem', target, yourItem, '[silent]', '[from] move: Thief', `[of] ${source}`);
@@ -19736,30 +19767,32 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 			return !target.hasAbility('stickyhold');
 		},
 		onHit(target, source, move) {
-			const yourItem = target.takeItem(source);
-			const myItem = source.takeItem();
+			const ySlot = target.item2 ? 2 : 1; // swap each side's last-acquired item
+			const mSlot = source.item2 ? 2 : 1;
+			const yourItem = target.takeItem(source, ySlot);
+			const myItem = source.takeItem(undefined, mSlot);
 			if (yourItem === false || myItem === false || (!yourItem && !myItem)) {
-				if (yourItem) target.item = yourItem.id;
-				if (myItem) source.item = myItem.id;
+				if (yourItem) { if (ySlot === 2) target.item2 = yourItem.id; else target.item = yourItem.id; }
+				if (myItem) { if (mSlot === 2) source.item2 = myItem.id; else source.item = myItem.id; }
 				return false;
 			}
 			if (
-				(myItem && !this.singleEvent('TakeItem', myItem, source.itemState, target, source, move, myItem)) ||
-				(yourItem && !this.singleEvent('TakeItem', yourItem, target.itemState, source, target, move, yourItem))
+				(myItem && !this.singleEvent('TakeItem', myItem, source.slotItemState(mSlot), target, source, move, myItem)) ||
+				(yourItem && !this.singleEvent('TakeItem', yourItem, target.slotItemState(ySlot), source, target, move, yourItem))
 			) {
-				if (yourItem) target.item = yourItem.id;
-				if (myItem) source.item = myItem.id;
+				if (yourItem) { if (ySlot === 2) target.item2 = yourItem.id; else target.item = yourItem.id; }
+				if (myItem) { if (mSlot === 2) source.item2 = myItem.id; else source.item = myItem.id; }
 				return false;
 			}
 			this.add('-activate', source, 'move: Trick', `[of] ${target}`);
 			if (myItem) {
-				target.setItem(myItem);
+				target.setItem(myItem, undefined, undefined, ySlot);
 				this.add('-item', target, myItem, '[from] move: Trick');
 			} else {
 				this.add('-enditem', target, yourItem, '[silent]', '[from] move: Trick');
 			}
 			if (yourItem) {
-				source.setItem(yourItem);
+				source.setItem(yourItem, undefined, undefined, mSlot);
 				this.add('-item', source, yourItem, '[from] move: Trick');
 			} else {
 				this.add('-enditem', source, myItem, '[silent]', '[from] move: Trick');

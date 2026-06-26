@@ -948,8 +948,8 @@ export const AbilitiesText: { [id: IDEntry]: AbilityText } = {
 	},
 	magician: {
 		name: "Magician",
-		desc: "If this Pokemon has no item, it steals the item off a Pokemon it hits with an attack. Does not affect Doom Desire and Future Sight. If multiple targets are hit by an attack the item is stolen from the fastest Pokemon, while considering the effect of Trick Room and prioritizing opposing Pokemon before allies.",
-		shortDesc: "If this Pokemon has no item, it steals the item off a Pokemon it hits with an attack.",
+		desc: "If this Pokemon has fewer than two items, it steals the last-acquired item off a Pokemon it hits with an attack, placing it into a free item slot. A Pokemon may hold up to two items. Does not affect Doom Desire and Future Sight. If multiple targets are hit by an attack the item is stolen from the fastest Pokemon, while considering the effect of Trick Room and prioritizing opposing Pokemon before allies.",
+		shortDesc: "If it has a free item slot, steals an item from a Pokemon it hits.",
 	},
 	magmaarmor: {
 		name: "Magma Armor",
@@ -1231,8 +1231,8 @@ export const AbilitiesText: { [id: IDEntry]: AbilityText } = {
 	},
 	pickpocket: {
 		name: "Pickpocket",
-		desc: "If this Pokemon has no item and is hit by a contact move, it steals the attacker's item. This effect applies after all hits from a multi-hit move. This effect is prevented if the move had a secondary effect removed by the Sheer Force Ability.",
-		shortDesc: "If this Pokemon has no item and is hit by a contact move, it steals the attacker's item.",
+		desc: "If this Pokemon has fewer than two items and is hit by a contact move, it steals the attacker's last-acquired item into a free item slot. A Pokemon may hold up to two items. This effect applies after all hits from a multi-hit move. This effect is prevented if the move had a secondary effect removed by the Sheer Force Ability.",
+		shortDesc: "Free item slot + hit by contact: steals the attacker's item.",
 	},
 	pickup: {
 		name: "Pickup",

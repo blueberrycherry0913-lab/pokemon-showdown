@@ -330,7 +330,7 @@ export const Conditions: import('../sim/dex-conditions').ConditionDataTable = {
 			this.effectState.move = this.activeMove.id;
 		},
 		onBeforeMove(pokemon, target, move) {
-			if (!pokemon.getItem().isChoice) {
+			if (!pokemon.hasChoiceItem()) {
 				pokemon.removeVolatile('choicelock');
 				return;
 			}
@@ -347,7 +347,7 @@ export const Conditions: import('../sim/dex-conditions').ConditionDataTable = {
 			}
 		},
 		onDisableMove(pokemon) {
-			if (!pokemon.getItem().isChoice || !pokemon.hasMove(this.effectState.move)) {
+			if (!pokemon.hasChoiceItem() || !pokemon.hasMove(this.effectState.move)) {
 				pokemon.removeVolatile('choicelock');
 				return;
 			}

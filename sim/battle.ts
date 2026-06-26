@@ -576,7 +576,12 @@ export class Battle {
 					expectedStateLocation = (handler.state === handler.state.target.abilityState2) ?
 						handler.state.target.abilityState2 : handler.state.target.abilityState;
 				} else if (effect.effectType === 'Item' && !handler.state.id.startsWith('item:')) {
-					expectedStateLocation = handler.state.target.itemState;
+					// Dual-item system: a handler may belong to slot 1 (itemState) or the
+					// in-battle-acquired slot 2 (itemState2). Compare against whichever slot this
+					// handler's state actually is, so a stolen/Bestowed item's residual handlers
+					// (Leftovers, berries, etc.) aren't wrongly skipped during fieldEvent.
+					expectedStateLocation = (handler.state === handler.state.target.itemState2) ?
+						handler.state.target.itemState2 : handler.state.target.itemState;
 				} else if (effect.effectType === 'Status') {
 					expectedStateLocation = handler.state.target.statusState;
 				} else {
@@ -1184,6 +1189,15 @@ export class Battle {
 			handlers.push(this.resolvePriority({
 				effect: item, callback, state: pokemon.itemState, end: pokemon.clearItem, effectHolder: pokemon,
 			}, callbackName));
+		}
+		if (pokemon.item2) {
+			const item2 = pokemon.getItem2();
+			callback = this.getCallback(pokemon, item2, callbackName);
+			if (callback !== undefined || (getKey && pokemon.itemState2[getKey])) {
+				handlers.push(this.resolvePriority({
+					effect: item2, callback, state: pokemon.itemState2, end: pokemon.clearItem2, effectHolder: pokemon,
+				}, callbackName));
+			}
 		}
 		const species = pokemon.baseSpecies;
 		callback = this.getCallback(pokemon, species, callbackName);
@@ -2954,6 +2968,7 @@ export class Battle {
 				this.runEvent('Faint', pokemon, faintData.source, faintData.effect);
 				this.singleEvent('End', pokemon.getAbility(), pokemon.abilityState, pokemon);
 				this.singleEvent('End', pokemon.getItem(), pokemon.itemState, pokemon);
+				if (pokemon.item2) this.singleEvent('End', pokemon.getItem2(), pokemon.itemState2, pokemon);
 				if (pokemon.formeRegression && !pokemon.transformed) {
 					// before clearing volatiles
 					pokemon.baseSpecies = this.dex.species.get(pokemon.set.species || pokemon.set.name);
@@ -3156,6 +3171,7 @@ export class Battle {
 				sourceEffect: action.sourceEffect, zMove: action.zmove,
 				maxMove: action.maxMove, originalTarget: action.originalTarget,
 				externalMove: action.externalMove, quickTunnel: action.quickTunnel,
+				flingSlot: action.flingSlot,
 			});
 
 			if (isFirstOfPair && this.speedTieFirstMoveLogCheckpoint !== null) {

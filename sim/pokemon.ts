@@ -128,6 +128,15 @@ export class Pokemon {
 	item: ID;
 	itemState: EffectState;
 	lastItem: ID;
+	/**
+	 * Second item slot. Empty at team start (teams begin with <=1 item); only ever filled
+	 * in-battle by theft (Thief/Covet/Pickpocket/Magician) or Bestow. Cap = 2 items total.
+	 * Its handlers are registered alongside slot 1 in Battle#findPokemonEventHandlers, so both
+	 * items function simultaneously.
+	 */
+	item2: ID;
+	itemState2: EffectState;
+	lastItem2: ID;
 	usedItemThisTurn: boolean;
 	ateBerry: boolean;
 	// Gens 3-4 only
@@ -444,6 +453,10 @@ export class Pokemon {
 		this.item = toID(set.item);
 		this.itemState = this.battle.initEffectState({ id: this.item, target: this });
 		this.lastItem = '';
+		// Slot 2 always starts empty — second items are only acquired in-battle.
+		this.item2 = '' as ID;
+		this.itemState2 = this.battle.initEffectState({ id: '', target: this });
+		this.lastItem2 = '' as ID;
 		this.usedItemThisTurn = false;
 		this.ateBerry = false;
 		this.itemKnockedOff = false;
@@ -1204,6 +1217,7 @@ export class Pokemon {
 			item: this.item,
 			pokeball: this.pokeball,
 		};
+		if (this.item2) entry.item2 = this.item2;
 		if (this.battle.gen > 6) entry.ability = this.ability;
 		if (this.battle.gen >= 9) {
 			entry.commanding = !!this.volatiles['commanding'] && !this.fainted;
@@ -1602,6 +1616,7 @@ export class Pokemon {
 
 		delete this.abilityState.started;
 		delete this.itemState.started;
+		delete this.itemState2.started;
 
 		this.setSpecies(this.baseSpecies);
 	}
@@ -1818,14 +1833,52 @@ export class Pokemon {
 		return this.battle.dex.conditions.getByID(this.status);
 	}
 
-	eatItem(force?: boolean, source?: Pokemon, sourceEffect?: Effect) {
-		if (!this.item) return false;
-		if ((!this.hp && this.item !== 'jabocaberry' && this.item !== 'rowapberry') || !this.isActive) return false;
+	/**
+	 * Held items live in two slots (`item`/`item2`). This resolves which slot a consume/take/end
+	 * acts on: an explicit slot wins; otherwise if the firing effect is one of the held items we
+	 * use that slot; otherwise we default to the last-acquired item (slot 2 if present, else 1).
+	 */
+	itemSlotFor(sourceEffect?: Effect | null, explicit?: 1 | 2): 1 | 2 {
+		if (explicit) return explicit;
+		const eff = sourceEffect || this.battle.effect;
+		if (eff && (eff as Effect).effectType === 'Item') {
+			if (this.item2 && (eff as Effect).id === this.item2) return 2;
+			if (this.item && (eff as Effect).id === this.item) return 1;
+		}
+		return this.item2 ? 2 : 1;
+	}
+
+	/** The held item id for a slot. */
+	slotItem(slot: 1 | 2): ID {
+		return slot === 2 ? this.item2 : this.item;
+	}
+
+	/** The EffectState for a slot. */
+	slotItemState(slot: 1 | 2): EffectState {
+		return slot === 2 ? this.itemState2 : this.itemState;
+	}
+
+	eatItem(force?: boolean, source?: Pokemon, sourceEffect?: Effect, slot?: 1 | 2) {
+		if (!this.item && !this.item2) return false;
+		if (!this.isActive) return false;
 
 		if (!sourceEffect && this.battle.effect) sourceEffect = this.battle.effect;
 		if (!source && this.battle.event?.target) source = this.battle.event.target;
-		const item = this.getItem();
-		if (sourceEffect?.effectType === 'Item' && this.item !== sourceEffect.id && source === this) {
+
+		let useSlot = this.itemSlotFor(sourceEffect, slot);
+		// Move-driven eats (Teatime, Stuff Cheeks, Bug Bite) have no item firing-context; if the
+		// resolved slot isn't a berry but the other slot is, eat the berry instead.
+		const isBerry = (id: ID) => !!id && this.battle.dex.items.getByID(id).isBerry;
+		if (!slot && !isBerry(this.slotItem(useSlot)) && isBerry(this.slotItem(useSlot === 2 ? 1 : 2))) {
+			useSlot = useSlot === 2 ? 1 : 2;
+		}
+		const heldId = this.slotItem(useSlot);
+		if (!heldId) return false;
+		if ((!this.hp && heldId !== 'jabocaberry' && heldId !== 'rowapberry')) return false;
+
+		const item = this.battle.dex.items.getByID(heldId);
+		const itemState = this.slotItemState(useSlot);
+		if (sourceEffect?.effectType === 'Item' && heldId !== sourceEffect.id && source === this) {
 			// if an item is telling us to eat it but we aren't holding it, we probably shouldn't eat what we are holding
 			return false;
 		}
@@ -1835,7 +1888,7 @@ export class Pokemon {
 		) {
 			this.battle.add('-enditem', this, item, '[eat]');
 
-			this.battle.singleEvent('Eat', item, this.itemState, this, source, sourceEffect);
+			this.battle.singleEvent('Eat', item, itemState, this, source, sourceEffect);
 			this.battle.runEvent('EatItem', this, source, sourceEffect, item);
 
 			if (RESTORATIVE_BERRIES.has(item.id)) {
@@ -1850,9 +1903,15 @@ export class Pokemon {
 				this.pendingStaleness = undefined;
 			}
 
-			this.lastItem = this.item;
-			this.item = '';
-			this.battle.clearEffectState(this.itemState);
+			if (useSlot === 2) {
+				this.lastItem2 = this.item2;
+				this.item2 = '' as ID;
+				this.battle.clearEffectState(this.itemState2);
+			} else {
+				this.lastItem = this.item;
+				this.item = '' as ID;
+				this.battle.clearEffectState(this.itemState);
+			}
 			this.usedItemThisTurn = true;
 			this.ateBerry = true;
 			this.battle.runEvent('AfterUseItem', this, null, null, item);
@@ -1861,14 +1920,20 @@ export class Pokemon {
 		return false;
 	}
 
-	useItem(source?: Pokemon, sourceEffect?: Effect) {
-		if ((!this.hp && !this.getItem().isGem) || !this.isActive) return false;
-		if (!this.item) return false;
+	useItem(source?: Pokemon, sourceEffect?: Effect, slot?: 1 | 2) {
+		if (!this.item && !this.item2) return false;
+		if (!this.isActive) return false;
 
 		if (!sourceEffect && this.battle.effect) sourceEffect = this.battle.effect;
 		if (!source && this.battle.event?.target) source = this.battle.event.target;
-		const item = this.getItem();
-		if (sourceEffect?.effectType === 'Item' && this.item !== sourceEffect.id && source === this) {
+
+		const useSlot = this.itemSlotFor(sourceEffect, slot);
+		const heldId = this.slotItem(useSlot);
+		if (!heldId) return false;
+		const item = this.battle.dex.items.getByID(heldId);
+		if (!this.hp && !item.isGem) return false;
+		const itemState = this.slotItemState(useSlot);
+		if (sourceEffect?.effectType === 'Item' && heldId !== sourceEffect.id && source === this) {
 			// if an item is telling us to eat it but we aren't holding it, we probably shouldn't eat what we are holding
 			return false;
 		}
@@ -1889,11 +1954,17 @@ export class Pokemon {
 				this.battle.boost(item.boosts, this, source, item);
 			}
 
-			this.battle.singleEvent('Use', item, this.itemState, this, source, sourceEffect);
+			this.battle.singleEvent('Use', item, itemState, this, source, sourceEffect);
 
-			this.lastItem = this.item;
-			this.item = '';
-			this.battle.clearEffectState(this.itemState);
+			if (useSlot === 2) {
+				this.lastItem2 = this.item2;
+				this.item2 = '' as ID;
+				this.battle.clearEffectState(this.itemState2);
+			} else {
+				this.lastItem = this.item;
+				this.item = '' as ID;
+				this.battle.clearEffectState(this.itemState);
+			}
 			this.usedItemThisTurn = true;
 			this.battle.runEvent('AfterUseItem', this, null, null, item);
 			return true;
@@ -1901,15 +1972,23 @@ export class Pokemon {
 		return false;
 	}
 
-	takeItem(source?: Pokemon) {
+	takeItem(source?: Pokemon, slot?: 1 | 2) {
 		if (!source) source = this;
 		if (this.battle.gen <= 4 && (this.itemKnockedOff || source.itemKnockedOff)) return false;
-		if (!this.item) return;
-		const item = this.getItem();
+		if (!this.item && !this.item2) return;
+		const useSlot = slot ?? (this.item2 ? 2 : 1);
+		const heldId = this.slotItem(useSlot);
+		if (!heldId) return;
+		const item = this.battle.dex.items.getByID(heldId);
 		if (this.battle.runEvent('TakeItem', this, source, null, item)) {
-			this.item = '';
-			const oldItemState = this.itemState;
-			this.battle.clearEffectState(this.itemState);
+			const oldItemState = this.slotItemState(useSlot);
+			if (useSlot === 2) {
+				this.item2 = '' as ID;
+				this.battle.clearEffectState(this.itemState2);
+			} else {
+				this.item = '' as ID;
+				this.battle.clearEffectState(this.itemState);
+			}
 			this.pendingStaleness = undefined;
 			this.battle.singleEvent('End', item, oldItemState, this);
 			this.battle.runEvent('AfterTakeItem', this, null, null, item);
@@ -1918,7 +1997,7 @@ export class Pokemon {
 		return false;
 	}
 
-	setItem(item: string | Item, source?: Pokemon, effect?: Effect) {
+	setItem(item: string | Item, source?: Pokemon, effect?: Effect, slot: 1 | 2 = 1) {
 		if (!this.hp || !this.isActive) return false;
 		if (typeof item === 'string') item = this.battle.dex.items.get(item);
 
@@ -1930,32 +2009,62 @@ export class Pokemon {
 		} else {
 			this.pendingStaleness = undefined;
 		}
-		const oldItem = this.getItem();
-		const oldItemState = this.itemState;
-		this.item = item.id;
-		this.itemState = this.battle.initEffectState({ id: item.id, target: this });
+		const oldItem = slot === 2 ? this.getItem2() : this.getItem();
+		const oldItemState = this.slotItemState(slot);
+		if (slot === 2) {
+			this.item2 = item.id;
+			this.itemState2 = this.battle.initEffectState({ id: item.id, target: this });
+		} else {
+			this.item = item.id;
+			this.itemState = this.battle.initEffectState({ id: item.id, target: this });
+		}
 		if (oldItem.exists) this.battle.singleEvent('End', oldItem, oldItemState, this);
 		if (item.id) {
-			this.battle.singleEvent('Start', item, this.itemState, this, source, effect);
+			this.battle.singleEvent('Start', item, this.slotItemState(slot), this, source, effect);
 		}
 		return true;
+	}
+
+	/**
+	 * Acquire an item into the first free slot — slot 1 if empty, else slot 2 if empty.
+	 * Returns false when both slots are full (item cap reached). Used by theft and Bestow.
+	 */
+	gainItem(item: string | Item, source?: Pokemon, effect?: Effect) {
+		if (!this.item) return this.setItem(item, source, effect, 1);
+		if (!this.item2) return this.setItem(item, source, effect, 2);
+		return false;
 	}
 
 	getItem() {
 		return this.battle.dex.items.getByID(this.item);
 	}
 
+	getItem2() {
+		return this.battle.dex.items.getByID(this.item2);
+	}
+
 	hasItem(item: string | string[]) {
-		if (Array.isArray(item)) {
-			if (!item.map(toID).includes(this.item)) return false;
-		} else {
-			if (toID(item) !== this.item) return false;
-		}
-		return !this.ignoringItem();
+		if (this.ignoringItem()) return false;
+		const ids = Array.isArray(item) ? item.map(toID) : [toID(item)];
+		return ids.includes(this.item) || (!!this.item2 && ids.includes(this.item2));
+	}
+
+	/**
+	 * True if either held slot is a Choice item. Raw check (does NOT account for Embargo/Klutz/
+	 * Magic Room) — callers that care about item suppression gate on `ignoringItem()` separately,
+	 * matching how the choicelock volatile already does.
+	 */
+	hasChoiceItem() {
+		return !!this.getItem().isChoice || (!!this.item2 && !!this.getItem2().isChoice);
 	}
 
 	clearItem() {
-		return this.setItem('');
+		return this.setItem('', undefined, undefined, 1);
+	}
+
+	clearItem2() {
+		if (!this.item2) return false;
+		return this.setItem('', undefined, undefined, 2);
 	}
 
 	setAbility(

@@ -49,6 +49,7 @@ export interface ChosenAction {
 	priority?: number; // priority of the action
 	externalMove?: boolean; // if true, skip PP deduction when resolving (Mind Control self-hit)
 	quickTunnel?: boolean; // Quick Tunneler: player toggled this move to self-switch (contact Ground moves only)
+	flingSlot?: 1 | 2; // which held-item slot to Fling (when a Pokémon holds two items)
 }
 
 /** One single turn's choice for one single player. */
@@ -90,6 +91,8 @@ export interface PokemonSwitchRequestData {
 	/** Permanent ability (the one applied on switch-in). */
 	baseAbility: ID;
 	item: ID;
+	/** Second held item (slot 2), only present when a Pokémon holds two items. */
+	item2?: ID;
 	pokeball: ID;
 	/** Current ability. Only sent in Gen 7+. */
 	ability?: ID;
@@ -578,7 +581,8 @@ export class Side {
 		targetLoc = 0,
 		event: 'mega' | 'megax' | 'megay' | 'zmove' | 'ultra' | 'dynamax' | 'terastallize' | 'telepathy' | '' = '',
 		terastallizeType?: string,
-		quickTunnel = false
+		quickTunnel = false,
+		flingSlot?: 1 | 2
 	) {
 		if (this.requestState !== 'move') {
 			return this.emitChoiceError(`Can't move: You need a ${this.requestState} response`);
@@ -884,6 +888,7 @@ export class Side {
 			terastallize: terastallize ? (terastallizeType || pokemon.teraType) : undefined,
 			useTelepathy: useTelepathy || undefined,
 			quickTunnel: quickTunnel || undefined,
+			flingSlot: flingSlot || undefined,
 		});
 
 		if (pokemon.maybeDisabled && (this.battle.gameType === 'singles' || (
@@ -1261,6 +1266,8 @@ export class Side {
 				let terastallizeType: string | undefined;
 				// Quick Tunneler: independent of `event` so it can combine with mega/tera/etc.
 				let quickTunnel = false;
+				// Fling slot (when holding two items): parsed from 'move N fling1'/'fling2'. Independent of `event`.
+				let flingSlot: 1 | 2 | undefined;
 				while (true) {
 					// If data ends with a number, treat it as a target location.
 					// We need to special case 'Conversion 2' so it doesn't get
@@ -1324,11 +1331,18 @@ export class Side {
 						// Quick Tunneler toggle — independent of `event`, so don't error if one is set.
 						quickTunnel = true;
 						data = data.slice(0, -7);
+					} else if (data.endsWith(' fling1')) {
+						// Fling slot choice — independent of `event`.
+						flingSlot = 1;
+						data = data.slice(0, -7);
+					} else if (data.endsWith(' fling2')) {
+						flingSlot = 2;
+						data = data.slice(0, -7);
 					} else {
 						break;
 					}
 				}
-				if (!this.chooseMove(data, targetLoc, event, terastallizeType, quickTunnel)) return false;
+				if (!this.chooseMove(data, targetLoc, event, terastallizeType, quickTunnel, flingSlot)) return false;
 				break;
 			case 'switch':
 				if (!this.chooseSwitch(data)) return false;

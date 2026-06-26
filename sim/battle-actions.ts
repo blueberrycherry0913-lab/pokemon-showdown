@@ -212,7 +212,7 @@ export class BattleActions {
 		moveOrMoveName: Move | string, pokemon: Pokemon, targetLoc: number,
 		options?: {
 			sourceEffect?: Effect | null, zMove?: string, externalMove?: boolean,
-			maxMove?: string, originalTarget?: Pokemon, quickTunnel?: boolean,
+			maxMove?: string, originalTarget?: Pokemon, quickTunnel?: boolean, flingSlot?: 1 | 2,
 		}
 	) {
 		pokemon.activeMoveActions++;
@@ -245,6 +245,8 @@ export class BattleActions {
 		// Quick Tunneler: flag the active move so the ability's onModifyMove can turn a
 		// contact Ground-type move into a self-switch (the player opted in pre-turn).
 		if (options?.quickTunnel) move.quickTunnel = true;
+		// Fling slot choice: flag the active move so the Fling handler throws the chosen item.
+		if (options?.flingSlot) (move as any).flingSlot = options.flingSlot;
 
 		this.battle.setActiveMove(move, pokemon, target);
 
