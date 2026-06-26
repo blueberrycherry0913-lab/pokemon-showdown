@@ -4864,13 +4864,13 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		priority: 0,
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		onBasePower(basePower, source) {
-			if (this.field.isTerrain('psychicterrain') && source.isGrounded()) {
-				this.debug('terrain buff');
+			if ((this.field.isTerrain('psychicterrain') || this.field.pseudoWeather['psychicdomain']) && source.isGrounded()) {
+				this.debug('terrain/domain buff');
 				return this.chainModify(1.5);
 			}
 		},
 		onModifyMove(move, source, target) {
-			if (this.field.isTerrain('psychicterrain') && source.isGrounded()) {
+			if ((this.field.isTerrain('psychicterrain') || this.field.pseudoWeather['psychicdomain']) && source.isGrounded()) {
 				move.target = 'allAdjacentFoes';
 			}
 		},
@@ -7584,7 +7584,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		priority: 0,
 		flags: { contact: 1, protect: 1, mirror: 1, metronome: 1 },
 		onModifyPriority(priority, source, target, move) {
-			if (this.field.isTerrain('grassyterrain') && source.isGrounded()) {
+			if ((this.field.isTerrain('grassyterrain') || this.field.pseudoWeather['grassdomain']) && source.isGrounded()) {
 				return priority + 1;
 			}
 		},
@@ -11987,8 +11987,8 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { protect: 1, mirror: 1, metronome: 1 },
 		selfdestruct: "always",
 		onBasePower(basePower, source) {
-			if (this.field.isTerrain('mistyterrain') && source.isGrounded()) {
-				this.debug('misty terrain boost');
+			if ((this.field.isTerrain('mistyterrain') || this.field.pseudoWeather['fairydomain']) && source.isGrounded()) {
+				this.debug('misty terrain/domain boost');
 				return this.chainModify(1.5);
 			}
 		},
@@ -14977,7 +14977,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		accuracy: 100,
 		basePower: 70,
 		basePowerCallback(source, target, move) {
-			if (this.field.isTerrain('electricterrain') && target.isGrounded()) {
+			if ((this.field.isTerrain('electricterrain') || this.field.pseudoWeather['electricdomain']) && target.isGrounded()) {
 				if (!source.isAlly(target)) this.hint(`${move.name}'s BP doubled on grounded target.`);
 				return move.basePower * 2;
 			}
