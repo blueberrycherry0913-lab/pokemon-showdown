@@ -1021,13 +1021,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	curiousmedicine: {
 		onStart(pokemon) {
-			for (const ally of pokemon.adjacentAllies()) {
-				ally.clearBoosts();
-				this.add('-clearboost', ally, '[from] ability: Curious Medicine', `[of] ${pokemon}`);
+			for (const target of this.getAllActive()) {
+				target.clearBoosts();
+				this.add('-clearboost', target, '[from] ability: Curious Medicine', `[of] ${pokemon}`);
 			}
 		},
-		shortDesc: "Resets all stat changes of adjacent allies upon entering the battlefield.",
-		origin: 'Unchanged',
+		shortDesc: "Resets all stat changes for all Pokémon upon entering the battlefield.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Curious Medicine",
 		rating: 0,
@@ -3805,11 +3805,14 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	pickpocket: {
 		// Steals item when making contact OR when being hit by a contact move.
+		// 50% chance, 75% if the Pickpocket user is faster than the target.
 		onAfterMove(source, target, move) {
 			if (target && target !== source && move?.flags['contact']) {
 				if ((source.item && source.item2) || source.switchFlag || source.forceSwitchFlag || target.switchFlag === true) {
 					return;
 				}
+				const chance = source.getStat('spe') > target.getStat('spe') ? 3 : 2; // 3/4 if faster, 2/4 otherwise
+				if (!this.randomChance(chance, 4)) return;
 				const slot = target.item2 ? 2 : 1; // steal the target's last-acquired item
 				const theirItem = target.takeItem(source, slot);
 				if (!theirItem) return;
@@ -3826,6 +3829,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				if ((target.item && target.item2) || target.switchFlag || target.forceSwitchFlag || source.switchFlag === true) {
 					return;
 				}
+				const chance = target.getStat('spe') > source.getStat('spe') ? 3 : 2; // 3/4 if faster, 2/4 otherwise
+				if (!this.randomChance(chance, 4)) return;
 				const slot = source.item2 ? 2 : 1; // steal the attacker's last-acquired item
 				const yourItem = source.takeItem(target, slot);
 				if (!yourItem) {
@@ -3841,8 +3846,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		},
 		flags: {},
 		name: "Pickpocket",
-		shortDesc: "Steals the foe's last item on contact (dealt or taken) if it has a free slot.",
-		desc: "When this Pokémon uses a contact move or is hit by a contact move, it steals the target's last-acquired held item into a free item slot. A Pokémon may hold up to two items, so this activates as long as this Pokémon has fewer than two items.",
+		shortDesc: "50% chance (75% if faster) to steal foe's last item on contact, if it has a free slot.",
+		desc: "When this Pokémon uses a contact move or is hit by a contact move, it has a 50% chance (75% if faster than the target) to steal the target's last-acquired held item into a free item slot.",
 		origin: 'Buffed',
 		rating: 1,
 		num: 124,
@@ -6428,9 +6433,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				return null;
 			}
 		},
+		onModifySpePriority: 6,
+		onModifySpe(spe) {
+			return this.chainModify(1.1);
+		},
 		flags: { breakable: 1 },
-		shortDesc: "Prevents this Pokémon from falling asleep.",
-		origin: 'Unchanged',
+		shortDesc: "Prevents this Pokémon from falling asleep and increases its Speed by 10%.",
+		origin: 'Buffed',
 		name: "Vital Spirit",
 		rating: 1.5,
 		num: 72,
