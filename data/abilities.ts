@@ -2076,6 +2076,9 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				delete boost.atk;
 				this.boost({ atk: 1 }, target, target, null, false, true);
 			}
+			if (effect.name === 'Awe-Inspiring' && boost.spa) {
+				delete boost.spa;
+			}
 		},
 		onAllyTryBoostPriority: 2,
 		onAllyTryBoost(boost, target, source, effect) {
@@ -2084,8 +2087,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				const effectHolder = this.effectState.target;
 				this.add('-block', target, 'ability: Guard Dog', `[of] ${effectHolder}`);
 			}
+			if (effect.name === 'Awe-Inspiring' && boost.spa) {
+				delete boost.spa;
+				const effectHolder = this.effectState.target;
+				this.add('-block', target, 'ability: Guard Dog', `[of] ${effectHolder}`);
+			}
 		},
-		shortDesc: "Protects itself and allies from Intimidate; receives +1 Attack when Intimidated; cannot be forced out.",
+		shortDesc: "Protects itself and allies from Intimidate and Awe-Inspiring; receives +1 Attack when Intimidated; cannot be forced out.",
 		origin: 'Buffed',
 		flags: { breakable: 1 },
 		name: "Guard Dog",
@@ -2582,8 +2590,12 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				delete boost.atk;
 				this.add('-fail', target, 'unboost', 'Attack', '[from] ability: Inner Focus', `[of] ${target}`);
 			}
+			if (effect.name === 'Awe-Inspiring' && boost.spa) {
+				delete boost.spa;
+				this.add('-fail', target, 'unboost', 'Sp. Atk', '[from] ability: Inner Focus', `[of] ${target}`);
+			}
 		},
-		shortDesc: "Immune to flinching and Intimidate.",
+		shortDesc: "Immune to flinching, Intimidate, and Awe-Inspiring.",
 		origin: 'Unchanged',
 		flags: { breakable: 1 },
 		name: "Inner Focus",
@@ -3533,6 +3545,16 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		},
 		onImmunity(type, pokemon) {
 			if (type === 'charmed') return false;
+		},
+		onTryBoost(boost, target, source, effect) {
+			if (effect.name === 'Intimidate' && boost.atk) {
+				delete boost.atk;
+				this.add('-fail', target, 'unboost', 'Attack', '[from] ability: Oblivious', `[of] ${target}`);
+			}
+			if (effect.name === 'Awe-Inspiring' && boost.spa) {
+				delete boost.spa;
+				this.add('-fail', target, 'unboost', 'Sp. Atk', '[from] ability: Oblivious', `[of] ${target}`);
+			}
 		},
 		onTryHit(pokemon, target, move) {
 			if (move.volatileStatus === 'charmed' || move.id === 'taunt') {
@@ -4857,8 +4879,12 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				delete boost.atk;
 				this.add('-fail', target, 'unboost', 'Attack', '[from] ability: Scrappy', `[of] ${target}`);
 			}
+			if (effect.name === 'Awe-Inspiring' && boost.spa) {
+				delete boost.spa;
+				this.add('-fail', target, 'unboost', 'Sp. Atk', '[from] ability: Scrappy', `[of] ${target}`);
+			}
 		},
-		shortDesc: "Normal and Fighting moves hit Ghost types; immune to Intimidate.",
+		shortDesc: "Normal and Fighting moves hit Ghost types; immune to Intimidate and Awe-Inspiring.",
 		origin: 'Unchanged',
 		flags: {},
 		name: "Scrappy",
