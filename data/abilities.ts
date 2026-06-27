@@ -2076,9 +2076,6 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				delete boost.atk;
 				this.boost({ atk: 1 }, target, target, null, false, true);
 			}
-			if (effect.name === 'Awe-Inspiring' && boost.spa) {
-				delete boost.spa;
-			}
 		},
 		onAllyTryBoostPriority: 2,
 		onAllyTryBoost(boost, target, source, effect) {
@@ -2087,13 +2084,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				const effectHolder = this.effectState.target;
 				this.add('-block', target, 'ability: Guard Dog', `[of] ${effectHolder}`);
 			}
-			if (effect.name === 'Awe-Inspiring' && boost.spa) {
-				delete boost.spa;
-				const effectHolder = this.effectState.target;
-				this.add('-block', target, 'ability: Guard Dog', `[of] ${effectHolder}`);
-			}
 		},
-		shortDesc: "Protects itself and allies from Intimidate and Awe-Inspiring; receives +1 Attack when Intimidated; cannot be forced out.",
+		shortDesc: "Protects itself and allies from Intimidate; receives +1 Attack when Intimidated; cannot be forced out.",
 		origin: 'Buffed',
 		flags: { breakable: 1 },
 		name: "Guard Dog",
