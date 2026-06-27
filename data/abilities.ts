@@ -6083,6 +6083,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		onModifyDamage(damage, source, target, move) {
 			if (target.getMoveHitData(move).typeMod < 0) {
 				this.debug('Tinted Lens boost');
+				this.add('-message', `${source.name}'s Tinted Lens made the attack feel unresisted!`);
 				return this.chainModify(2);
 			}
 		},
@@ -8214,25 +8215,19 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 
 	// --- Row 418: Overwhelming ---
-	// NOTE: onEffectiveness fires for the DEFENDER's ability in this engine, so the
-	// attacker-side resist floor is done via onModifyDamage (reading typeMod), the same
-	// pattern as Best in Show. ignoreImmunity (onModifyMove) handles type/grounding immunities.
 	overwhelming: {
-		onModifyMove(move) {
-			if (move.category !== 'Status') move.ignoreImmunity = true;
-		},
 		onModifyDamage(damage, source, target, move) {
-			const typeMod = target.getMoveHitData(move).typeMod;
-			if (typeMod < 0) {
-				// Undo the resistance to floor at neutral; SE bonuses (typeMod >= 0) are kept.
-				return this.chainModify(Math.pow(2, -typeMod));
+			if (target.getMoveHitData(move).typeMod < 0) {
+				this.debug('Overwhelming boost');
+				this.add('-message', `${source.name}'s Overwhelming made the attack feel unresisted!`);
+				return this.chainModify(2);
 			}
 		},
-		shortDesc: "This Pokémon's attacks ignore resistances and immunities (minimum neutral damage).",
+		shortDesc: "Doubles the power of not-very-effective moves.",
 		origin: 'Custom',
 		flags: {},
 		name: "Overwhelming",
-		rating: 3.5,
+		rating: 4,
 		num: 10109,
 	},
 
