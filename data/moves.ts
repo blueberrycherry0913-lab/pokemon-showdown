@@ -13311,7 +13311,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	poisongas: {
 		num: 139,
-		accuracy: 90,
+		accuracy: 100,
 		basePower: 0,
 		category: "Status",
 		name: "Poison Gas",
@@ -13343,7 +13343,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	poisonpowder: {
 		num: 77,
-		accuracy: 75,
+		accuracy: 100,
 		basePower: 0,
 		category: "Status",
 		name: "Poison Powder",
@@ -18138,7 +18138,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	stunspore: {
 		num: 78,
-		accuracy: 75,
+		accuracy: 100,
 		basePower: 0,
 		category: "Status",
 		name: "Stun Spore",
@@ -19465,7 +19465,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	thunderwave: {
 		num: 86,
-		accuracy: 90,
+		accuracy: 100,
 		basePower: 0,
 		category: "Status",
 		name: "Thunder Wave",
@@ -19607,7 +19607,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	toxic: {
 		num: 92,
-		accuracy: 90,
+		accuracy: 80,
 		basePower: 0,
 		category: "Status",
 		name: "Toxic",
@@ -20773,7 +20773,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 	},
 	willowisp: {
 		num: 261,
-		accuracy: 85,
+		accuracy: 100,
 		basePower: 0,
 		category: "Status",
 		name: "Will-O-Wisp",
