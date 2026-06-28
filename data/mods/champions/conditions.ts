@@ -1222,11 +1222,11 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			// 1/16 per turn
 			this.damage(pokemon.baseMaxhp / 16);
 		},
-		// -33% Defense while Corroded. Fires last so it stacks correctly with domain boosts.
+		// -25% Defense while Corroded. Fires last so it stacks correctly with domain boosts.
 		onModifyDefPriority: -101,
 		onModifyDef(def) {
 			def = this.finalModify(def);
-			return Math.floor(def * 2 / 3);
+			return Math.floor(def * 3 / 4);
 		},
 	},
 
@@ -1242,8 +1242,8 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onResidualOrder: 9,
 		onResidual(pokemon) {
-			// 1/8 per turn (doubled from Corroded)
-			this.damage(pokemon.baseMaxhp / 8);
+			// 1/10 per turn (doubled from Corroded)
+			this.damage(pokemon.baseMaxhp / 10);
 		},
 		// -50% Defense while Melting
 		onModifyDefPriority: -101,
@@ -1270,13 +1270,13 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			// 1/16 per turn (canon value, unchanged)
 			this.damage(pokemon.baseMaxhp / 16);
 		},
-		// -33% Attack while Burned (nerfed from canon's -50%, which was hardcoded in getDamage).
+		// -25% Attack while Burned.
 		// Moved to event handler so Scorched can use the same pattern at -50%.
 		onModifyAtkPriority: -101,
 		onModifyAtk(atk, pokemon, target, move) {
 			if (move.category === 'Physical' && !pokemon.hasAbility('guts')) {
 				atk = this.finalModify(atk);
-				return Math.floor(atk * 2 / 3);
+				return Math.floor(atk * 3 / 4);
 			}
 		},
 	},
@@ -1293,8 +1293,8 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 		onResidualOrder: 10,
 		onResidual(pokemon) {
-			// 1/8 per turn (doubled from Burned)
-			this.damage(pokemon.baseMaxhp / 8);
+			// 1/10 per turn (doubled from Burned)
+			this.damage(pokemon.baseMaxhp / 10);
 		},
 		// -50% Attack while Scorched
 		onModifyAtkPriority: -101,
@@ -1329,14 +1329,14 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			// 1/16 per turn (halved from canon's 1/8)
 			this.damage(pokemon.baseMaxhp / 16);
 		},
-		// -33% SpDef while Poisoned. Fires at -101 priority so it applies after all other
+		// -25% SpDef while Poisoned. Fires at -101 priority so it applies after all other
 		// modifiers (domain boosts, stat stages, etc.) have already been chained in.
 		onModifySpDPriority: -101,
 		onModifySpD(spd, target) {
 			// Toxic Boost ignores poison's SpD drop.
 			if (target.hasAbility('toxicboost')) return;
 			spd = this.finalModify(spd);
-			return Math.floor(spd * 2 / 3);
+			return Math.floor(spd * 3 / 4);
 		},
 	},
 
@@ -1344,7 +1344,6 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		name: 'tox',
 		effectType: 'Status',
 		onStart(target, source, sourceEffect) {
-			this.effectState.stage = 0;
 			if (sourceEffect && sourceEffect.id === 'toxicorb') {
 				this.add('-status', target, 'tox', '[from] item: Toxic Orb');
 			} else if (sourceEffect && sourceEffect.effectType === 'Ability') {
@@ -1353,18 +1352,12 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				this.add('-status', target, 'tox');
 			}
 		},
-		onSwitchIn() {
-			this.effectState.stage = 0;
-		},
 		onResidualOrder: 9,
 		onResidual(pokemon) {
-			// Escalating: 1/16 on turn 1, +1/16 each subsequent turn (canon-preserved)
-			if (this.effectState.stage < 15) {
-				this.effectState.stage++;
-			}
-			// Toxic Boost ignores toxic chip damage (stage still advances).
+			// Flat 1/10 per turn (§4 spec).
+			// Toxic Boost ignores toxic chip damage.
 			if (pokemon.hasAbility('toxicboost')) return;
-			this.damage(this.clampIntRange(pokemon.baseMaxhp / 16, 1) * this.effectState.stage);
+			this.damage(Math.floor(pokemon.baseMaxhp / 10));
 		},
 		// -50% SpDef while Toxicked. Same late-priority pattern as psn.
 		onModifySpDPriority: -101,
@@ -1400,11 +1393,11 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 				if (move.selfSwitch) pokemon.disableMove(moveSlot.id);
 			}
 		},
-		// -33% Speed while Stunned. Applied at -101 priority so it stacks after all other mods.
+		// -25% Speed while Stunned. Applied at -101 priority so it stacks after all other mods.
 		onModifySpePriority: -101,
 		onModifySpe(spe) {
 			spe = this.finalModify(spe);
-			return Math.floor(spe * 2 / 3);
+			return Math.floor(spe * 3 / 4);
 		},
 	},
 
@@ -1505,8 +1498,8 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onResidual(pokemon) {
 			if (pokemon.hasAbility('comatose')) return;
 			if (!pokemon.hp || pokemon.status !== 'slp') return;
-			// Heal-tax: sleeping restores 1/10 max HP per end-of-turn
-			this.heal(Math.floor(pokemon.baseMaxhp / 10), pokemon, pokemon);
+			// Heal-tax: sleeping restores 1/16 max HP per end-of-turn
+			this.heal(Math.floor(pokemon.baseMaxhp / 16), pokemon, pokemon);
 		},
 		// Takes 10% more damage from all attacks while asleep.
 		// onSourceModifyDamage fires on the DEFENDER's conditions; source = attacker, target = sleeping Pokémon.
@@ -1540,11 +1533,11 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 			// 1/16 per turn (mirrors Burned/Poisoned/Corroded minor-tier chip)
 			this.damage(Math.floor(pokemon.baseMaxhp / 16));
 		},
-		// -33% Special Attack while Frostbitten
+		// -25% Special Attack while Frostbitten
 		onModifySpAPriority: -101,
 		onModifySpA(spa, pokemon) {
 			spa = this.finalModify(spa);
-			return Math.floor(spa * 2 / 3);
+			return Math.floor(spa * 3 / 4);
 		},
 	},
 
@@ -1576,8 +1569,8 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onResidualOrder: 9,
 		onResidual(pokemon) {
 			if (!pokemon.hp || pokemon.status !== 'frz') return;
-			// 1/8 chip damage in both phases
-			this.damage(Math.floor(pokemon.baseMaxhp / 8));
+			// 1/12 chip damage in both phases
+			this.damage(Math.floor(pokemon.baseMaxhp / 12));
 		},
 		// Phase 1 damage reduction: takes 50% less from non-Ice attacking moves while Frozen Solid.
 		// onSourceModifyDamage fires on the DEFENDER's conditions; source = attacker, target = frozen Pokémon.
