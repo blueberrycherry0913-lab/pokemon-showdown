@@ -8227,6 +8227,13 @@ export const Items: import('../sim/dex-items').ItemDataTable = {
 				this.add('-item', target, 'Terastallization Crystal');
 			}
 		},
+		onEnd(target) {
+			// When the crystal leaves (Knock Off, Thief, Trick, etc.), undo Terastallization.
+			if (target.terastallized) {
+				target.terastallized = '';
+				this.add('custom', '-endterastallize', target);
+			}
+		},
 		num: -7,
 		gen: 9,
 	},
