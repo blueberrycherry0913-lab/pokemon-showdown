@@ -8723,6 +8723,23 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 10146,
 	},
 
+	emotionallyunstable: {
+		onModifyMovePriority: -1,
+		onModifyMove(move) {
+			if (move.flags['emotion']) move.emotionallyUnstable = true;
+		},
+		onBasePowerPriority: 8,
+		onBasePower(basePower, attacker, defender, move) {
+			if (move.emotionallyUnstable) return this.chainModify(1.5);
+		},
+		shortDesc: "This Pokémon's emotion moves deal 1.5× damage.",
+		origin: 'Custom',
+		flags: {},
+		name: "Emotionally Unstable",
+		rating: 3,
+		num: 10162,
+	},
+
 	// --- Elastic ---
 	elastic: {
 		onSourceModifyDamage(damage, source, target, move) {
