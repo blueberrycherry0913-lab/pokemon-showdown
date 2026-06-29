@@ -3882,8 +3882,8 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	magnetrise: {
 		name: "Magnet Rise",
-		desc: "Steel- and Electric-type Pokemon only. For 5 turns, the user is immune to Ground-type attacks and the effects of Spikes, Toxic Spikes, Sticky Web, and the Arena Trap Ability as long as it remains active. If the user uses Baton Pass, the replacement will gain the effect. Ingrain, Smack Down, Thousand Arrows, and Iron Ball override this move if the user is under any of their effects. Fails if the user is not Steel or Electric type, is already under this effect, or is under the effects of Ingrain, Smack Down, or Thousand Arrows.",
-		shortDesc: "Steel/Electric only. For 5 turns, the user has immunity to Ground.",
+		desc: "For 5 turns, all Steel- and Electric-type Pokemon on the field are immune to Ground-type attacks. Fails under Gravity.",
+		shortDesc: "For 5 turns, Steel/Electric types are immune to Ground.",
 		gen5: {
 			desc: "For 5 turns, the user is immune to Ground-type attacks and the effects of Spikes, Toxic Spikes, and the Arena Trap Ability as long as it remains active. If the user uses Baton Pass, the replacement will gain the effect. Ingrain, Smack Down, and Iron Ball override this move if the user is under any of their effects. Fails if the user is already under this effect or the effects of Ingrain or Smack Down.",
 		},

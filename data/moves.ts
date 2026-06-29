@@ -7713,9 +7713,10 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 						pokemon.removeVolatile('skydrop');
 						pokemon.removeVolatile('twoturnmove');
 					}
-					if (pokemon.volatiles['magnetrise']) {
+					if (this.field.pseudoWeather['magnetrise'] && !this.field.pseudoWeather['magnetrise'].gravityCleared) {
+						this.field.pseudoWeather['magnetrise'].gravityCleared = true;
 						applies = true;
-						delete pokemon.volatiles['magnetrise'];
+						this.field.removePseudoWeather('magnetrise');
 					}
 					if (pokemon.volatiles['telekinesis']) {
 						applies = true;
@@ -10706,30 +10707,13 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		name: "Magnet Rise",
 		pp: 10,
 		priority: 0,
-		flags: { snatch: 1, gravity: 1, metronome: 1 },
-		volatileStatus: 'magnetrise',
+		flags: { metronome: 1 },
+		pseudoWeather: 'magnetrise',
 		onTry(source, target, move) {
-			if (!source.hasType('Steel') && !source.hasType('Electric')) return false;
-			if (target.volatiles['smackdown'] || target.volatiles['ingrain']) return false;
-
-			// Additional Gravity check for Z-move variant
 			if (this.field.getPseudoWeather('Gravity')) {
 				this.add('cant', source, 'move: Gravity', move);
 				return null;
 			}
-		},
-		condition: {
-			duration: 5,
-			onStart(target) {
-				this.add('-start', target, 'Magnet Rise');
-			},
-			onImmunity(type) {
-				if (type === 'Ground') return false;
-			},
-			onResidualOrder: 18,
-			onEnd(target) {
-				this.add('-end', target, 'Magnet Rise');
-			},
 		},
 		target: "self",
 		type: "Electric",
@@ -16799,10 +16783,6 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 					applies = true;
 					this.queue.cancelMove(pokemon);
 					pokemon.removeVolatile('twoturnmove');
-				}
-				if (pokemon.volatiles['magnetrise']) {
-					applies = true;
-					delete pokemon.volatiles['magnetrise'];
 				}
 				if (pokemon.volatiles['telekinesis']) {
 					applies = true;

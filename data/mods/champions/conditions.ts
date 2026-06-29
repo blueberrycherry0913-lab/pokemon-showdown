@@ -2038,4 +2038,21 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		},
 	},
 
+	// Magnet Rise — field pseudoWeather that grants Ground immunity to all active Steel and
+	// Electric types for 5 turns. Any Pokémon can set it; Gravity removes it.
+	magnetrise: {
+		name: "Magnet Rise",
+		duration: 5,
+		onFieldStart(field, source) {
+			this.add('-fieldstart', 'move: Magnet Rise');
+		},
+		onImmunity(type, pokemon) {
+			if (type === 'Ground' && (pokemon.hasType('Steel') || pokemon.hasType('Electric'))) return false;
+		},
+		onFieldResidualOrder: 27,
+		onFieldEnd() {
+			this.add('-fieldend', 'move: Magnet Rise');
+		},
+	},
+
 };
