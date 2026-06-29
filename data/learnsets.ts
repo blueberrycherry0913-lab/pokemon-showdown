@@ -85565,6 +85565,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			flareblitz: ["9M", "8M"],
 			gigaimpact: ["9M", "8M"],
 			gyroball: ["9M", "8M"],
+			headsmash: ["9M"],
 			heatcrash: ["9M", "9L45", "8M", "8L45"],
 			heatwave: ["9M", "8M"],
 			heavyslam: ["9M", "8M"],
