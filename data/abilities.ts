@@ -1385,6 +1385,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.field.setWeather('raindance');
 			}
 		},
+		shortDesc: "The Pokémon makes it rain when it enters a battle. If Heavy Rain is already active, then increase duration by 1.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Drizzle",
 		rating: 4,
@@ -1401,6 +1403,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.field.setWeather('sunnyday');
 			}
 		},
+		shortDesc: "Turns the sunlight harsh when the Pokémon enters a battle. If Harsh Sun is already active, then increase duration by 1.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Drought",
 		rating: 4,
@@ -4804,7 +4808,7 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.field.setWeather('sandstorm');
 			}
 		},
-		shortDesc: "The Pokémon summons a sandstorm in battle.",
+		shortDesc: "The Pokémon summons a sandstorm in battle. If sandstorm is already active, increase duration by 1 turn.",
 		origin: 'Buffed',
 		flags: {},
 		name: "Sand Stream",
@@ -5248,6 +5252,8 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 				this.field.setWeather('snowscape');
 			}
 		},
+		shortDesc: "The Pokémon summons a Snowstorm in battle. If Snowstorm is already active, increase duration by 1 turn.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Snow Warning",
 		rating: 4,
