@@ -3015,19 +3015,19 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	magnetpull: {
 		onFoeTrapPokemon(pokemon) {
-			if (pokemon.hasType('Steel') && pokemon.isAdjacent(this.effectState.target)) {
+			if ((pokemon.hasType('Steel') || pokemon.hasType('Electric')) && pokemon.isAdjacent(this.effectState.target)) {
 				pokemon.tryTrap(true);
 			}
 		},
 		onFoeMaybeTrapPokemon(pokemon, source) {
 			if (!source) source = this.effectState.target;
 			if (!source || !pokemon.isAdjacent(source)) return;
-			if (!pokemon.knownType || pokemon.hasType('Steel')) {
+			if (!pokemon.knownType || pokemon.hasType('Steel') || pokemon.hasType('Electric')) {
 				pokemon.maybeTrapped = true;
 			}
 		},
-		shortDesc: "Prevents Steel-type Pokémon from escaping.",
-		origin: 'Unchanged',
+		shortDesc: "Prevents Steel- and Electric-type Pokémon from escaping.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Magnet Pull",
 		rating: 4,

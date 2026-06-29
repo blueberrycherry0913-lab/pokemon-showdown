@@ -957,8 +957,8 @@ export const AbilitiesText: { [id: IDEntry]: AbilityText } = {
 	},
 	magnetpull: {
 		name: "Magnet Pull",
-		desc: "Prevents opposing Steel-type Pokemon from choosing to switch out, unless they are holding a Shed Shell or are a Ghost type.",
-		shortDesc: "Prevents opposing Steel-type Pokemon from choosing to switch out.",
+		desc: "Prevents opposing Steel- and Electric-type Pokemon from choosing to switch out, unless they are holding a Shed Shell or are a Ghost type.",
+		shortDesc: "Prevents opposing Steel- and Electric-type Pokemon from choosing to switch out.",
 		gen6: {
 			desc: "Prevents adjacent opposing Steel-type Pokemon from choosing to switch out, unless they are holding a Shed Shell or are a Ghost type.",
 			shortDesc: "Prevents adjacent opposing Steel-type Pokemon from choosing to switch out.",

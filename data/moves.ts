@@ -10723,7 +10723,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 				this.add('-start', target, 'Magnet Rise');
 			},
 			onImmunity(type) {
-				if (type === 'Ground') return false;
+				if (type === 'Ground' || type === 'Electric') return false;
 			},
 			onResidualOrder: 18,
 			onEnd(target) {
