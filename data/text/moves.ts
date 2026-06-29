@@ -28,7 +28,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	acid: {
 		name: "Acid",
-		desc: "Has a 10% chance to lower the target's Special Defense by 1 stage.",
+		desc: "Has a 25% chance to lower the target's Special Defense by 1 stage.",
 		shortDesc: "10% chance to lower the foe(s) Sp. Def by 1.",
 		gen3: {
 			desc: "Has a 10% chance to lower the target's Defense by 1 stage.",
@@ -39,7 +39,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 			shortDesc: "33% chance to lower the target's Defense by 1.",
 		},
 		gen2: {
-			shortDesc: "10% chance to lower the target's Defense by 1.",
+			shortDesc: "25% chance to lower the target's Defense by 1.",
 		},
 	},
 	acidarmor: {
@@ -780,7 +780,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	bugbuzz: {
 		name: "Bug Buzz",
-		desc: "Has a 10% chance to lower the target's Special Defense by 1 stage.",
+		desc: "Has a 25% chance to lower the target's Special Defense by 1 stage.",
 		shortDesc: "25% chance to lower the target's Sp. Def by 1.",
 	},
 	bulkup: {
@@ -1235,10 +1235,10 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	crunch: {
 		name: "Crunch",
-		desc: "Has a 20% chance to lower the target's Defense by 1 stage.",
+		desc: "Has a 25% chance to lower the target's Defense by 1 stage.",
 		shortDesc: "20% chance to lower the target's Defense by 1.",
 		gen3: {
-			desc: "Has a 20% chance to lower the target's Special Defense by 1 stage.",
+			desc: "Has a 25% chance to lower the target's Special Defense by 1 stage.",
 			shortDesc: "20% chance to lower the target's Sp. Def by 1.",
 		},
 	},
@@ -1700,7 +1700,7 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	earthpower: {
 		name: "Earth Power",
-		desc: "Has a 10% chance to lower the target's Special Defense by 1 stage.",
+		desc: "Has a 25% chance to lower the target's Special Defense by 1 stage.",
 		shortDesc: "25% chance to lower the target's Sp. Def by 1.",
 	},
 	earthquake: {
@@ -1857,8 +1857,8 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	energyball: {
 		name: "Energy Ball",
-		desc: "Has a 10% chance to lower the target's Special Defense by 1 stage.",
-		shortDesc: "10% chance to lower the target's Sp. Def by 1.",
+		desc: "Has a 25% chance to lower the target's Special Defense by 1 stage.",
+		shortDesc: "25% chance to lower the target's Sp. Def by 1.",
 	},
 	entrainment: {
 		name: "Entrainment",
@@ -2195,8 +2195,8 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	flashcannon: {
 		name: "Flash Cannon",
-		desc: "Has a 10% chance to lower the target's Special Defense by 1 stage.",
-		shortDesc: "10% chance to lower the target's Sp. Def by 1.",
+		desc: "Has a 25% chance to lower the target's Special Defense by 1 stage.",
+		shortDesc: "25% chance to lower the target's Sp. Def by 1.",
 	},
 	flatter: {
 		name: "Flatter",
@@ -2279,8 +2279,8 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	focusblast: {
 		name: "Focus Blast",
-		desc: "Has a 10% chance to lower the target's Special Defense by 1 stage.",
-		shortDesc: "10% chance to lower the target's Sp. Def by 1.",
+		desc: "Has a 25% chance to lower the target's Special Defense by 1 stage.",
+		shortDesc: "25% chance to lower the target's Sp. Def by 1.",
 	},
 	focusenergy: {
 		name: "Focus Energy",
@@ -3730,8 +3730,8 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	liquidation: {
 		name: "Liquidation",
-		desc: "Has a 20% chance to lower the target's Defense by 1 stage.",
-		shortDesc: "10% chance to lower the target's Defense by 1.",
+		desc: "Has a 25% chance to lower the target's Defense by 1 stage.",
+		shortDesc: "25% chance to lower the target's Defense by 1.",
 	},
 	lockon: {
 		name: "Lock-On",
@@ -5022,8 +5022,8 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	psychic: {
 		name: "Psychic",
-		desc: "Has a 10% chance to lower the target's Special Defense by 1 stage.",
-		shortDesc: "10% chance to lower the target's Sp. Def by 1.",
+		desc: "Has a 25% chance to lower the target's Special Defense by 1 stage.",
+		shortDesc: "25% chance to lower the target's Sp. Def by 1.",
 		gen1: {
 			desc: "Has a 33% chance to lower the target's Special by 1 stage.",
 			shortDesc: "33% chance to lower the target's Special by 1.",
@@ -5775,12 +5775,12 @@ export const MovesText: { [id: IDEntry]: MoveText } = {
 	},
 	shadowball: {
 		name: "Shadow Ball",
-		desc: "Has a 20% chance to lower the target's Special Defense by 1 stage.",
+		desc: "Has a 25% chance to lower the target's Special Defense by 1 stage.",
 		shortDesc: "25% chance to lower the target's Sp. Def by 1.",
 	},
 	shadowbone: {
 		name: "Shadow Bone",
-		desc: "Has a 20% chance to lower the target's Defense by 1 stage.",
+		desc: "Has a 25% chance to lower the target's Defense by 1 stage.",
 		shortDesc: "20% chance to lower the target's Defense by 1.",
 	},
 	shadowclaw: {
