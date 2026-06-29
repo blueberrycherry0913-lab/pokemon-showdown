@@ -10709,6 +10709,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 		flags: { snatch: 1, gravity: 1, metronome: 1 },
 		volatileStatus: 'magnetrise',
 		onTry(source, target, move) {
+			if (!source.hasType('Steel') && !source.hasType('Electric')) return false;
 			if (target.volatiles['smackdown'] || target.volatiles['ingrain']) return false;
 
 			// Additional Gravity check for Z-move variant
@@ -10723,7 +10724,7 @@ export const Moves: import('../sim/dex-moves').MoveDataTable = {
 				this.add('-start', target, 'Magnet Rise');
 			},
 			onImmunity(type) {
-				if (type === 'Ground' || type === 'Electric') return false;
+				if (type === 'Ground') return false;
 			},
 			onResidualOrder: 18,
 			onEnd(target) {
