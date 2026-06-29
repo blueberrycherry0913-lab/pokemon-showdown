@@ -1498,8 +1498,8 @@ export const Conditions: import('../../../sim/dex-conditions').ConditionDataTabl
 		onResidual(pokemon) {
 			if (pokemon.hasAbility('comatose')) return;
 			if (!pokemon.hp || pokemon.status !== 'slp') return;
-			// Heal-tax: sleeping restores 1/16 max HP per end-of-turn
-			this.heal(Math.floor(pokemon.baseMaxhp / 16), pokemon, pokemon);
+			// Heal-tax: sleeping restores 1/10 max HP per end-of-turn
+			this.heal(Math.floor(pokemon.baseMaxhp / 10), pokemon, pokemon);
 		},
 		// Takes 10% more damage from all attacks while asleep.
 		// onSourceModifyDamage fires on the DEFENDER's conditions; source = attacker, target = sleeping Pokémon.
