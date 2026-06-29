@@ -1377,7 +1377,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	drizzle: {
 		onStart(source) {
 			if (source.species.id === 'kyogre' && source.item === 'blueorb') return;
-			this.field.setWeather('raindance');
+			if (this.field.isWeather('raindance') && this.field.weatherState.duration) {
+				this.field.weatherState.duration++;
+				this.add('-weather', 'RainDance', '[from] ability: Drizzle', '[of] ' + source);
+				this.hint("The rain's duration was extended by 1 turn.");
+			} else {
+				this.field.setWeather('raindance');
+			}
 		},
 		flags: {},
 		name: "Drizzle",
@@ -1387,7 +1393,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	drought: {
 		onStart(source) {
 			if (source.species.id === 'groudon' && source.item === 'redorb') return;
-			this.field.setWeather('sunnyday');
+			if (this.field.isWeather('sunnyday') && this.field.weatherState.duration) {
+				this.field.weatherState.duration++;
+				this.add('-weather', 'SunnyDay', '[from] ability: Drought', '[of] ' + source);
+				this.hint("The sunlight's duration was extended by 1 turn.");
+			} else {
+				this.field.setWeather('sunnyday');
+			}
 		},
 		flags: {},
 		name: "Drought",
@@ -4766,10 +4778,17 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	sandspit: {
 		onDamagingHit(damage, target, source, move) {
-			this.field.setWeather('sandstorm');
+			if (this.field.isWeather('sandstorm') && this.field.weatherState.duration) {
+				this.field.weatherState.duration++;
+				this.add('-weather', 'Sandstorm', '[from] ability: Sand Spit', '[of] ' + target);
+				this.hint("The sandstorm's duration was extended by 1 turn.");
+			} else {
+				this.field.setWeather('sandstorm');
+			}
+			this.boost({accuracy: -1}, source, target);
 		},
-		shortDesc: "Creates a sandstorm when hit by an attack.",
-		origin: 'Standby',
+		shortDesc: "Creates a sandstorm when hit; lowers attacker's accuracy by 1.",
+		origin: 'Buffed',
 		flags: {},
 		name: "Sand Spit",
 		rating: 1,
@@ -4777,10 +4796,16 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	sandstream: {
 		onStart(source) {
-			this.field.setWeather('sandstorm');
+			if (this.field.isWeather('sandstorm') && this.field.weatherState.duration) {
+				this.field.weatherState.duration++;
+				this.add('-weather', 'Sandstorm', '[from] ability: Sand Stream', '[of] ' + source);
+				this.hint("The sandstorm's duration was extended by 1 turn.");
+			} else {
+				this.field.setWeather('sandstorm');
+			}
 		},
 		shortDesc: "The Pokémon summons a sandstorm in battle.",
-		origin: 'Standby',
+		origin: 'Buffed',
 		flags: {},
 		name: "Sand Stream",
 		rating: 4,
@@ -5215,7 +5240,13 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 	},
 	snowwarning: {
 		onStart(source) {
-			this.field.setWeather('snowscape');
+			if (this.field.isWeather('snowscape') && this.field.weatherState.duration) {
+				this.field.weatherState.duration++;
+				this.add('-weather', 'Snowscape', '[from] ability: Snow Warning', '[of] ' + source);
+				this.hint("The snowstorm's duration was extended by 1 turn.");
+			} else {
+				this.field.setWeather('snowscape');
+			}
 		},
 		flags: {},
 		name: "Snow Warning",
