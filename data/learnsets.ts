@@ -86767,6 +86767,11 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	},
 	hatterene: {
 		learnset: {
+			faecurrent: ["9L1"],
+			fairywind: ["9L1"],
+			glimmeringrush: ["9L1"],
+			pixiewelt: ["9L1"],
+
 			agility: ["9M"],
 			aromatherapy: ["8L15"],
 			aromaticmist: ["9L15"],
