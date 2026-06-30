@@ -6113,6 +6113,7 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 			hail: ["8M", "7M"],
 			headbutt: ["8V"],
 			healbell: ["7T"],
+			healingwish: ["9L1"],
 			helpinghand: ["9M"],
 			hex: ["9M", "8M"],
 			hiddenpower: ["7M"],
