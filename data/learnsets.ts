@@ -87275,8 +87275,6 @@ export const Learnsets: import('../sim/dex-species').LearnsetDataTable = {
 	frosmoth: {
 		learnset: {
 			signalbeam: ["9L1"],
-			skittersmack: ["9L1"],
-			strugglebug: ["9L1"],
 			xscissor: ["9L1"],
 
 			acrobatics: ["9M", "8M"],
