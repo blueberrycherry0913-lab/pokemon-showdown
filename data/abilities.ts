@@ -6025,12 +6025,9 @@ export const Abilities: import('../sim/dex-abilities').AbilityDataTable = {
 		num: 101,
 	},
 	telepathy: {
-		onStart(pokemon) {
-			pokemon.m.telepathyUsed = false;
-		},
 		onTryHit(target, source, move) {
 			if (target !== source && target.isAlly(source) && move.category !== 'Status') {
-				this.add('-activate', target, 'ability: Telepathy');
+				this.add('-block', target, 'ability: Telepathy', move.name, source);
 				return null;
 			}
 		},

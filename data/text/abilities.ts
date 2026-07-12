@@ -1997,8 +1997,9 @@ export const AbilitiesText: { [id: IDEntry]: AbilityText } = {
 	},
 	telepathy: {
 		name: "Telepathy",
-		shortDesc: "This Pokemon does not take damage from attacks made by its allies.",
+		shortDesc: "Once per battle, Pokemon can act after already knowing what the opponent has chosen to do. Also immune to ally's damaging moves in doubles.",
 
+		activate: "  Using its ability, [POKEMON] knows its opponent's next move!",
 		block: "  [POKEMON] can't be hit by attacks from its ally Pok\u00E9mon!",
 	},
 	teraformzero: {
