@@ -292,8 +292,14 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		onModifySpePriority: 5,
 		onModifySpe(spe, pokemon) {
 			if (pokemonInActiveDomain(this, pokemon)) return this.chainModify([6144, 5120]);
-			// Flying types benefit from the opposing side's Tailwind (§1.5)
-			if (pokemon.hasType('Flying') && pokemon.side.foe.sideConditions['tailwind']) {
+			// Flying types benefit from the opposing side's Tailwind (§1.5) — but only
+			// if they aren't already under their own side's Tailwind (a Pokemon can only
+			// be affected by one Tailwind; the own-side Tailwind condition's own ×1.5
+			// (see the 'tailwind' condition in data/moves.ts) takes priority over this.
+			if (
+				pokemon.hasType('Flying') && pokemon.side.foe.sideConditions['tailwind'] &&
+				!pokemon.side.sideConditions['tailwind']
+			) {
 				return this.chainModify([3, 2]);
 			}
 		},
