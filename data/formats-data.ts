@@ -585,7 +585,8 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 		tier: "LC",
 	},
 	slowpokegalar: {
-		tier: "LC",
+		tier: "Illegal",
+		natDexTier: "Illegal",
 	},
 	sloyster: {
 		tier: "ZU",
