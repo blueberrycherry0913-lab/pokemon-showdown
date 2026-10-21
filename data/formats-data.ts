@@ -582,11 +582,22 @@ export const FormatsData: import('../sim/dex-species').SpeciesFormatsDataTable =
 		natDexTier: "Illegal",
 	},
 	slowpoke: {
-		tier: "Illegal",
-		natDexTier: "Illegal",
+		tier: "LC",
 	},
 	slowpokegalar: {
 		tier: "LC",
+	},
+	sloyster: {
+		tier: "ZU",
+	},
+	slopex: {
+		tier: "ZU",
+	},
+	slobanacle: {
+		tier: "ZU",
+	},
+	slocurchin: {
+		tier: "ZU",
 	},
 	slowbro: {
 		tier: "PU",
