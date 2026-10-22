@@ -119,6 +119,32 @@ function pokemonInActiveDomain(battle: any, pokemon: any): boolean {
 //  handled separately by the Ghost guard in pokemon.tryTrap; see champions/scripts.ts.)
 const TRAPPED_VOLATILES = new Set(['interlocked', 'deathgrip', 'locked', 'rooted', 'swallowed']);
 
+// Water blanket purge (§1.5): one intensity step down per purge (severe → minor, minor → cleared;
+// Sleep has no minor tier so it clears). First purge fires at the end of the 3rd turn after
+// infliction (the infliction turn counts as turn 1); each purge that leaves a status starts a fresh
+// 3-turn timer. The counter lives on pokemon.m (not statusState) so escalation — which recreates
+// statusState — does not reset it. Called from the format-level onResidual, which fires once per
+// active Pokémon.
+const WATER_PURGE_STEP_DOWN: {[status: string]: string} = {
+	tox: 'psn', mlt: 'cor', scr: 'brn', frz: 'frb', par: 'stun',
+};
+function waterPurgeTick(battle: any, pokemon: any) {
+	if (!pokemon.status || !pokemon.hasType('Water')) {
+		delete pokemon.m.waterPurge;
+		return;
+	}
+	pokemon.m.waterPurge = (pokemon.m.waterPurge || 0) + 1;
+	if (pokemon.m.waterPurge < 3) return;
+	pokemon.m.waterPurge = 0;
+	battle.add('-activate', pokemon, 'typeEffect', '[type]Water', '[msg]Status Purge');
+	battle.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Water'}));
+	const lower = WATER_PURGE_STEP_DOWN[pokemon.status];
+	const source = pokemon.statusState.source;
+	const sourceEffect = pokemon.statusState.sourceEffect;
+	pokemon.cureStatus();
+	if (lower) pokemon.setStatus(lower, source, sourceEffect);
+}
+
 // Domain Setter awakened-ability validation shared by both custom formats.
 function validateDomainSetter(this: any, set: any): string[] | void {
 	const ability2 = (set as any).ability2 as string | undefined;
@@ -292,16 +318,6 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		onModifySpePriority: 5,
 		onModifySpe(spe, pokemon) {
 			if (pokemonInActiveDomain(this, pokemon)) return this.chainModify([6144, 5120]);
-			// Flying types benefit from the opposing side's Tailwind (§1.5) — but only
-			// if they aren't already under their own side's Tailwind (a Pokemon can only
-			// be affected by one Tailwind; the own-side Tailwind condition's own ×1.5
-			// (see the 'tailwind' condition in data/moves.ts) takes priority over this.
-			if (
-				pokemon.hasType('Flying') && pokemon.side.foe.sideConditions['tailwind'] &&
-				!pokemon.side.sideConditions['tailwind']
-			) {
-				return this.chainModify([3, 2]);
-			}
 		},
 		// Normal blanket effects (§1.5), applied as flat end-of-calc damage multipliers:
 		//  - Inverse-STAB: a Normal-type attacker deals ×1.1 on NON-STAB moves (move type is
@@ -311,7 +327,12 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		//    and Ghost, regardless of type effectiveness.
 		// Both accumulate into the ModifyDamage event modifier (chainModify, no return), so when
 		// a Normal attacks a Normal with a non-STAB non-Fighting/Ghost move both apply (×0.99).
+		// Flying wind reduction (§1.5): a Flying defender takes ×0.5 from any Wind-flagged move
+		// (keys on the flag, not the move's type); stacks with Soft Resistance.
 		onModifyDamage(damage, source, target, move) {
+			if (target.hasType('Flying') && move.flags?.['wind']) {
+				this.chainModify(0.5);
+			}
 			if (source.hasType('Normal') && !source.hasType(move.type) && !move.forceSTAB) {
 				this.chainModify(1.1); // Inverse-STAB
 			}
@@ -421,20 +442,11 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 				return null;
 			}
 		},
-		// Two §1.5 hit-time effects:
-		//  - Dark types are immune to ALL Dark-type status moves used against them (Taunt,
-		//    Torment, Fake Tears, Parting Shot, Topsy-Turvy, etc.). The canon Prankster-Dark
-		//    immunity (any-type Prankster-boosted status move) is separate and stays canon.
-		//  - Flying types gain +1 Speed stage when hit by a Wind-flagged move. NO immunity is
-		//    granted — the wind move still deals full damage (we do not return null for it).
+		// Dark types are immune to ALL Dark-type status moves used against them (Taunt,
+		// Torment, Fake Tears, Parting Shot, Topsy-Turvy, etc.). The canon Prankster-Dark
+		// immunity (any-type Prankster-boosted status move) is separate and stays canon.
 		onTryHit(target, source, move) {
 			if (target === source) return;
-			if (move.flags?.['wind'] && target.hasType('Flying')) {
-				this.add('-activate', target, 'typeEffect', '[type]Flying', '[msg]Wind Speed Boost');
-				this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: target.species.name, ipl: target.side.id, ty: 'Flying'}));
-				this.boost({ spe: 1 }, target, target);
-				// fall through — wind move proceeds at full effect (no immunity)
-			}
 			if (move.category === 'Status' && move.type === 'Dark' && target.hasType('Dark')) {
 				this.add('-activate', target, 'typeEffect', '[type]Dark', '[msg]Dark Move Immunity');
 				this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: target.species.name, ipl: target.side.id, ty: 'Dark'}));
@@ -442,33 +454,11 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 				return null;
 			}
 		},
-		// Steel types cannot be phazed (§1.5): immune to forced-switch effects (Roar,
-		// Whirlwind, Dragon Tail, Circle Throw, etc.). DragOut fires for both the
-		// forceSwitch action and damaging forceSwitch moves.
-		onDragOut(pokemon) {
-			if (pokemon.hasType('Steel')) {
-				this.add('-activate', pokemon, 'typeEffect', '[type]Steel', '[msg]Phazing Immunity');
-				this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Steel'}));
-				this.add('-fail', pokemon);
-				return false;
-			}
-		},
-		// Water types purge all non-volatile status at the end of the second turn after
-		// infliction (§1.5): the status chips on turns 1 and 2, then clears. The counter
-		// lives on statusState, which is recreated on every (re-)infliction, so Toxic's
-		// escalating clock resets on purge automatically. High onResidualOrder so the
-		// second chip lands before the cure. This format-level onResidual fires once per
-		// active Pokémon (findBattleEventHandlers is called per-active in fieldEvent), so we
-		// operate on the single pokemon arg — looping getAllActive here would multi-count.
+		// Water types purge non-volatile status one intensity step per 3-turn timer (§1.5) —
+		// see waterPurgeTick. High onResidualOrder so the purge lands after residual chip damage.
 		onResidualOrder: 100,
 		onResidual(pokemon) {
-			if (!pokemon.status || !pokemon.hasType('Water')) return;
-			pokemon.statusState.waterPurge = (pokemon.statusState.waterPurge || 0) + 1;
-			if (pokemon.statusState.waterPurge >= 2) {
-				this.add('-activate', pokemon, 'typeEffect', '[type]Water', '[msg]Status Purge');
-				this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Water'}));
-				pokemon.cureStatus();
-			}
+			waterPurgeTick(this, pokemon);
 		},
 		// Testing Standard bans Mega Evolutions, Mega Stones, and Gen 1 legendaries.
 		// Domain Setter awakened-ability validation is also applied (shared with Mythics and Megas).
@@ -572,11 +562,11 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		onModifySpePriority: 5,
 		onModifySpe(spe: number, pokemon: any) {
 			if (pokemonInActiveDomain(this, pokemon)) return this.chainModify([6144, 5120]);
-			if (pokemon.hasType('Flying') && pokemon.side.foe.sideConditions['tailwind']) {
-				return this.chainModify([3, 2]);
-			}
 		},
 		onModifyDamage(damage: number, source: any, target: any, move: any) {
+			if (target.hasType('Flying') && move.flags?.['wind']) {
+				this.chainModify(0.5);
+			}
 			if (source.hasType('Normal') && !source.hasType(move.type) && !move.forceSTAB) {
 				this.chainModify(1.1);
 			}
@@ -659,11 +649,6 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 		},
 		onTryHit(target: any, source: any, move: any) {
 			if (target === source) return;
-			if (move.flags?.['wind'] && target.hasType('Flying')) {
-				this.add('-activate', target, 'typeEffect', '[type]Flying', '[msg]Wind Speed Boost');
-				this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: target.species.name, ipl: target.side.id, ty: 'Flying'}));
-				this.boost({ spe: 1 }, target, target);
-			}
 			if (move.category === 'Status' && move.type === 'Dark' && target.hasType('Dark')) {
 				this.add('-activate', target, 'typeEffect', '[type]Dark', '[msg]Dark Move Immunity');
 				this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: target.species.name, ipl: target.side.id, ty: 'Dark'}));
@@ -671,23 +656,9 @@ export const Formats: import('../sim/dex-formats').FormatList = [
 				return null;
 			}
 		},
-		onDragOut(pokemon: any) {
-			if (pokemon.hasType('Steel')) {
-				this.add('-activate', pokemon, 'typeEffect', '[type]Steel', '[msg]Phazing Immunity');
-				this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Steel'}));
-				this.add('-fail', pokemon);
-				return false;
-			}
-		},
 		onResidualOrder: 100,
 		onResidual(pokemon: any) {
-			if (!pokemon.status || !pokemon.hasType('Water')) return;
-			pokemon.statusState.waterPurge = (pokemon.statusState.waterPurge || 0) + 1;
-			if (pokemon.statusState.waterPurge >= 2) {
-				this.add('-activate', pokemon, 'typeEffect', '[type]Water', '[msg]Status Purge');
-				this.add('analytic', 'typeabilityactivation', JSON.stringify({ip: pokemon.species.name, ipl: pokemon.side.id, ty: 'Water'}));
-				pokemon.cureStatus();
-			}
+			waterPurgeTick(this, pokemon);
 		},
 		onValidateSet(set: any) {
 			return validateDomainSetter.call(this, set);
